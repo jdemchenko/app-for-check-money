@@ -20,8 +20,8 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 ## Requirements
 
-- macOS with **Xcode 16+** (iOS 18 / watchOS 11 SDKs)
-- iOS **18.0+** Simulator or device; watchOS **11.0+** for the companion
+- macOS with **Xcode 16+** (iOS 18 / watchOS 10+ SDKs)
+- iOS **18.0+** Simulator or device; watchOS **10.0+** for the companion
 - Apple Developer team (for device runs / signing / App Groups). Simulator works with automatic signing and an empty team in many setups; real phone↔watch App Group sync needs a Team.
 
 ## Open & run
@@ -32,15 +32,13 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 4. Set your **Team** under Signing & Capabilities if deploying to a device (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). Enable the **App Groups** capability (`group.com.jdemchenko.AppForCheckMoney`) on iPhone, Watch, and Widgets if Xcode prompts.
 5. Press **Run** (⌘R).
 
-### Apple Watch Simulator
+### Apple Watch (Simulator or physical / paired)
 
-1. Select scheme **CheckMoneyWatch**.
-2. Pick an Apple Watch Simulator destination (watchOS 11+), ideally paired with an iPhone Simulator.
-3. Set the same **Team** on **CheckMoneyWatch** and **CheckMoneyWatchWidgets**.
-4. Run **⌘R**. Launch the iPhone app once so a snapshot is pushed.
-5. Optional: edit the Watch face and add the **Today spend** complication.
+**Install to a paired Watch** (e.g. “Vanya’s Apple Watch”): scheme **AppForCheckMoney**, destination = the **iPhone** (not the Watch) → Run. The Watch app installs via Embed Watch Content. Selecting the Watch as destination for the iPhone scheme triggers Xcode’s “change Base SDK / Supported Platforms” error — that is expected; use the steps below instead.
 
-Voice on Watch uses **keyboard dictation** (mic on text fields), not the full iPhone `SFSpeechRecognizer` pipeline.
+**Run / debug on Watch**: scheme **CheckMoneyWatch**, destination = Watch Simulator or the physical Watch → Run. Set the same **Team** on Watch + Widgets targets. Launch the iPhone app once so a snapshot is pushed.
+
+Optional: edit the Watch face and add the **Today spend** complication. Voice on Watch uses **keyboard dictation** (mic on text fields), not the full iPhone `SFSpeechRecognizer` pipeline.
 
 ### Voice on Simulator
 
