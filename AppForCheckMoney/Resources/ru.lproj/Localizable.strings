@@ -83,11 +83,3 @@
 "common.edit" = "Изменить";
 "common.ok" = "OK";
 "common.close" = "Закрыть";
-"common.menu" = "Меню";
-
-"settings.icon.title" = "Иконка приложения";
-"settings.icon.subtitle" = "Выберите, как CheckMoney выглядит на домашнем экране.";
-"settings.icon.default" = "По умолчанию";
-"settings.icon.dark" = "Тёмный";
-"settings.icon.clear" = "Прозрачный";
-"settings.icon.unsupported" = "Смена иконок недоступна на этом устройстве. Выбор сохранится на будущее.";

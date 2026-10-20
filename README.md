@@ -11,6 +11,7 @@ Native **SwiftUI** personal money tracker for iPhone and iPad — expenses and i
 - **Categories** — seeded defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords (RU/EN synonyms, АЗС/заправка/gas station, …) with **manual override**
 - **Screens** — Home (balance + floating glass mic + recent), History, Categories; manual Add as a sheet from Home
 - **UI** — Liquid Glass–inspired materials (`.ultraThinMaterial` / specular rims / soft depth), minimal chrome, system Light/Dark
+- **App icon** — primary `AppIcon` with Default / Dark / Tinted Appearances (Home Screen → Edit → Customize); no in-app icon picker
 - **System appearance** — follows Light/Dark Mode (no forced theme)
 - **Localization** — English + Russian (`en` / `ru` `.lproj`); UI language follows the device locale
 

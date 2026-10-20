@@ -83,11 +83,3 @@
 "common.edit" = "Edit";
 "common.ok" = "OK";
 "common.close" = "Close";
-"common.menu" = "Menu";
-
-"settings.icon.title" = "App Icon";
-"settings.icon.subtitle" = "Choose how CheckMoney looks on the Home Screen.";
-"settings.icon.default" = "Default";
-"settings.icon.dark" = "Dark";
-"settings.icon.clear" = "Transparent";
-"settings.icon.unsupported" = "Alternate icons aren’t available on this device. Your choice is saved for when they are.";
