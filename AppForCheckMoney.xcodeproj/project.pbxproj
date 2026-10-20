@@ -34,7 +34,7 @@
 		A10000000000000000000011 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Localizable.strings */; };
 		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
 		A1000000000000000000001D /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
-		A1000000000000000000001E /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* AppGroupStore.swift */; };
+		A1000000000000000000001E /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
 		/* Do NOT CodeSignOnCopy the Watch .app — that can invalidate the companion and hide it from Available Apps. */
 		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A20000000000000000000001 /* CheckMoneyWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* CheckMoneyWatchApp.swift */; };
@@ -45,11 +45,20 @@
 		A20000000000000000000006 /* WatchRecentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* WatchRecentView.swift */; };
 		A20000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000007 /* Assets.xcassets */; };
 		A20000000000000000000008 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
-		A20000000000000000000009 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* AppGroupStore.swift */; };
+		A20000000000000000000009 /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
 		A30000000000000000000001 /* CheckMoneyWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000001 /* CheckMoneyWatchWidgets.swift */; };
 		A30000000000000000000002 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
-		A30000000000000000000003 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* AppGroupStore.swift */; };
+		A30000000000000000000003 /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
 		A30000000000000000000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000002 /* Assets.xcassets */; };
+		A10000000000000000000020 /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* TextNormalizer.swift */; };
+		A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* SharedCategoryMatcher.swift */; };
+		A10000000000000000000022 /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* SharedVoiceParser.swift */; };
+		A2000000000000000000000A /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* TextNormalizer.swift */; };
+		A2000000000000000000000B /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* SharedCategoryMatcher.swift */; };
+		A2000000000000000000000C /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* SharedVoiceParser.swift */; };
+		A2000000000000000000000D /* AmountWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* AmountWords.swift */; };
+		A2000000000000000000000E /* WatchDictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* WatchDictateView.swift */; };
+		A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* WatchSpeechRecognizer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,7 +116,7 @@
 		B10000000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B1000000000000000000001F /* PhoneWatchSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWatchSync.swift; sourceTree = "<group>"; };
 		B10000000000000000000020 /* SyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModels.swift; sourceTree = "<group>"; };
-		B10000000000000000000021 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000021 /* LocalSyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSyncStore.swift; sourceTree = "<group>"; };
 		B10000000000000000000022 /* AppForCheckMoney.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppForCheckMoney.entitlements; sourceTree = "<group>"; };
 		C10000000000000000000001 /* AppForCheckMoney.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppForCheckMoney.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C10000000000000000000002 /* CheckMoneyWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CheckMoneyWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -205,7 +214,6 @@
 				B10000000000000000000019 /* SymbolSuggester.swift */,
 				B10000000000000000000018 /* AppCurrency.swift */,
 				B1000000000000000000001C /* StatsEngine.swift */,
-				B1000000000000000000001D /* AmountWords.swift */,
 				B1000000000000000000001E /* ExchangeRateStore.swift */,
 				B10000000000000000000006 /* VoiceParser.swift */,
 				B10000000000000000000007 /* SpeechRecognizer.swift */,
@@ -252,7 +260,11 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000000000020 /* SyncModels.swift */,
-				B10000000000000000000021 /* AppGroupStore.swift */,
+				B10000000000000000000021 /* LocalSyncStore.swift */,
+				B1000000000000000000001D /* AmountWords.swift */,
+				B10000000000000000000022 /* TextNormalizer.swift */,
+				B10000000000000000000023 /* SharedCategoryMatcher.swift */,
+				B10000000000000000000024 /* SharedVoiceParser.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -263,6 +275,8 @@
 				B20000000000000000000001 /* CheckMoneyWatchApp.swift */,
 				B20000000000000000000002 /* WatchStore.swift */,
 				B20000000000000000000003 /* WatchRootView.swift */,
+				B2000000000000000000000A /* WatchDictateView.swift */,
+				B2000000000000000000000B /* WatchSpeechRecognizer.swift */,
 				B20000000000000000000004 /* WatchHomeView.swift */,
 				B20000000000000000000005 /* WatchAddView.swift */,
 				B20000000000000000000006 /* WatchRecentView.swift */,
@@ -457,7 +471,7 @@
 				A10000000000000000000008 /* L10n.swift in Sources */,
 				A1000000000000000000001C /* PhoneWatchSync.swift in Sources */,
 				A1000000000000000000001D /* SyncModels.swift in Sources */,
-				A1000000000000000000001E /* AppGroupStore.swift in Sources */,
+				A1000000000000000000001E /* LocalSyncStore.swift in Sources */,
 				A10000000000000000000009 /* RootTabView.swift in Sources */,
 				A1000000000000000000000A /* HomeView.swift in Sources */,
 				A10000000000000000000018 /* StatsView.swift in Sources */,
@@ -467,6 +481,9 @@
 				A10000000000000000000017 /* SettingsView.swift in Sources */,
 				A1000000000000000000000E /* Theme.swift in Sources */,
 				A1000000000000000000000F /* TransactionRowView.swift in Sources */,
+				A10000000000000000000020 /* TextNormalizer.swift in Sources */,
+				A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */,
+				A10000000000000000000022 /* SharedVoiceParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -481,7 +498,13 @@
 				A20000000000000000000005 /* WatchAddView.swift in Sources */,
 				A20000000000000000000006 /* WatchRecentView.swift in Sources */,
 				A20000000000000000000008 /* SyncModels.swift in Sources */,
-				A20000000000000000000009 /* AppGroupStore.swift in Sources */,
+				A20000000000000000000009 /* LocalSyncStore.swift in Sources */,
+				A2000000000000000000000A /* TextNormalizer.swift in Sources */,
+				A2000000000000000000000B /* SharedCategoryMatcher.swift in Sources */,
+				A2000000000000000000000C /* SharedVoiceParser.swift in Sources */,
+				A2000000000000000000000D /* AmountWords.swift in Sources */,
+				A2000000000000000000000E /* WatchDictateView.swift in Sources */,
+				A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,7 +514,7 @@
 			files = (
 				A30000000000000000000001 /* CheckMoneyWatchWidgets.swift in Sources */,
 				A30000000000000000000002 /* SyncModels.swift in Sources */,
-				A30000000000000000000003 /* AppGroupStore.swift in Sources */,
+				A30000000000000000000003 /* LocalSyncStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

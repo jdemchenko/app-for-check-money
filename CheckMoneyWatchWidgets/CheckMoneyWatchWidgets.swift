@@ -24,7 +24,7 @@ struct TodaySpendProvider: TimelineProvider {
     }
 
     private func makeEntry() -> TodaySpendEntry {
-        let snap = AppGroupStore.readSnapshot() ?? .empty
+        let snap = LocalSyncStore.readSnapshot() ?? .empty
         return TodaySpendEntry(
             date: .now,
             todayExpense: snap.todayExpense,

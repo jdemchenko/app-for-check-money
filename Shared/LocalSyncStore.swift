@@ -1,7 +1,11 @@
 import Foundation
 
-/// JSON snapshot + pending Watch adds in the App Group container (fallback: app Documents).
-enum AppGroupStore {
+/// Per-app Documents JSON cache for Watch glance data + pending Watch→phone adds.
+/// No App Groups / no `group.*` lookups (those log `client is not entitled` when absent).
+enum LocalSyncStore {
+    private static let snapshotFileName = "watch-snapshot.json"
+    private static let pendingWatchAddsFileName = "pending-watch-adds.json"
+
     private static let encoder: JSONEncoder = {
         let e = JSONEncoder()
         e.dateEncodingStrategy = .iso8601
@@ -15,29 +19,23 @@ enum AppGroupStore {
         return d
     }()
 
-    static var containerURL: URL {
-        if let url = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: CheckMoneyAppGroup.id
-        ) {
-            return url
-        }
-        // Simulator / unsigned builds without App Group — still functional locally.
-        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    static var documentsURL: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("CheckMoneyShared", isDirectory: true)
     }
 
-    private static func ensureContainer() {
-        try? FileManager.default.createDirectory(at: containerURL, withIntermediateDirectories: true)
+    private static func ensureDir() {
+        try? FileManager.default.createDirectory(at: documentsURL, withIntermediateDirectories: true)
     }
 
     static var snapshotURL: URL {
-        ensureContainer()
-        return containerURL.appendingPathComponent(CheckMoneyAppGroup.snapshotFileName)
+        ensureDir()
+        return documentsURL.appendingPathComponent(snapshotFileName)
     }
 
     static var pendingURL: URL {
-        ensureContainer()
-        return containerURL.appendingPathComponent(CheckMoneyAppGroup.pendingWatchAddsFileName)
+        ensureDir()
+        return documentsURL.appendingPathComponent(pendingWatchAddsFileName)
     }
 
     static func writeSnapshot(_ snapshot: WatchSnapshot) throws {

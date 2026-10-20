@@ -2,17 +2,19 @@ import Foundation
 import SwiftData
 import WatchConnectivity
 
-/// Phone-side sync: push SwiftData glance snapshot → App Group + WatchConnectivity;
-/// merge pending Watch adds into SwiftData.
+/// Phone-side sync: SwiftData glance snapshot → Documents cache + WatchConnectivity
+/// when the Watch companion is installed. Soft-fails if Watch app is missing.
 @MainActor
 final class PhoneWatchSync: NSObject, ObservableObject {
     static let shared = PhoneWatchSync()
 
     @Published private(set) var lastPushAt: Date?
     @Published private(set) var isWatchReachable = false
+    @Published private(set) var isWatchAppInstalled = false
 
     private var modelContext: ModelContext?
     private var session: WCSession?
+    private var loggedMissingWatchApp = false
 
     private override init() {
         super.init()
@@ -20,7 +22,6 @@ final class PhoneWatchSync: NSObject, ObservableObject {
 
     func start(modelContext: ModelContext) {
         self.modelContext = modelContext
-        // Never block UI / SwiftData setup if WatchConnectivity misbehaves.
         guard WCSession.isSupported() else {
             pushSnapshot()
             return
@@ -29,6 +30,7 @@ final class PhoneWatchSync: NSObject, ObservableObject {
         session.delegate = self
         session.activate()
         self.session = session
+        refreshWatchInstallState()
         pushSnapshot()
         mergePendingFromWatch()
     }
@@ -38,17 +40,9 @@ final class PhoneWatchSync: NSObject, ObservableObject {
         guard let modelContext else { return }
         do {
             let snapshot = try buildSnapshot(in: modelContext)
-            try? AppGroupStore.writeSnapshot(snapshot)
+            try? LocalSyncStore.writeSnapshot(snapshot)
             lastPushAt = .now
-
-            if let session, session.activationState == .activated {
-                let data = try JSONEncoder.iso8601.encode(snapshot)
-                // updateApplicationContext throws if payload too large / not activated — ignore.
-                try? session.updateApplicationContext([
-                    "snapshot": data.base64EncodedString(),
-                    "updatedAt": snapshot.updatedAt.timeIntervalSince1970,
-                ])
-            }
+            pushContextIfWatchInstalled(snapshot)
         } catch {
             #if DEBUG
             print("PhoneWatchSync push failed: \(error)")
@@ -58,12 +52,11 @@ final class PhoneWatchSync: NSObject, ObservableObject {
 
     func mergePendingFromWatch() {
         guard let modelContext else { return }
-        let pending = AppGroupStore.readPendingAdds()
+        let pending = LocalSyncStore.readPendingAdds()
         guard !pending.isEmpty else { return }
 
         var mergedIds = Set<String>()
         for item in pending {
-            // #Predicate must capture a local constant (not `item.id` directly).
             let pendingId = item.id
             let existing = FetchDescriptor<MoneyTransaction>(
                 predicate: #Predicate { $0.id == pendingId }
@@ -72,23 +65,65 @@ final class PhoneWatchSync: NSObject, ObservableObject {
                 mergedIds.insert(pendingId)
                 continue
             }
+            let txType: TransactionType = item.typeRaw == "income" ? .income : .expense
             let tx = MoneyTransaction(
                 id: pendingId,
                 amount: item.amount,
-                type: .expense,
+                type: txType,
                 categoryId: item.categoryId,
                 note: item.note,
                 date: item.createdAt,
                 createdAt: item.createdAt,
-                source: .manual,
+                source: .voice,
                 currency: AppCurrency.parse(item.currencyRaw)
             )
             modelContext.insert(tx)
             mergedIds.insert(pendingId)
         }
         try? modelContext.save()
-        try? AppGroupStore.clearPendingAdds(ids: mergedIds)
+        try? LocalSyncStore.clearPendingAdds(ids: mergedIds)
         pushSnapshot()
+    }
+
+    private func ingestPendingAdd(_ add: WatchPendingAdd) {
+        try? LocalSyncStore.appendPendingAdd(add)
+        mergePendingFromWatch()
+    }
+
+    private func refreshWatchInstallState() {
+        guard let session else {
+            isWatchAppInstalled = false
+            return
+        }
+        #if os(iOS)
+        isWatchAppInstalled = session.isWatchAppInstalled
+        isWatchReachable = session.isReachable
+        #else
+        isWatchAppInstalled = false
+        #endif
+    }
+
+    private func pushContextIfWatchInstalled(_ snapshot: WatchSnapshot) {
+        guard let session, session.activationState == .activated else { return }
+        #if os(iOS)
+        refreshWatchInstallState()
+        guard session.isWatchAppInstalled else {
+            if !loggedMissingWatchApp {
+                loggedMissingWatchApp = true
+                #if DEBUG
+                print("PhoneWatchSync: Watch companion not installed — skipping WCSession. Run CheckMoneyWatch → Watch, or install from Available Apps after PlugIns embed.")
+                #endif
+            }
+            return
+        }
+        #endif
+        guard let data = try? JSONEncoder.iso8601.encode(snapshot) else { return }
+        let payload: [String: Any] = [
+            "snapshot": data.base64EncodedString(),
+            "updatedAt": snapshot.updatedAt.timeIntervalSince1970,
+        ]
+        // Snapshot = latest-wins via applicationContext (not a transferUserInfo flood).
+        try? session.updateApplicationContext(payload)
     }
 
     private func buildSnapshot(in context: ModelContext) throws -> WatchSnapshot {
@@ -118,19 +153,7 @@ final class PhoneWatchSync: NSObject, ObservableObject {
             }
         }
 
-        let categoryDTOs: [SharedCategoryDTO] = cats
-            .filter { $0.kind == .expense || $0.kind == .both }
-            .map {
-                SharedCategoryDTO(
-                    id: $0.id,
-                    nameRu: $0.nameRu,
-                    nameEn: $0.nameEn,
-                    kindRaw: $0.kindRaw,
-                    symbolName: $0.symbolName,
-                    colorHex: $0.colorHex,
-                    sortOrder: $0.sortOrder
-                )
-            }
+        let categoryDTOs: [SharedCategoryDTO] = cats.map { $0.asSharedDTO }
 
         let recent = Array(txs.prefix(12)).map { tx in
             SharedTransactionDTO(
@@ -165,7 +188,7 @@ extension PhoneWatchSync: WCSessionDelegate {
         error: Error?
     ) {
         Task { @MainActor in
-            isWatchReachable = session.isReachable
+            refreshWatchInstallState()
             if activationState == .activated {
                 pushSnapshot()
                 mergePendingFromWatch()
@@ -175,7 +198,7 @@ extension PhoneWatchSync: WCSessionDelegate {
 
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
-            isWatchReachable = session.isReachable
+            refreshWatchInstallState()
             if session.isReachable {
                 pushSnapshot()
                 mergePendingFromWatch()
@@ -184,6 +207,19 @@ extension PhoneWatchSync: WCSessionDelegate {
     }
 
     #if os(iOS)
+    nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
+        Task { @MainActor in
+            let wasInstalled = isWatchAppInstalled
+            refreshWatchInstallState()
+            if isWatchAppInstalled {
+                loggedMissingWatchApp = false
+                if !wasInstalled {
+                    pushSnapshot()
+                }
+            }
+        }
+    }
+
     nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}
     nonisolated func sessionDidDeactivate(_ session: WCSession) {
         session.activate()
@@ -199,8 +235,7 @@ extension PhoneWatchSync: WCSessionDelegate {
             if let b64 = message["pendingAdd"] as? String,
                let data = Data(base64Encoded: b64),
                let add = try? JSONDecoder.iso8601.decode(WatchPendingAdd.self, from: data) {
-                try? AppGroupStore.appendPendingAdd(add)
-                mergePendingFromWatch()
+                ingestPendingAdd(add)
                 replyHandler(["ok": true])
                 return
             }
@@ -218,9 +253,20 @@ extension PhoneWatchSync: WCSessionDelegate {
             if let b64 = applicationContext["pendingAdd"] as? String,
                let data = Data(base64Encoded: b64),
                let add = try? JSONDecoder.iso8601.decode(WatchPendingAdd.self, from: data) {
-                try? AppGroupStore.appendPendingAdd(add)
-                mergePendingFromWatch()
+                ingestPendingAdd(add)
             }
+        }
+    }
+
+    nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        Task { @MainActor in
+            if let b64 = userInfo["pendingAdd"] as? String,
+               let data = Data(base64Encoded: b64),
+               let add = try? JSONDecoder.iso8601.decode(WatchPendingAdd.self, from: data) {
+                ingestPendingAdd(add)
+                return
+            }
+            // Snapshot pushed via transferUserInfo — ignore on phone.
         }
     }
 }

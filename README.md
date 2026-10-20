@@ -1,6 +1,6 @@
 # CheckMoney (AppForCheckMoney)
 
-Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** — expenses and income with manual entry, voice drafts, and keyword auto-categorization. Data stays on-device via **SwiftData** (phone) with App Group + WatchConnectivity sync to the Watch companion. No backend, no auth.
+Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** — expenses and income with manual entry, voice drafts, and keyword auto-categorization. Data stays on-device via **SwiftData** (phone). Watch is a **paired companion**: hold-to-dictate → shared NLP → WatchConnectivity sync. No App Groups, no backend, no auth.
 
 > This repository is an **independent** iOS app. It is not related to Fitil.
 
@@ -13,7 +13,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 - **UI** — Liquid Glass–inspired materials (`.ultraThinMaterial` / specular rims / soft depth), minimal chrome, system Light/Dark
 - **Currency** — each transaction stores its own currency; Settings has **display** (totals via approximate BYN-pivot rates) and **entry default** (new ops). Changing Settings never rewrites past amounts. Voice «руб» → entry default (BYN); dollars/euros stamp USD/EUR.
 - **Stats** — week / month / all overview + spend by category (converted to display currency)
-- **Apple Watch** — Overview (balance + today), quick add (amount / category / dictation via keyboard mic), recent list; **Today spend** complication. Sync: App Group JSON + WatchConnectivity (phone SwiftData is source of truth).
+- **Apple Watch** — Hold-to-dictate companion (one breath → parse amount/category/currency → sync to iPhone). Minimal UI; phone SwiftData is source of truth. Sync: Documents cache + WatchConnectivity (no App Groups). **Today spend** complication.
 - **App icon** — minimal checkmark glass; Default / Dark / Tinted Home Screen Appearances; Watch 1024×1024 icon; no in-app picker
 - **System appearance** — Light/Dark; restrained ADA-inspired materials
 - **Localization** — English + Russian (`en` / `ru` `.lproj`); UI language follows the device locale
@@ -22,19 +22,25 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 - macOS with **Xcode 26+** recommended for watchOS 26 devices (iOS 18 / watchOS 11+ SDKs)
 - iOS **18.0+** Simulator or device; watchOS **11.0+** companion (runs on watchOS **26.6**)
-- Same Signing **Team** on iPhone + Watch targets. App Groups not required. Simulator works with automatic signing.
+- Same Signing **Team** on iPhone + Watch targets. App Groups are **not used**. Simulator works with automatic signing.
 
 ## Open & run
 
 1. Clone this repo on a Mac.
 2. Open `AppForCheckMoney.xcodeproj` in Xcode.
 3. Select the **AppForCheckMoney** scheme and an iOS 18+ Simulator (or your device).
-4. Set the **same Team** under Signing & Capabilities on **AppForCheckMoney**, **CheckMoneyWatch**, and **CheckMoneyWatchWidgets** (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). App Groups are optional (paid Team); leave them off on a Personal Team so Watch install succeeds.
+4. Set the **same Team** under Signing & Capabilities on **AppForCheckMoney**, **CheckMoneyWatch**, and **CheckMoneyWatchWidgets** (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). Do **not** add App Groups.
 5. Press **Run** (⌘R).
 
 ### Apple Watch (Simulator or physical / paired)
 
-**Watch:** use **two schemes** (one LaunchAction can’t safely switch products). **AppForCheckMoney → iPhone** (embeds Watch under `PlugIns/`). **CheckMoneyWatch → Watch**. Putting Watch’s RemoteRunnable on the iPhone scheme caused Code 6: Watch app (family 4) installed on iPhone (family 1). Docs: agent-store `apple-watch.md`.
+**Product:** iPhone↔Watch связка — Watch hold-to-dictate, sync via WCSession.  
+**Two schemes** (one LaunchAction can’t switch products safely):
+
+1. **AppForCheckMoney → iPhone** — embeds companion under `PlugIns/` (Build log: `Watch companion OK`). Then Available Apps / auto-install.
+2. **CheckMoneyWatch → Watch** — reliable first install if Available Apps is empty.
+
+`WCErrorCodeWatchAppNotInstalled` on the phone means the companion is not on the Watch yet — run step 2. Full guide: agent-store `docs/apple-watch.md`.
 
 ### Voice on Simulator
 
@@ -56,7 +62,7 @@ node scripts/currency-selftest.mjs
 AppForCheckMoney.xcodeproj/          # Xcode project + AppForCheckMoney / CheckMoneyWatch schemes
 AppForCheckMoney/                   # iPhone / iPad app (SwiftData)
   Services/PhoneWatchSync.swift     # Push snapshot + merge Watch pending adds
-Shared/                             # SyncModels + AppGroupStore (iOS + Watch + Widgets)
+Shared/                             # SyncModels, LocalSyncStore, SharedVoiceParser (iOS + Watch)
 CheckMoneyWatch/                    # watchOS companion UI
 CheckMoneyWatchWidgets/             # Today spend complication
 ```
