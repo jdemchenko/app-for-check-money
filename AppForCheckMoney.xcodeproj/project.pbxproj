@@ -12,6 +12,7 @@
 		A10000000000000000000003 /* MoneyTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* MoneyTransaction.swift */; };
 		A10000000000000000000004 /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* SeedData.swift */; };
 		A10000000000000000000005 /* CategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* CategoryMatcher.swift */; };
+		A10000000000000000000014 /* KeywordSuggester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* KeywordSuggester.swift */; };
 		A10000000000000000000006 /* VoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* VoiceParser.swift */; };
 		A10000000000000000000007 /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* SpeechRecognizer.swift */; };
 		A10000000000000000000008 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* L10n.swift */; };
@@ -32,6 +33,7 @@
 		B10000000000000000000003 /* MoneyTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyTransaction.swift; sourceTree = "<group>"; };
 		B10000000000000000000004 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		B10000000000000000000005 /* CategoryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryMatcher.swift; sourceTree = "<group>"; };
+		B10000000000000000000017 /* KeywordSuggester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeywordSuggester.swift; sourceTree = "<group>"; };
 		B10000000000000000000006 /* VoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceParser.swift; sourceTree = "<group>"; };
 		B10000000000000000000007 /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		B10000000000000000000008 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000000000005 /* CategoryMatcher.swift */,
+				B10000000000000000000017 /* KeywordSuggester.swift */,
 				B10000000000000000000006 /* VoiceParser.swift */,
 				B10000000000000000000007 /* SpeechRecognizer.swift */,
 				B10000000000000000000008 /* L10n.swift */,
@@ -217,6 +220,7 @@
 				A10000000000000000000003 /* MoneyTransaction.swift in Sources */,
 				A10000000000000000000004 /* SeedData.swift in Sources */,
 				A10000000000000000000005 /* CategoryMatcher.swift in Sources */,
+				A10000000000000000000014 /* KeywordSuggester.swift in Sources */,
 				A10000000000000000000006 /* VoiceParser.swift in Sources */,
 				A10000000000000000000007 /* SpeechRecognizer.swift in Sources */,
 				A10000000000000000000008 /* L10n.swift in Sources */,

@@ -67,7 +67,8 @@ enum SeedData {
         )
     }
 
-    private struct DefaultCategory {
+    /// Synonym bank used for seeding defaults and for manual-category keyword suggestions.
+    struct SynonymBank: Sendable {
         let id: String
         let nameRu: String
         let nameEn: String
@@ -76,6 +77,11 @@ enum SeedData {
         let colorHex: String
         let symbolName: String
     }
+
+    /// Public synonym banks (RU+EN) shared with `KeywordSuggester` / voice self-test.
+    static var synonymBanks: [SynonymBank] { defaults }
+
+    private typealias DefaultCategory = SynonymBank
 
     /// Keyword lists used by SeedData and mirrored by `scripts/voice-selftest.mjs`.
     private static let defaults: [DefaultCategory] = [

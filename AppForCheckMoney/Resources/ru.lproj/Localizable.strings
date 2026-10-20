@@ -56,6 +56,7 @@
 "categories.nameEn" = "Название (EN)";
 "categories.keywords" = "Ключевые слова";
 "categories.keywordsHint" = "Через запятую — для авто-категоризации";
+"categories.keywordsAuto" = "Подставляются по названию — можно править";
 "categories.colorHex" = "Цвет (hex)";
 "categories.symbol" = "Имя SF Symbol";
 

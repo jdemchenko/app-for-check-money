@@ -169,6 +169,12 @@ struct CategoryEditorSheet: View {
     @State private var colorHex = "0A84FF"
     @State private var symbolName = "circle.fill"
 
+    /// Once the user edits keywords by hand, stop overwriting — unless the field still equals the last auto-fill.
+    @State private var keywordsUserEdited = false
+    @State private var lastAutoKeywords = ""
+    @State private var suppressKeywordsTracking = false
+    @State private var suggestTask: Task<Void, Never>?
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -194,7 +200,10 @@ struct CategoryEditorSheet: View {
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                             TextField(L10n.string("categories.keywordsHint"), text: $keywordsText, axis: .vertical)
-                                .lineLimit(2...5)
+                                .lineLimit(2...6)
+                            Text(L10n.string("categories.keywordsAuto"))
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
                     }
 
@@ -237,6 +246,15 @@ struct CategoryEditorSheet: View {
                 }
             }
             .onAppear { load() }
+            .onChange(of: nameRu) { _, _ in scheduleKeywordSuggest() }
+            .onChange(of: nameEn) { _, _ in scheduleKeywordSuggest() }
+            .onChange(of: symbolName) { _, _ in scheduleKeywordSuggest() }
+            .onChange(of: kind) { _, _ in scheduleKeywordSuggest() }
+            .onChange(of: keywordsText) { _, _ in
+                guard !suppressKeywordsTracking else { return }
+                keywordsUserEdited = true
+            }
+            .onDisappear { suggestTask?.cancel() }
         }
     }
 
@@ -247,6 +265,7 @@ struct CategoryEditorSheet: View {
                 .foregroundStyle(.secondary)
             TextField(title, text: text)
                 .glassField()
+                .onSubmit { applyKeywordSuggest(immediate: true) }
         }
     }
 
@@ -255,10 +274,56 @@ struct CategoryEditorSheet: View {
             nameRu = cat.nameRu
             nameEn = cat.nameEn
             kind = cat.kind
+            suppressKeywordsTracking = true
             keywordsText = cat.keywords.joined(separator: ", ")
+            lastAutoKeywords = keywordsText
+            suppressKeywordsTracking = false
+            // Preserve saved keywords until the user clears them or they still match auto-fill.
+            keywordsUserEdited = !cat.keywords.isEmpty
             colorHex = cat.colorHex
             symbolName = cat.symbolName
+        } else {
+            keywordsUserEdited = false
+            lastAutoKeywords = ""
         }
+        if keywordsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            applyKeywordSuggest(immediate: true)
+        }
+    }
+
+    private func scheduleKeywordSuggest() {
+        suggestTask?.cancel()
+        suggestTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard !Task.isCancelled else { return }
+            applyKeywordSuggest(immediate: false)
+        }
+    }
+
+    private func applyKeywordSuggest(immediate: Bool) {
+        if immediate {
+            suggestTask?.cancel()
+        }
+        let csv = KeywordSuggester.suggestCSV(
+            nameRu: nameRu,
+            nameEn: nameEn,
+            symbolName: symbolName,
+            kind: kind
+        )
+        guard !csv.isEmpty else { return }
+
+        let canReplace =
+            !keywordsUserEdited
+            || keywordsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || keywordsText == lastAutoKeywords
+
+        guard canReplace else { return }
+
+        suppressKeywordsTracking = true
+        keywordsText = csv
+        lastAutoKeywords = csv
+        suppressKeywordsTracking = false
+        keywordsUserEdited = false
     }
 
     private func save() {
