@@ -1,11 +1,10 @@
 import SwiftUI
 
-/// Primary Watch surface: hold/tap mic → system dictation → parse → sync to iPhone.
+/// Maximally minimal: tap mic → system dictation → parse → sync. Zero chrome.
 struct WatchDictateView: View {
     @EnvironmentObject private var store: WatchStore
     @StateObject private var speech = WatchSpeechRecognizer()
 
-    @State private var isHolding = false
     @State private var statusLine: String = ""
     @State private var flashSaved = false
     @State private var sheetText = ""
@@ -13,7 +12,8 @@ struct WatchDictateView: View {
     @FocusState private var sheetFocused: Bool
 
     private var isRussian: Bool {
-        Locale.current.language.languageCode?.identifier.hasPrefix("ru") == true
+        Locale.preferredLanguages.contains { $0.hasPrefix("ru") }
+            || Locale.current.language.languageCode?.identifier.hasPrefix("ru") == true
     }
 
     var body: some View {
@@ -24,7 +24,7 @@ struct WatchDictateView: View {
 
             Spacer(minLength: 2)
 
-            holdButton
+            micButton
 
             Spacer(minLength: 2)
 
@@ -44,12 +44,6 @@ struct WatchDictateView: View {
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
-
-            if !store.isReachable {
-                Text(isRussian ? "iPhone не рядом" : "iPhone away")
-                    .font(.system(size: 9))
-                    .foregroundStyle(.tertiary)
-            }
         }
         .padding(.horizontal, 4)
         .task {
@@ -61,8 +55,6 @@ struct WatchDictateView: View {
         .sheet(isPresented: $showFallbackSheet) {
             NavigationStack {
                 VStack(spacing: 10) {
-                    Text(isRussian ? "Диктовка" : "Dictation")
-                        .font(.headline)
                     TextField(
                         isRussian ? "Сумма и категория…" : "Amount and category…",
                         text: $sheetText
@@ -95,48 +87,28 @@ struct WatchDictateView: View {
         }
     }
 
-    private var holdButton: some View {
+    private var micButton: some View {
         ZStack {
             Circle()
-                .fill(isHolding || speech.isListening
+                .fill(speech.isListening
                       ? Color.red.opacity(0.85)
                       : Color.accentColor.opacity(0.9))
                 .frame(width: 88, height: 88)
-                .scaleEffect(isHolding || speech.isListening ? 1.06 : 1.0)
-                .animation(.easeInOut(duration: 0.15), value: isHolding || speech.isListening)
+                .scaleEffect(speech.isListening ? 1.06 : 1.0)
+                .animation(.easeInOut(duration: 0.15), value: speech.isListening)
 
             Image(systemName: speech.isListening ? "waveform" : "mic.fill")
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(.white)
         }
-        .accessibilityLabel(isRussian ? "Удерживайте и говорите" : "Hold to speak")
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    guard !isHolding else { return }
-                    beginHold()
-                }
-                .onEnded { _ in
-                    endHold()
-                }
-        )
-        .sensoryFeedback(.impact(weight: .medium), trigger: isHolding)
-    }
-
-    private func beginHold() {
-        isHolding = true
-        flashSaved = false
-        statusLine = isRussian ? "Говорите…" : "Listening…"
-        speech.start()
-    }
-
-    private func endHold() {
-        guard isHolding else { return }
-        isHolding = false
-        speech.stop()
-        if speech.presentSystemDictation {
-            statusLine = isRussian ? "Диктовка…" : "Dictating…"
+        .accessibilityLabel(isRussian ? "Диктовка" : "Dictate")
+        .onTapGesture {
+            guard !speech.isListening else { return }
+            flashSaved = false
+            statusLine = isRussian ? "Говорите…" : "Listening…"
+            speech.start()
         }
+        .sensoryFeedback(.impact(weight: .medium), trigger: speech.isListening)
     }
 
     private func handleFinished(_ text: String) {

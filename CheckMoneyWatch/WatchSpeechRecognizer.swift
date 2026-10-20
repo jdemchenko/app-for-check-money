@@ -2,13 +2,15 @@ import Combine
 import Foundation
 import WatchKit
 
-/// Watch dictation without `import Speech` — Speech is not a watchOS Swift module
-/// like on iOS. Uses WatchKit system text input (dictation / scribble).
+/// System WatchKit dictation only — no Speech module on watchOS.
+/// Empty suggestions + `.plain` → straight to the mic (no scribble/emoji chooser).
+/// Do **not** use `presentTextInputController(withSuggestionsForLanguage:)` — Apple docs:
+/// that API never goes straight to dictation (shows language switching UI).
+/// Dictation language follows Watch/Siri (enable RU + EN there for auto multilingual ASR).
 @MainActor
 final class WatchSpeechRecognizer: ObservableObject {
     enum Status: Equatable {
         case idle
-        case requestingPermission
         case listening
         case unavailable(String)
         case failed(String)
@@ -17,16 +19,11 @@ final class WatchSpeechRecognizer: ObservableObject {
     @Published private(set) var status: Status = .idle
     @Published private(set) var transcript: String = ""
     @Published private(set) var isAuthorized = true
-    /// True while system dictation UI (or SwiftUI fallback sheet) should be up.
     @Published var presentSystemDictation = false
 
     var onUtteranceFinished: ((String) -> Void)?
 
     private var didPresentWatchKit = false
-
-    private var isRussian: Bool {
-        Locale.current.language.languageCode?.identifier.hasPrefix("ru") == true
-    }
 
     var isListening: Bool { status == .listening || presentSystemDictation }
 
@@ -35,7 +32,7 @@ final class WatchSpeechRecognizer: ObservableObject {
         isAuthorized = true
     }
 
-    /// Begin dictation via WatchKit text input (includes dictation mic).
+    /// Tap mic → open system dictation immediately.
     func start() {
         guard !presentSystemDictation else { return }
         transcript = ""
@@ -46,7 +43,6 @@ final class WatchSpeechRecognizer: ObservableObject {
     }
 
     func stop() {
-        // WatchKit sheet owns the session until the user finishes speaking.
         if status == .listening, !presentSystemDictation {
             status = .idle
         }
@@ -69,22 +65,18 @@ final class WatchSpeechRecognizer: ObservableObject {
         }
     }
 
-    /// Whether SwiftUI should show its TextField fallback (WatchKit controller missing).
     var needsSwiftUIFallback: Bool {
         presentSystemDictation && !didPresentWatchKit
     }
 
     private func presentWatchTextInput() {
         guard let controller = Self.activeInterfaceController() else {
-            // WatchDictateView will show a TextField sheet via needsSwiftUIFallback.
             return
         }
         didPresentWatchKit = true
-        let suggestions: [String] = isRussian
-            ? ["еда", "транспорт", "кофе"]
-            : ["food", "transport", "coffee"]
+        // nil suggestions + plain → dictation-first (Apple / WatchKit contract).
         controller.presentTextInputController(
-            withSuggestions: suggestions,
+            withSuggestions: nil,
             allowedInputMode: .plain
         ) { [weak self] results in
             Task { @MainActor in
