@@ -567,7 +567,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -600,7 +600,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -632,7 +632,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -665,7 +665,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -698,7 +698,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -728,7 +728,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;

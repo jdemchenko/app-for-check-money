@@ -34,7 +34,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 ### Apple Watch (Simulator or physical / paired)
 
-**Watch (combined scheme AppForCheckMoney):** builds iPhone + Watch. Destination **iPhone** → phone app (Watch embeds under `PlugIns/`). Destination **Vanya’s Apple Watch** → launches **CheckMoneyWatch** via RemoteRunnable (does not run the iPhone `.app` on watchOS). Same Team + Developer Mode. Docs: agent-store `apple-watch.md`.
+**Watch:** use **two schemes** (one LaunchAction can’t safely switch products). **AppForCheckMoney → iPhone** (embeds Watch under `PlugIns/`). **CheckMoneyWatch → Watch**. Putting Watch’s RemoteRunnable on the iPhone scheme caused Code 6: Watch app (family 4) installed on iPhone (family 1). Docs: agent-store `apple-watch.md`.
 
 ### Voice on Simulator
 

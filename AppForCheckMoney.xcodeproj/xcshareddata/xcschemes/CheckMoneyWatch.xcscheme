@@ -2,7 +2,10 @@
 <Scheme
    LastUpgradeVersion = "2600"
    version = "1.7">
-   <!-- Same dual build as AppForCheckMoney; Watch-first LaunchAction for direct Watch debug. -->
+   <!--
+      Watch scheme ONLY. Runnable = CheckMoneyWatch (UIDeviceFamily 4).
+      iPhone host is a dependency (built/installed as companion), not the launch product.
+   -->
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
@@ -23,7 +26,7 @@
          </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "YES"
+            buildForRunning = "NO"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">
