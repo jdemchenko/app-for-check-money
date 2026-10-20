@@ -391,6 +391,7 @@ struct HomeView: View {
         )
         modelContext.insert(tx)
         try? modelContext.save()
+        PhoneWatchSync.shared.pushSnapshot()
         speech.clearTranscript()
         pendingDraft = nil
         // No «Готово» toast — optional quiet day / category % (DeepSeek metrics, ADA-quiet).

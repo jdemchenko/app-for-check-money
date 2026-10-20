@@ -20,6 +20,20 @@
                ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F10000000000000000000002"
+               BuildableName = "CheckMoneyWatch.app"
+               BlueprintName = "CheckMoneyWatch"
+               ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

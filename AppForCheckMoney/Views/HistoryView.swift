@@ -99,6 +99,7 @@ struct HistoryView: View {
                                         Button(role: .destructive) {
                                             modelContext.delete(tx)
                                             try? modelContext.save()
+                                            PhoneWatchSync.shared.pushSnapshot()
                                         } label: {
                                             Label(L10n.string("common.delete"), systemImage: "trash")
                                         }
@@ -280,6 +281,7 @@ struct HistoryView: View {
                     ) {
                         modelContext.delete(tx)
                         try? modelContext.save()
+                        PhoneWatchSync.shared.pushSnapshot()
                         selected = nil
                     }
                 }

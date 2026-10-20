@@ -319,6 +319,7 @@ struct AddTransactionView: View {
         )
         modelContext.insert(tx)
         try? modelContext.save()
+        PhoneWatchSync.shared.pushSnapshot()
 
         amountText = ""
         note = ""

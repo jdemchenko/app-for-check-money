@@ -79,7 +79,10 @@ final class CurrencySettings: ObservableObject {
 
     /// Currency used for Home / Stats totals (converts each tx; does not mutate storage).
     @Published var displayCurrency: AppCurrency {
-        didSet { UserDefaults.standard.set(displayCurrency.rawValue, forKey: Self.displayKey) }
+        didSet {
+            UserDefaults.standard.set(displayCurrency.rawValue, forKey: Self.displayKey)
+            PhoneWatchSync.shared.pushSnapshot()
+        }
     }
 
     /// Default currency stamped onto new manual / voice transactions.

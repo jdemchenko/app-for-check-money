@@ -104,6 +104,7 @@ struct CategoriesView: View {
                                     Button(role: .destructive) {
                                         modelContext.delete(cat)
                                         try? modelContext.save()
+                                        PhoneWatchSync.shared.pushSnapshot()
                                     } label: {
                                         Label(L10n.string("common.delete"), systemImage: "trash")
                                     }
