@@ -1,0 +1,79 @@
+"app.name" = "CheckMoney";
+
+"tab.home" = "Home";
+"tab.add" = "Add";
+"tab.categories" = "Categories";
+"tab.history" = "History";
+
+"home.balance" = "Balance";
+"home.income" = "Income";
+"home.expense" = "Expenses";
+"home.recent" = "Recent";
+"home.empty" = "No transactions yet";
+"home.emptyHint" = "Add a manual or voice entry to get started.";
+
+"add.mode" = "Mode";
+"add.manual" = "Manual";
+"add.voice" = "Voice";
+"add.saved" = "Saved";
+
+"field.amount" = "Amount";
+"field.type" = "Type";
+"field.category" = "Category";
+"field.note" = "Note";
+"field.notePlaceholder" = "Optional";
+"field.date" = "Date";
+
+"type.expense" = "Expense";
+"type.income" = "Income";
+"type.both" = "Both";
+
+"category.auto" = "Auto";
+"category.unknown" = "Uncategorized";
+
+"voice.hint" = "Try: “Spent 12 on coffee” or “Got salary 3000”";
+"voice.tap" = "Tap and speak";
+"voice.listening" = "Listening…";
+"voice.start" = "Start listening";
+"voice.stop" = "Stop listening";
+"voice.draft" = "Draft";
+"voice.clear" = "Clear";
+"voice.unsupported" = "Voice input isn’t available on this device. Use manual entry.";
+"voice.permissionDenied" = "Microphone or speech permission is off. Enable them in Settings, or use manual entry.";
+
+"categories.defaults" = "Defaults";
+"categories.custom" = "Custom";
+"categories.customEmpty" = "No custom categories yet.";
+"categories.add" = "New category";
+"categories.restore" = "Restore defaults";
+"categories.nameRu" = "Name (RU)";
+"categories.nameEn" = "Name (EN)";
+"categories.keywords" = "Keywords";
+"categories.keywordsHint" = "Comma-separated — used for auto-categorization";
+"categories.colorHex" = "Color hex";
+"categories.symbol" = "SF Symbol name";
+
+"history.empty" = "Nothing found";
+"history.emptyHint" = "Try adjusting filters or add a transaction.";
+"history.search" = "Search";
+"history.filters" = "Filters";
+"history.reset" = "Reset";
+"history.dateRange" = "Date range";
+"history.from" = "From";
+"history.to" = "To";
+"history.useFrom" = "Filter from date";
+"history.useTo" = "Filter to date";
+"history.detail" = "Transaction";
+
+"filter.all" = "All";
+
+"date.today" = "Today";
+"date.yesterday" = "Yesterday";
+
+"common.save" = "Save";
+"common.cancel" = "Cancel";
+"common.confirm" = "Confirm";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.ok" = "OK";
+"common.close" = "Close";

@@ -1,0 +1,55 @@
+import Foundation
+import SwiftData
+
+@Model
+final class MoneyTransaction {
+    @Attribute(.unique) var id: String
+    var amount: Double
+    /// "expense" | "income"
+    var typeRaw: String
+    var categoryId: String
+    var note: String?
+    var date: Date
+    var createdAt: Date
+    /// "manual" | "voice"
+    var sourceRaw: String
+
+    init(
+        id: String = UUID().uuidString,
+        amount: Double,
+        type: TransactionType,
+        categoryId: String,
+        note: String? = nil,
+        date: Date = .now,
+        createdAt: Date = .now,
+        source: EntrySource = .manual
+    ) {
+        self.id = id
+        self.amount = amount
+        self.typeRaw = type.rawValue
+        self.categoryId = categoryId
+        self.note = note
+        self.date = date
+        self.createdAt = createdAt
+        self.sourceRaw = source.rawValue
+    }
+
+    var type: TransactionType {
+        get { TransactionType(rawValue: typeRaw) ?? .expense }
+        set { typeRaw = newValue.rawValue }
+    }
+
+    var source: EntrySource {
+        get { EntrySource(rawValue: sourceRaw) ?? .manual }
+        set { sourceRaw = newValue.rawValue }
+    }
+
+    var signedAmount: Double {
+        type == .income ? amount : -amount
+    }
+}
+
+enum EntrySource: String, Codable {
+    case manual
+    case voice
+}

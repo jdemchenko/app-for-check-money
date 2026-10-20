@@ -1,0 +1,371 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* AppForCheckMoneyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* AppForCheckMoneyApp.swift */; };
+		A10000000000000000000002 /* MoneyCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* MoneyCategory.swift */; };
+		A10000000000000000000003 /* MoneyTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* MoneyTransaction.swift */; };
+		A10000000000000000000004 /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* SeedData.swift */; };
+		A10000000000000000000005 /* CategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* CategoryMatcher.swift */; };
+		A10000000000000000000006 /* VoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* VoiceParser.swift */; };
+		A10000000000000000000007 /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* SpeechRecognizer.swift */; };
+		A10000000000000000000008 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* L10n.swift */; };
+		A10000000000000000000009 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* RootTabView.swift */; };
+		A1000000000000000000000A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A /* HomeView.swift */; };
+		A1000000000000000000000B /* AddTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* AddTransactionView.swift */; };
+		A1000000000000000000000C /* CategoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000C /* CategoriesView.swift */; };
+		A1000000000000000000000D /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000D /* HistoryView.swift */; };
+		A1000000000000000000000E /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* Theme.swift */; };
+		A1000000000000000000000F /* TransactionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* TransactionRowView.swift */; };
+		A10000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* Assets.xcassets */; };
+		A10000000000000000000011 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Localizable.strings */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B10000000000000000000001 /* AppForCheckMoneyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppForCheckMoneyApp.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* MoneyCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyCategory.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* MoneyTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyTransaction.swift; sourceTree = "<group>"; };
+		B10000000000000000000004 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
+		B10000000000000000000005 /* CategoryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryMatcher.swift; sourceTree = "<group>"; };
+		B10000000000000000000006 /* VoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceParser.swift; sourceTree = "<group>"; };
+		B10000000000000000000007 /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
+		B10000000000000000000008 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		B10000000000000000000009 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000B /* AddTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransactionView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000C /* CategoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000D /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000E /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		B1000000000000000000000F /* TransactionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRowView.swift; sourceTree = "<group>"; };
+		B10000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B10000000000000000000012 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B10000000000000000000013 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B10000000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C10000000000000000000001 /* AppForCheckMoney.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppForCheckMoney.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D10000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E10000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				E10000000000000000000002 /* AppForCheckMoney */,
+				E10000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E10000000000000000000002 /* AppForCheckMoney */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000001 /* AppForCheckMoneyApp.swift */,
+				E10000000000000000000004 /* Models */,
+				E10000000000000000000005 /* Services */,
+				E10000000000000000000006 /* Views */,
+				E10000000000000000000007 /* Resources */,
+				B10000000000000000000010 /* Assets.xcassets */,
+			);
+			path = AppForCheckMoney;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C10000000000000000000001 /* AppForCheckMoney.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000002 /* MoneyCategory.swift */,
+				B10000000000000000000003 /* MoneyTransaction.swift */,
+				B10000000000000000000004 /* SeedData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000005 /* CategoryMatcher.swift */,
+				B10000000000000000000006 /* VoiceParser.swift */,
+				B10000000000000000000007 /* SpeechRecognizer.swift */,
+				B10000000000000000000008 /* L10n.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000009 /* RootTabView.swift */,
+				B1000000000000000000000A /* HomeView.swift */,
+				B1000000000000000000000B /* AddTransactionView.swift */,
+				B1000000000000000000000C /* CategoriesView.swift */,
+				B1000000000000000000000D /* HistoryView.swift */,
+				E10000000000000000000008 /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000007 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000014 /* Info.plist */,
+				B10000000000000000000011 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000008 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B1000000000000000000000E /* Theme.swift */,
+				B1000000000000000000000F /* TransactionRowView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F10000000000000000000001 /* AppForCheckMoney */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000000000000000000004 /* Build configuration list for PBXNativeTarget "AppForCheckMoney" */;
+			buildPhases = (
+				F10000000000000000000002 /* Sources */,
+				D10000000000000000000001 /* Frameworks */,
+				F10000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AppForCheckMoney;
+			productName = AppForCheckMoney;
+			productReference = C10000000000000000000001 /* AppForCheckMoney.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F10000000000000000000010 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					F10000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = F10000000000000000000011 /* Build configuration list for PBXProject "AppForCheckMoney" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				ru,
+				Base,
+			);
+			mainGroup = E10000000000000000000001;
+			productRefGroup = E10000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F10000000000000000000001 /* AppForCheckMoney */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F10000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000010 /* Assets.xcassets in Resources */,
+				A10000000000000000000011 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F10000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000001 /* AppForCheckMoneyApp.swift in Sources */,
+				A10000000000000000000002 /* MoneyCategory.swift in Sources */,
+				A10000000000000000000003 /* MoneyTransaction.swift in Sources */,
+				A10000000000000000000004 /* SeedData.swift in Sources */,
+				A10000000000000000000005 /* CategoryMatcher.swift in Sources */,
+				A10000000000000000000006 /* VoiceParser.swift in Sources */,
+				A10000000000000000000007 /* SpeechRecognizer.swift in Sources */,
+				A10000000000000000000008 /* L10n.swift in Sources */,
+				A10000000000000000000009 /* RootTabView.swift in Sources */,
+				A1000000000000000000000A /* HomeView.swift in Sources */,
+				A1000000000000000000000B /* AddTransactionView.swift in Sources */,
+				A1000000000000000000000C /* CategoriesView.swift in Sources */,
+				A1000000000000000000000D /* HistoryView.swift in Sources */,
+				A1000000000000000000000E /* Theme.swift in Sources */,
+				A1000000000000000000000F /* TransactionRowView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B10000000000000000000011 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B10000000000000000000012 /* en */,
+				B10000000000000000000013 /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		F10000000000000000000020 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F10000000000000000000021 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F10000000000000000000022 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F10000000000000000000023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10000000000000000000004 /* Build configuration list for PBXNativeTarget "AppForCheckMoney" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000022 /* Debug */,
+				F10000000000000000000023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10000000000000000000011 /* Build configuration list for PBXProject "AppForCheckMoney" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000020 /* Debug */,
+				F10000000000000000000021 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F10000000000000000000010 /* Project object */;
+}

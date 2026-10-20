@@ -1,40 +1,58 @@
 # CheckMoney (AppForCheckMoney)
 
-Personal money tracker for expenses and income — manual entry, voice drafts, and keyword auto-categorization. Data stays in the browser (`localStorage`). No auth, no backend.
+Native **SwiftUI** personal money tracker for iPhone and iPad — expenses and income with manual entry, voice drafts, and keyword auto-categorization. Data stays on-device via **SwiftData**. No backend, no auth.
+
+> This repository is an **independent** iOS app. It is not related to Fitil.
 
 ## Features
 
 - **Manual entry** — amount, expense/income, category, optional note, date
-- **Voice entry** — Web Speech API parses spoken amounts/categories into a draft you confirm before saving; graceful fallback when unsupported
-- **Categories** — defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords with **manual override**
-- **Screens** — Home (balance + recent), Add, Categories, History with filters
-- **Design** — iOS / Liquid Glass inspired UI, light + dark via `prefers-color-scheme`, Russian/English from `navigator.language` (default Russian for `ru*`), respects `prefers-reduced-motion`
+- **Voice entry** — `SFSpeechRecognizer` + microphone → editable draft → confirm to save  
+  Graceful fallback when speech/mic is unavailable or permission is denied
+- **Categories** — seeded defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords with **manual override**
+- **Screens** — Home (month balance + recent), Add (manual / voice), Categories, History (search + filters)
+- **System appearance** — follows Light/Dark Mode (no forced theme)
+- **Localization** — English + Russian (`en` / `ru` `.lproj`); UI language follows the device locale
 
-## Stack
+## Requirements
 
-- Next.js (App Router) + TypeScript
-- Tailwind CSS + shadcn/ui
-- Local persistence only
+- macOS with **Xcode 16+** (iOS 18 SDK)
+- iOS **18.0+** Simulator or device
+- Apple Developer team (for device runs / signing). Simulator works with automatic signing and an empty team in many setups.
 
-## Quick start
+## Open & run
 
-```bash
-npm install
-npm run dev
+1. Clone this repo on a Mac.
+2. Open `AppForCheckMoney.xcodeproj` in Xcode.
+3. Select the **AppForCheckMoney** scheme and an iOS 18+ Simulator (or your device).
+4. Set your **Team** under Signing & Capabilities if deploying to a device (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`).
+5. Press **Run** (⌘R).
+
+### Voice on Simulator
+
+Speech recognition often needs a **physical device** (or a Simulator with a working mic input). If voice is unavailable, the Add → Voice tab shows a clear fallback and manual entry still works.
+
+## Project structure
+
+```
+AppForCheckMoney.xcodeproj/          # Xcode project + shared scheme
+AppForCheckMoney/
+  AppForCheckMoneyApp.swift         # @main + SwiftData container
+  Models/                           # MoneyTransaction, MoneyCategory, SeedData
+  Services/                         # Speech, voice parse, category match, L10n
+  Views/                            # Home, Add, Categories, History + components
+  Resources/                        # Info.plist, en/ru Localizable.strings
+  Assets.xcassets/
 ```
 
-Open [http://localhost:43127](http://localhost:43127).
+## Privacy (Info.plist)
 
-```bash
-npm run build
-npm start
-```
+- `NSMicrophoneUsageDescription`
+- `NSSpeechRecognitionUsageDescription`
 
-## Voice & auto-categorize
+## Design notes
 
-1. On **Add → Voice**, tap the mic and say something like «Потратил 450 на кофе» or “Spent 12 on coffee”.
-2. The app fills amount, type, and category (keywords such as *кофе* / *coffee* → Food). Confirm to save.
-3. On **Manual**, typing keywords in the note field also auto-picks a category; you can override anytime.
+UI follows Apple HIG: `NavigationStack`, large titles, grouped lists, SF Symbols, and `.regularMaterial` cards. When building with a newer SDK that ships Liquid Glass APIs (iOS 26+), those can be adopted behind availability checks without changing the data layer.
 
 ## License
 

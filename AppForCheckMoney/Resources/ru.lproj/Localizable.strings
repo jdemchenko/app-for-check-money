@@ -1,0 +1,79 @@
+"app.name" = "CheckMoney";
+
+"tab.home" = "Главная";
+"tab.add" = "Добавить";
+"tab.categories" = "Категории";
+"tab.history" = "История";
+
+"home.balance" = "Баланс";
+"home.income" = "Доходы";
+"home.expense" = "Расходы";
+"home.recent" = "Недавние";
+"home.empty" = "Пока нет операций";
+"home.emptyHint" = "Добавьте запись вручную или голосом.";
+
+"add.mode" = "Режим";
+"add.manual" = "Вручную";
+"add.voice" = "Голосом";
+"add.saved" = "Сохранено";
+
+"field.amount" = "Сумма";
+"field.type" = "Тип";
+"field.category" = "Категория";
+"field.note" = "Заметка";
+"field.notePlaceholder" = "Необязательно";
+"field.date" = "Дата";
+
+"type.expense" = "Расход";
+"type.income" = "Доход";
+"type.both" = "Оба";
+
+"category.auto" = "Авто";
+"category.unknown" = "Без категории";
+
+"voice.hint" = "Например: «Потратил 450 на кофе» или «Получил зарплату 80000»";
+"voice.tap" = "Нажмите и говорите";
+"voice.listening" = "Слушаю…";
+"voice.start" = "Начать запись";
+"voice.stop" = "Остановить";
+"voice.draft" = "Черновик";
+"voice.clear" = "Сбросить";
+"voice.unsupported" = "Голосовой ввод недоступен на этом устройстве. Используйте ручной ввод.";
+"voice.permissionDenied" = "Нет доступа к микрофону или распознаванию речи. Разрешите в Настройках или вводите вручную.";
+
+"categories.defaults" = "Базовые";
+"categories.custom" = "Свои";
+"categories.customEmpty" = "Своих категорий пока нет.";
+"categories.add" = "Новая категория";
+"categories.restore" = "Восстановить базовые";
+"categories.nameRu" = "Название (RU)";
+"categories.nameEn" = "Название (EN)";
+"categories.keywords" = "Ключевые слова";
+"categories.keywordsHint" = "Через запятую — для авто-категоризации";
+"categories.colorHex" = "Цвет (hex)";
+"categories.symbol" = "Имя SF Symbol";
+
+"history.empty" = "Ничего не найдено";
+"history.emptyHint" = "Измените фильтры или добавьте операцию.";
+"history.search" = "Поиск";
+"history.filters" = "Фильтры";
+"history.reset" = "Сбросить";
+"history.dateRange" = "Период";
+"history.from" = "С";
+"history.to" = "По";
+"history.useFrom" = "Фильтр с даты";
+"history.useTo" = "Фильтр по дату";
+"history.detail" = "Операция";
+
+"filter.all" = "Все";
+
+"date.today" = "Сегодня";
+"date.yesterday" = "Вчера";
+
+"common.save" = "Сохранить";
+"common.cancel" = "Отмена";
+"common.confirm" = "Подтвердить";
+"common.delete" = "Удалить";
+"common.edit" = "Изменить";
+"common.ok" = "OK";
+"common.close" = "Закрыть";
