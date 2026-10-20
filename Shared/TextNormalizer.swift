@@ -1,7 +1,6 @@
 import Foundation
 
 enum TextNormalizer {
- {
     /// Lowercase, ё→е, strip most punctuation, collapse whitespace.
     static func normalize(_ text: String) -> String {
         var s = text.lowercased()

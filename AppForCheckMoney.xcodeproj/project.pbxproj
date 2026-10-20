@@ -59,6 +59,11 @@
 		A2000000000000000000000D /* AmountWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* AmountWords.swift */; };
 		A2000000000000000000000E /* WatchDictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000004 /* WatchDictateView.swift */; };
 		A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000005 /* WatchSpeechRecognizer.swift */; };
+
+		A20000000000000000000010 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* Speech.framework */; };
+		A20000000000000000000011 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* AVFoundation.framework */; };
+		A10000000000000000000023 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* Speech.framework */; };
+		A10000000000000000000024 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -139,6 +144,7 @@
 		B40000000000000000000003 /* SharedVoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedVoiceParser.swift; sourceTree = "<group>"; };
 		B40000000000000000000004 /* WatchDictateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDictateView.swift; sourceTree = "<group>"; };
 		B40000000000000000000005 /* WatchSpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSpeechRecognizer.swift; sourceTree = "<group>"; };
+		B50000000000000000000003 /* WatchKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchKit.framework; path = System/Library/Frameworks/WatchKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +152,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000023 /* Speech.framework in Frameworks */,
+				A10000000000000000000024 /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,6 +161,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A20000000000000000000012 /* WatchKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,6 +182,7 @@
 				E10000000000000000000009 /* Shared */,
 				E1000000000000000000000A /* CheckMoneyWatch */,
 				E1000000000000000000000B /* CheckMoneyWatchWidgets */,
+				E1000000000000000000000C /* Frameworks */,
 				E10000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -301,6 +311,17 @@
 				B30000000000000000000004 /* CheckMoneyWatchWidgets.entitlements */,
 			);
 			path = CheckMoneyWatchWidgets;
+			sourceTree = "<group>";
+		};
+
+		E1000000000000000000000C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B50000000000000000000001 /* Speech.framework */,
+				B50000000000000000000002 /* AVFoundation.framework */,
+				B50000000000000000000003 /* WatchKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

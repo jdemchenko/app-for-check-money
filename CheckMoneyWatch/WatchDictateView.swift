@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Primary Watch surface: hold to dictate one expense/income, parse, sync to iPhone.
+/// Primary Watch surface: hold/tap mic → system dictation → parse → sync to iPhone.
 struct WatchDictateView: View {
     @EnvironmentObject private var store: WatchStore
     @StateObject private var speech = WatchSpeechRecognizer()
@@ -8,6 +8,9 @@ struct WatchDictateView: View {
     @State private var isHolding = false
     @State private var statusLine: String = ""
     @State private var flashSaved = false
+    @State private var sheetText = ""
+    @State private var showFallbackSheet = false
+    @FocusState private var sheetFocused: Bool
 
     private var isRussian: Bool {
         Locale.current.language.languageCode?.identifier.hasPrefix("ru") == true
@@ -25,14 +28,7 @@ struct WatchDictateView: View {
 
             Spacer(minLength: 2)
 
-            if !speech.transcript.isEmpty, isHolding || speech.isListening {
-                Text(speech.transcript)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            } else if flashSaved, let summary = store.lastSavedSummary {
+            if flashSaved, let summary = store.lastSavedSummary {
                 Text(summary)
                     .font(.caption.weight(.semibold).monospacedDigit())
                     .foregroundStyle(.green)
@@ -62,20 +58,56 @@ struct WatchDictateView: View {
             }
             await speech.prepare()
         }
+        .sheet(isPresented: $showFallbackSheet) {
+            NavigationStack {
+                VStack(spacing: 10) {
+                    Text(isRussian ? "Диктовка" : "Dictation")
+                        .font(.headline)
+                    TextField(
+                        isRussian ? "Сумма и категория…" : "Amount and category…",
+                        text: $sheetText
+                    )
+                    .focused($sheetFocused)
+                    .textInputAutocapitalization(.never)
+                    Button(isRussian ? "Готово" : "Done") {
+                        let text = sheetText
+                        showFallbackSheet = false
+                        speech.complete(with: text)
+                    }
+                    .disabled(sheetText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+                .padding()
+            }
+            .onAppear { sheetFocused = true }
+        }
+        .onChange(of: speech.presentSystemDictation) { _, presenting in
+            if presenting {
+                Task {
+                    try? await Task.sleep(nanoseconds: 400_000_000)
+                    if speech.needsSwiftUIFallback {
+                        sheetText = ""
+                        showFallbackSheet = true
+                    }
+                }
+            } else {
+                showFallbackSheet = false
+            }
+        }
     }
 
     private var holdButton: some View {
         ZStack {
             Circle()
-                .fill(isHolding ? Color.red.opacity(0.85) : Color.accentColor.opacity(0.9))
+                .fill(isHolding || speech.isListening
+                      ? Color.red.opacity(0.85)
+                      : Color.accentColor.opacity(0.9))
                 .frame(width: 88, height: 88)
-                .scaleEffect(isHolding ? 1.06 : 1.0)
-                .animation(.easeInOut(duration: 0.15), value: isHolding)
+                .scaleEffect(isHolding || speech.isListening ? 1.06 : 1.0)
+                .animation(.easeInOut(duration: 0.15), value: isHolding || speech.isListening)
 
-            Image(systemName: isHolding ? "waveform" : "mic.fill")
+            Image(systemName: speech.isListening ? "waveform" : "mic.fill")
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(.white)
-                .symbolEffect(.variableColor.iterative, isActive: isHolding)
         }
         .accessibilityLabel(isRussian ? "Удерживайте и говорите" : "Hold to speak")
         .gesture(
@@ -101,11 +133,14 @@ struct WatchDictateView: View {
     private func endHold() {
         guard isHolding else { return }
         isHolding = false
-        statusLine = isRussian ? "Распознаю…" : "Parsing…"
         speech.stop()
+        if speech.presentSystemDictation {
+            statusLine = isRussian ? "Диктовка…" : "Dictating…"
+        }
     }
 
     private func handleFinished(_ text: String) {
+        showFallbackSheet = false
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             statusLine = isRussian ? "Не расслышала — ещё раз" : "Didn’t catch that — retry"
@@ -122,8 +157,7 @@ struct WatchDictateView: View {
             return
         }
 
-        let defaultCurrency = store.snapshot.displayCurrency
-        store.saveFromVoice(draft, defaultCurrency: defaultCurrency)
+        store.saveFromVoice(draft, defaultCurrency: store.snapshot.displayCurrency)
         flashSaved = true
         statusLine = ""
         Task {
