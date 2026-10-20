@@ -397,6 +397,7 @@ struct CategoryEditorSheet: View {
             cat.symbolName = symbolName.isEmpty ? "circle.fill" : symbolName
         }
         try? modelContext.save()
+        PhoneWatchSync.shared.pushSnapshot()
         dismiss()
     }
 }
