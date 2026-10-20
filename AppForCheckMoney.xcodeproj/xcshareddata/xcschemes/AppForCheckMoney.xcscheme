@@ -20,10 +20,12 @@
                ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <!-- Always build Watch when running to iPhone so PlugIns embed is present for Available Apps. -->
+         <!-- Watch is embed-only for this scheme. buildForRunning=NO so choosing a Watch
+              destination does not try to launch AppForCheckMoney.app on watchOS.
+              Target dependency + Embed Watch Content still builds/embeds the companion. -->
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "YES"
+            buildForRunning = "NO"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">
