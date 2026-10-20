@@ -18,6 +18,7 @@
 "home.quickEntryEmpty" = "Didn’t catch that. Try again.";
 "home.quickEntryNoAmount" = "Couldn’t hear an amount. Try again or use Add.";
 "home.monthIn" = "This month ·";
+"home.quietFeedback" = "Today %@ · %@ %@%%";
 
 "add.mode" = "Mode";
 "add.manual" = "Manual";
@@ -43,6 +44,8 @@
 "stats.all" = "All";
 "stats.overview" = "Overview";
 "stats.byCategory" = "By category";
+"stats.top3" = "Top spending";
+"stats.avgCheck" = "Average check";
 "stats.empty" = "No data yet";
 "stats.emptyHint" = "Add a few expenses to see the breakdown.";
 "stats.ops" = "ops";

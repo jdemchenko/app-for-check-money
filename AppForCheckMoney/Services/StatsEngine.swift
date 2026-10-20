@@ -18,6 +18,13 @@ struct StatsSnapshot {
     var balance: Double { income - expense }
     let categoryBreakdown: [CategorySpend]
     let transactionCount: Int
+    let expenseCount: Int
+    /// Average expense check in display currency.
+    var averageCheck: Double {
+        guard expenseCount > 0 else { return 0 }
+        return (expense / Double(expenseCount) * 100).rounded() / 100
+    }
+    var top3: [CategorySpend] { Array(categoryBreakdown.prefix(3)) }
 }
 
 enum StatsEngine {
@@ -31,6 +38,7 @@ enum StatsEngine {
         let filtered = transactions.filter { period.contains($0.date, now: now) }
         var income = 0.0
         var expense = 0.0
+        var expenseCount = 0
         var byCategory: [String: Double] = [:]
 
         for tx in filtered {
@@ -40,6 +48,7 @@ enum StatsEngine {
                 income += converted
             case .expense:
                 expense += converted
+                expenseCount += 1
                 byCategory[tx.categoryId, default: 0] += converted
             }
         }
@@ -65,7 +74,30 @@ enum StatsEngine {
             income: income,
             expense: expense,
             categoryBreakdown: breakdown,
-            transactionCount: filtered.count
+            transactionCount: filtered.count,
+            expenseCount: expenseCount
         )
+    }
+
+    /// Day total + category share right after a quiet save (DeepSeek-style feedback, no toast).
+    static func quietFeedback(
+        after tx: MoneyTransaction,
+        all: [MoneyTransaction],
+        categories: [MoneyCategory],
+        displayCurrency: AppCurrency,
+        now: Date = .now
+    ) -> (dayTotal: Double, categoryName: String, categoryPercent: Double) {
+        let cal = Calendar.current
+        let dayStart = cal.startOfDay(for: now)
+        let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart) ?? now
+        let dayTx = all.filter { $0.type == .expense && $0.date >= dayStart && $0.date < dayEnd }
+        let dayTotal = dayTx.reduce(0.0) { $0 + $1.amountIn(displayCurrency) }
+        let catTotal = dayTx
+            .filter { $0.categoryId == tx.categoryId }
+            .reduce(0.0) { $0 + $1.amountIn(displayCurrency) }
+        let percent = dayTotal > 0 ? (catTotal / dayTotal * 1000).rounded() / 10 : 100
+        let name = categories.first { $0.id == tx.categoryId }?.displayName()
+            ?? L10n.string("category.unknown")
+        return (dayTotal, name, percent)
     }
 }

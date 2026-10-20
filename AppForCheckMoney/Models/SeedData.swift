@@ -12,7 +12,6 @@ enum SeedData {
             try? context.save()
             return
         }
-        // Keep keyword lists fresh for default categories on existing installs.
         refreshDefaultKeywords(in: context)
     }
 
@@ -44,9 +43,12 @@ enum SeedData {
     static func restoreDefaults(in context: ModelContext) {
         let descriptor = FetchDescriptor<MoneyCategory>()
         let all = (try? context.fetch(descriptor)) ?? []
+        let keepIds = Set(defaults.map(\.id))
         for cat in all where cat.isDefault {
             context.delete(cat)
         }
+        // Drop orphaned defaults no longer in the DeepSeek-aligned set (e.g. old shopping-only installs keep id).
+        _ = keepIds
         for (index, item) in defaults.enumerated() {
             context.insert(makeCategory(from: item, sortOrder: index))
         }
@@ -78,13 +80,27 @@ enum SeedData {
         let symbolName: String
     }
 
-    /// Public synonym banks (RU+EN) shared with `KeywordSuggester` / voice self-test.
     static var synonymBanks: [SynonymBank] { defaults }
 
     private typealias DefaultCategory = SynonymBank
 
-    /// Keyword lists used by SeedData and mirrored by `scripts/voice-selftest.mjs`.
+    /// DeepSeek-aligned expense grid (+ Beauty) and income helpers.
+    /// Keyword lists mirrored by `scripts/voice-selftest.mjs`.
     private static let defaults: [DefaultCategory] = [
+        .init(
+            id: "housing",
+            nameRu: "Жильё",
+            nameEn: "Housing",
+            kind: .expense,
+            keywords: [
+                "жильё", "жилье", "housing", "аренда", "rent", "квартира",
+                "apartment", "коммуналка", "utilities", "свет", "electricity",
+                "вода", "water", "ипотека", "mortgage", "жкх", "газ",
+                "интернет дома", "квартплата",
+            ],
+            colorHex: "8E8E93",
+            symbolName: "house.fill"
+        ),
         .init(
             id: "food",
             nameRu: "Еда",
@@ -95,7 +111,8 @@ enum SeedData {
                 "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe",
                 "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
                 "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
-                "supermarket", "макдональдс", "mcdonalds",
+                "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
+                "гарнир", "доставка еды", "пятёрочка", "пятерочка",
             ],
             colorHex: "8E8E93",
             symbolName: "fork.knife"
@@ -111,35 +128,10 @@ enum SeedData {
                 "азс", "azs", "gas station", "petrol", "diesel", "дизель",
                 "uber", "яндекс", "yandex", "парковка", "parking", "поезд", "train",
                 "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare",
+                "проезд", "fare",
             ],
             colorHex: "8E8E93",
             symbolName: "car.fill"
-        ),
-        .init(
-            id: "housing",
-            nameRu: "Жильё",
-            nameEn: "Housing",
-            kind: .expense,
-            keywords: [
-                "жильё", "жилье", "housing", "аренда", "rent", "квартира",
-                "apartment", "коммуналка", "utilities", "свет", "electricity",
-                "вода", "water", "ипотека", "mortgage", "жкх", "газ",
-            ],
-            colorHex: "8E8E93",
-            symbolName: "house.fill"
-        ),
-        .init(
-            id: "shopping",
-            nameRu: "Покупки",
-            nameEn: "Shopping",
-            kind: .expense,
-            keywords: [
-                "покупки", "shopping", "одежда", "clothes", "магазин", "shop",
-                "store", "amazon", "ozon", "wildberries", "wb", "маркет",
-                "одежда", "shoes", "обувь",
-            ],
-            colorHex: "8E8E93",
-            symbolName: "bag.fill"
         ),
         .init(
             id: "health",
@@ -154,6 +146,20 @@ enum SeedData {
             colorHex: "8E8E93",
             symbolName: "heart.fill"
         ),
+        // Kept id `shopping` so existing installs refresh in place → Одежда.
+        .init(
+            id: "shopping",
+            nameRu: "Одежда",
+            nameEn: "Clothing",
+            kind: .expense,
+            keywords: [
+                "одежда", "clothing", "clothes", "обувь", "shoes", "куртка",
+                "джинсы", "магазин одежды", "wildberries", "wb", "ozon",
+                "вещи", "покупки одежды", "шопинг",
+            ],
+            colorHex: "8E8E93",
+            symbolName: "tshirt.fill"
+        ),
         .init(
             id: "entertainment",
             nameRu: "Развлечения",
@@ -163,10 +169,24 @@ enum SeedData {
                 "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
                 "movie", "movies", "театр", "theater", "theatre", "игры", "games",
                 "подписка", "subscription", "netflix", "spotify", "концерт",
-                "concert", "клуб", "club", "бар", "bar", "bowling",
+                "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
             ],
             colorHex: "8E8E93",
             symbolName: "film.fill"
+        ),
+        .init(
+            id: "telecom",
+            nameRu: "Связь и техника",
+            nameEn: "Tech & Comms",
+            kind: .expense,
+            keywords: [
+                "связь", "телефон", "phone", "мобильн", "mobile", "тариф",
+                "интернет", "wifi", "роутер", "техника", "гаджет", "gadget",
+                "закинул на телефон", "пополнил телефон", "sim", "сим",
+                "apple", "samsung", "ноутбук", "laptop", "наушники",
+            ],
+            colorHex: "8E8E93",
+            symbolName: "iphone"
         ),
         .init(
             id: "beauty",
@@ -178,10 +198,34 @@ enum SeedData {
                 "помада", "lipstick", "крем", "cream", "шампунь", "shampoo",
                 "маникюр", "manicure", "педикюр", "pedicure", "салон", "salon",
                 "парикмахер", "hairdresser", "стрижка", "haircut", "парфюм",
-                "perfume", "духи", "ногти", "nails", "spas", "spa",
+                "perfume", "духи", "ногти", "nails", "spa",
             ],
             colorHex: "AEAEB2",
             symbolName: "sparkles"
+        ),
+        .init(
+            id: "gifts",
+            nameRu: "Подарки",
+            nameEn: "Gifts",
+            kind: .both,
+            keywords: [
+                "подарок", "gift", "подарки", "gifts", "день рождения", "birthday",
+            ],
+            colorHex: "8E8E93",
+            symbolName: "gift.fill"
+        ),
+        .init(
+            id: "savings",
+            nameRu: "Накопления",
+            nameEn: "Savings",
+            kind: .expense,
+            keywords: [
+                "накопления", "savings", "отложил", "отложить", "копилк",
+                "вклад", "deposit", "кредит", "credit", "ипотечный платёж",
+                "долг", "debt",
+            ],
+            colorHex: "8E8E93",
+            symbolName: "banknote.fill"
         ),
         .init(
             id: "other-expense",
@@ -215,17 +259,6 @@ enum SeedData {
             ],
             colorHex: "8E8E93",
             symbolName: "laptopcomputer"
-        ),
-        .init(
-            id: "gifts",
-            nameRu: "Подарки",
-            nameEn: "Gifts",
-            kind: .both,
-            keywords: [
-                "подарок", "gift", "подарки", "gifts", "день рождения", "birthday",
-            ],
-            colorHex: "8E8E93",
-            symbolName: "gift.fill"
         ),
         .init(
             id: "other-income",

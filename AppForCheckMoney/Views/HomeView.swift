@@ -17,6 +17,9 @@ struct HomeView: View {
     @State private var showManualAdd = false
     @State private var showSettings = false
     @State private var isHoldingMic = false
+    /// Soft day-total / category % after save (DeepSeek-style, no toast).
+    @State private var quietFeedback: String?
+    @State private var quietFeedbackTask: Task<Void, Never>?
 
     private var monthTransactions: [MoneyTransaction] {
         let cal = Calendar.current
@@ -57,9 +60,19 @@ struct HomeView: View {
             ScrollView {
                 VStack(spacing: AppTheme.spaceSection) {
                     balanceHero
+                    if let quietFeedback {
+                        Text(quietFeedback)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                            .accessibilityLabel(quietFeedback)
+                    }
                     quickMic
                     recentBlock
                 }
+                .animation(.easeOut(duration: 0.28), value: quietFeedback)
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .padding(.bottom, 32)
@@ -337,7 +350,40 @@ struct HomeView: View {
         try? modelContext.save()
         speech.clearTranscript()
         pendingDraft = nil
-        // No success toast — quiet save (Apple Design Awards restraint).
+        // No «Готово» toast — optional quiet day / category % (DeepSeek metrics, ADA-quiet).
+        if (draft.type ?? .expense) == .expense {
+            presentQuietFeedback(for: tx)
+        } else {
+            quietFeedback = nil
+        }
+    }
+
+    private func presentQuietFeedback(for tx: MoneyTransaction) {
+        let all = (try? modelContext.fetch(FetchDescriptor<MoneyTransaction>())) ?? transactions
+        let tip = StatsEngine.quietFeedback(
+            after: tx,
+            all: all,
+            categories: categories,
+            displayCurrency: displayCurrency
+        )
+        let total = MoneyFormat.currency(tip.dayTotal, code: displayCurrency)
+        let pct = tip.categoryPercent.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(tip.categoryPercent))
+            : String(format: "%.1f", tip.categoryPercent)
+        quietFeedback = String(
+            format: L10n.string("home.quietFeedback"),
+            total,
+            tip.categoryName,
+            pct
+        )
+        quietFeedbackTask?.cancel()
+        quietFeedbackTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 4_500_000_000)
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeOut(duration: 0.35)) {
+                quietFeedback = nil
+            }
+        }
     }
 
     private func flash(_ message: String) {

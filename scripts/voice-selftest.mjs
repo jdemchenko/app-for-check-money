@@ -14,7 +14,50 @@ function normalize(text) {
 const WB = "(?<![0-9A-Za-zА-Яа-яЁё])";
 const WA = "(?![0-9A-Za-zА-Яа-яЁё])";
 
+const ONES = {
+  ноль: 0, один: 1, одна: 1, два: 2, две: 2, три: 3, четыре: 4,
+  пять: 5, шесть: 6, семь: 7, восемь: 8, девять: 9,
+  десять: 10, одиннадцать: 11, двенадцать: 12, тринадцать: 13,
+  четырнадцать: 14, пятнадцать: 15, шестнадцать: 16, семнадцать: 17,
+  восемнадцать: 18, девятнадцать: 19,
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15,
+  sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+};
+const TENS = {
+  двадцать: 20, тридцать: 30, сорок: 40, пятьдесят: 50,
+  шестьдесят: 60, семьдесят: 70, восемьдесят: 80, девяносто: 90,
+  twenty: 20, thirty: 30, forty: 40, fifty: 50,
+  sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+};
+const HUNDREDS = {
+  сто: 100, двести: 200, триста: 300, четыреста: 400,
+  пятьсот: 500, шестьсот: 600, семьсот: 700, восемьсот: 800,
+  девятьсот: 900, hundred: 100,
+};
+const SPELLED_TOKENS = new Set([
+  ...Object.keys(ONES),
+  ...Object.keys(TENS),
+  ...Object.keys(HUNDREDS),
+  "тысяча", "тысячи", "тысяч", "thousand", "thousands",
+  "миллион", "миллиона", "миллионов", "million",
+  "итого", "total",
+]);
+
 const CATEGORIES = [
+  {
+    id: "housing",
+    nameRu: "Жильё",
+    nameEn: "Housing",
+    kind: "expense",
+    keywords: [
+      "жильё", "жилье", "housing", "аренда", "rent", "квартира",
+      "apartment", "коммуналка", "utilities", "свет", "electricity",
+      "вода", "water", "ипотека", "mortgage", "жкх", "газ",
+      "интернет дома", "квартплата",
+    ],
+  },
   {
     id: "food",
     nameRu: "Еда",
@@ -25,7 +68,8 @@ const CATEGORIES = [
       "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe",
       "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
       "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
-      "supermarket", "макдональдс", "mcdonalds",
+      "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
+      "гарнир", "доставка еды", "пятёрочка", "пятерочка",
     ],
   },
   {
@@ -39,6 +83,29 @@ const CATEGORIES = [
       "азс", "azs", "gas station", "petrol", "diesel", "дизель",
       "uber", "яндекс", "yandex", "парковка", "parking", "поезд", "train",
       "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare",
+      "проезд", "fare",
+    ],
+  },
+  {
+    id: "health",
+    nameRu: "Здоровье",
+    nameEn: "Health",
+    kind: "expense",
+    keywords: [
+      "здоровье", "health", "аптека", "pharmacy", "врач", "doctor",
+      "медицина", "medicine", "спорт", "gym", "фитнес", "fitness",
+      "таблетки", "больница", "hospital", "стоматолог", "dentist",
+    ],
+  },
+  {
+    id: "shopping",
+    nameRu: "Одежда",
+    nameEn: "Clothing",
+    kind: "expense",
+    keywords: [
+      "одежда", "clothing", "clothes", "обувь", "shoes", "куртка",
+      "джинсы", "магазин одежды", "wildberries", "wb", "ozon",
+      "вещи", "покупки одежды", "шопинг",
     ],
   },
   {
@@ -50,7 +117,19 @@ const CATEGORIES = [
       "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
       "movie", "movies", "театр", "theater", "theatre", "игры", "games",
       "подписка", "subscription", "netflix", "spotify", "концерт",
-      "concert", "клуб", "club", "бар", "bar", "bowling",
+      "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
+    ],
+  },
+  {
+    id: "telecom",
+    nameRu: "Связь и техника",
+    nameEn: "Tech & Comms",
+    kind: "expense",
+    keywords: [
+      "связь", "телефон", "phone", "мобильн", "mobile", "тариф",
+      "интернет", "wifi", "роутер", "техника", "гаджет", "gadget",
+      "закинул на телефон", "пополнил телефон", "sim", "сим",
+      "apple", "samsung", "ноутбук", "laptop", "наушники",
     ],
   },
   {
@@ -63,8 +142,33 @@ const CATEGORIES = [
       "помада", "lipstick", "крем", "cream", "шампунь", "shampoo",
       "маникюр", "manicure", "педикюр", "pedicure", "салон", "salon",
       "парикмахер", "hairdresser", "стрижка", "haircut", "парфюм",
-      "perfume", "духи", "ногти", "nails", "spas", "spa",
+      "perfume", "духи", "ногти", "nails", "spa",
     ],
+  },
+  {
+    id: "gifts",
+    nameRu: "Подарки",
+    nameEn: "Gifts",
+    kind: "both",
+    keywords: ["подарок", "gift", "подарки", "gifts", "день рождения", "birthday"],
+  },
+  {
+    id: "savings",
+    nameRu: "Накопления",
+    nameEn: "Savings",
+    kind: "expense",
+    keywords: [
+      "накопления", "savings", "отложил", "отложить", "копилк",
+      "вклад", "deposit", "кредит", "credit", "ипотечный платёж",
+      "долг", "debt",
+    ],
+  },
+  {
+    id: "other-expense",
+    nameRu: "Другое",
+    nameEn: "Other",
+    kind: "expense",
+    keywords: ["другое", "other", "разное", "misc"],
   },
   {
     id: "salary",
@@ -77,11 +181,21 @@ const CATEGORIES = [
     ],
   },
   {
-    id: "other-expense",
-    nameRu: "Другое",
-    nameEn: "Other",
-    kind: "expense",
-    keywords: ["другое", "other", "разное", "misc"],
+    id: "freelance",
+    nameRu: "Фриланс",
+    nameEn: "Freelance",
+    kind: "income",
+    keywords: [
+      "фриланс", "freelance", "проект", "project", "клиент", "client",
+      "заказ", "contract",
+    ],
+  },
+  {
+    id: "other-income",
+    nameRu: "Прочий доход",
+    nameEn: "Other income",
+    kind: "income",
+    keywords: ["доход", "income", "перевод", "transfer", "возврат", "refund"],
   },
 ];
 
@@ -95,14 +209,26 @@ const NOTE_SUPPRESS = new Set(
     "gas", "fuel", "petrol", "diesel", "дизель", "gas station", "petrol station",
     "такси", "taxi", "метро", "metro", "subway", "автобус", "bus", "парковка",
     "parking", "station", "uber", "яндекс", "yandex", "поезд", "train",
+    "жильё", "жилье", "housing",
+    "здоровье", "health",
+    "одежда", "clothing", "clothes",
     "развлечения", "entertainment",
-    "косметика", "cosmetics", "красота", "beauty", "макияж", "makeup",
-    "маникюр", "manicure", "салон", "salon",
+    "связь", "техника",
+    "накопления", "savings",
+    "другое", "other", "разное", "misc",
+    "косметика", "cosmetics", "красота", "beauty",
+    "категория", "category",
     "зарплата", "зарплату", "зарплаты", "salary", "зп", "оклад", "wage",
+    "paycheck", "аванс",
+    "фриланс", "freelance",
+    "подарок", "подарки", "gift", "gifts",
+    "доход", "income", "перевод", "transfer", "возврат", "refund",
     "рублей", "рубль", "рубля", "ruble", "rubles", "byn", "br",
-    "dollar", "dollars", "usd", "eur", "euro",
+    "dollar", "dollars", "usd", "eur", "euro", "копеек", "копейки", "копейка",
     "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
-    "got", "received", "spent", "paid",
+    "закинул", "закинула", "пополнил", "купил", "купила", "добавь", "кажется",
+    "сегодня", "это", "будет", "свой", "свою",
+    "got", "received", "spent", "paid", "bought",
   ].map(normalize)
 );
 
@@ -120,7 +246,7 @@ const INCOME_CUES = new RegExp(
   "i"
 );
 const EXPENSE_CUES = new RegExp(
-  `${WB}(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход)${WA}`,
+  `${WB}(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)${WA}`,
   "i"
 );
 
@@ -152,11 +278,97 @@ function autoAssign(text, preferredType = null) {
   return best?.category ?? null;
 }
 
+function parseSpelled(text) {
+  const tokens = text.replace(/-/g, " ").split(/\s+/).filter(Boolean);
+  let best = null;
+  let i = 0;
+  while (i < tokens.length) {
+    let value = 0;
+    let thousands = 0;
+    let consumed = 0;
+    let j = i;
+    let sawNumber = false;
+    while (j < tokens.length) {
+      const t = tokens[j];
+      if (t === "тысяча" || t === "тысячи" || t === "тысяч" || t === "thousand") {
+        const base = thousands === 0 ? 1 : thousands;
+        value += base * 1000;
+        thousands = 0;
+        sawNumber = true;
+        consumed += 1;
+        j += 1;
+        continue;
+      }
+      if (HUNDREDS[t] != null) {
+        thousands += HUNDREDS[t];
+        sawNumber = true;
+        consumed += 1;
+        j += 1;
+        continue;
+      }
+      if (TENS[t] != null) {
+        thousands += TENS[t];
+        sawNumber = true;
+        consumed += 1;
+        j += 1;
+        continue;
+      }
+      if (ONES[t] != null) {
+        thousands += ONES[t];
+        sawNumber = true;
+        consumed += 1;
+        j += 1;
+        continue;
+      }
+      if ((t === "и" || t === "and") && sawNumber) {
+        consumed += 1;
+        j += 1;
+        continue;
+      }
+      break;
+    }
+    if (sawNumber) {
+      value += thousands;
+      if (value > 0) best = Math.max(best ?? 0, value);
+      i += Math.max(consumed, 1);
+    } else {
+      i += 1;
+    }
+  }
+  return best;
+}
+
+function parseRublesAndKopeks(text) {
+  const patterns = [
+    /(\d+)\s*(?:руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br)?\s*(\d{1,2})\s*(?:копе(?:ек|йки|йка)|коп\.?|cents?)/i,
+    /итого\s+(\d+)[.,]?(\d{1,2})?/i,
+  ];
+  for (const re of patterns) {
+    const m = text.match(re);
+    if (!m) continue;
+    const whole = Number.parseFloat(m[1]) || 0;
+    let frac = 0;
+    if (m[2]) {
+      frac = m[2].length === 1 ? Number.parseFloat(m[2]) / 10 : Number.parseFloat(m[2]) / 100;
+    }
+    const value = whole + frac;
+    if (value > 0) return Math.round(value * 100) / 100;
+  }
+  return null;
+}
+
 function parseAmount(text) {
+  const normalized = normalize(text);
+  const withKopeks = parseRublesAndKopeks(normalized);
+  if (withKopeks != null) return withKopeks;
+
+  const spelled = parseSpelled(normalized);
+  if (spelled != null) return spelled;
+
   let cleaned = text.replace(/(\d)\s+(\d{3})\b/g, "$1$2").replace(/,/g, ".");
   const patterns = [
-    /(\d+(?:\.\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|dollars?|\$|usd|eur|€)/i,
-    /(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|dollars?|\$|usd|eur|€)\s*(\d+(?:\.\d{1,2})?)/i,
+    /(\d+(?:\.\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)/i,
+    /(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)\s*(\d+(?:\.\d{1,2})?)/i,
     /(\d+(?:\.\d{1,2})?)/,
   ];
   for (const re of patterns) {
@@ -182,12 +394,22 @@ function cleanNoteFragment(text) {
   return s;
 }
 
+function stripSpelled(text) {
+  let working = text;
+  for (const token of [...SPELLED_TOKENS].sort((a, b) => b.length - a.length)) {
+    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    working = working.replace(new RegExp(`${WB}${escaped}${WA}`, "gi"), " ");
+  }
+  return working;
+}
+
 function stripAmountsAndCurrency(text) {
   let working = text.replace(/\d[\d\s.,]*/g, " ");
   working = working.replace(
     new RegExp(`${WB}(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)${WA}`, "gi"),
     " "
   );
+  working = stripSpelled(working);
   return working;
 }
 
@@ -257,6 +479,7 @@ function extractNote(rawText, matched) {
   let working = rawText;
   for (const re of NOTE_COMMANDS) working = working.replace(re, " ");
   working = stripAmountsAndCurrency(working);
+  working = working.replace(INCOME_CUES, " ").replace(EXPENSE_CUES, " ");
   if (matched) {
     working = stripKeyword(matched.nameRu, working);
     working = stripKeyword(matched.nameEn, working);
@@ -279,11 +502,9 @@ function parse(rawText) {
   const amount = parseAmount(rawText);
   let type = inferType(rawText);
   let matched = autoAssign(rawText, type);
-  // If type filter blocked income category, retry without filter
   if (!matched) matched = autoAssign(rawText, null);
   if (!type && matched) type = matched.kind === "income" ? "income" : "expense";
   if (!type) type = "expense";
-  // Re-match with inferred type for consistency
   matched = autoAssign(rawText, type) ?? autoAssign(rawText, null);
   const categoryMatchedByKeyword = Boolean(matched);
   const categoryId =
@@ -362,6 +583,28 @@ const cases = [
     name: "7 RU beauty / косметика (руб → entry default)",
     input: "17 руб косметика",
     expect: { amount: 17, categoryId: "beauty", note: "", autosave: true, currency: null },
+  },
+  // DeepSeek free-form patterns
+  {
+    name: "ds phone top-up → telecom + note",
+    input: "20 рублей закинул на свой телефон",
+    expect: { amount: 20, categoryId: "telecom", note: "телефон", autosave: true, currency: null },
+  },
+  {
+    name: "ds bus fare → transport + проезд note",
+    input: "70 рублей это будет проезд на автобусе",
+    // «автобусе» kept (declined form ≠ suppress token «автобус»)
+    expect: { amount: 70, categoryId: "transport", note: "проезд автобусе", autosave: true },
+  },
+  {
+    name: "ds rent spelled amount → housing + description",
+    input: "добавь тысяча тридцать пять рублей. Аренда квартиры.",
+    expect: { amount: 1035, categoryId: "housing", note: "Аренда квартиры", autosave: true },
+  },
+  {
+    name: "ds groceries + kopecks",
+    input: "купил картошки гарнир огурцов итого 7 рублей 40 копеек",
+    expect: { amount: 7.4, categoryId: "food", note: "картошки гарнир огурцов", autosave: true },
   },
 ];
 

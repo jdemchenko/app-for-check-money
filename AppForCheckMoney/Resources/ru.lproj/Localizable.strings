@@ -18,6 +18,7 @@
 "home.quickEntryEmpty" = "Не расслышала. Попробуйте ещё раз.";
 "home.quickEntryNoAmount" = "Не услышала сумму. Повторите или добавьте вручную.";
 "home.monthIn" = "Этот месяц ·";
+"home.quietFeedback" = "Сегодня %@ · %@ %@%%";
 
 "add.mode" = "Режим";
 "add.manual" = "Вручную";
@@ -43,6 +44,8 @@
 "stats.all" = "Всё";
 "stats.overview" = "Обзор";
 "stats.byCategory" = "По категориям";
+"stats.top3" = "Топ трат";
+"stats.avgCheck" = "Средний чек";
 "stats.empty" = "Пока нет данных";
 "stats.emptyHint" = "Добавьте несколько расходов, чтобы увидеть разбивку.";
 "stats.ops" = "оп.";

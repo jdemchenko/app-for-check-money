@@ -31,8 +31,10 @@ enum SymbolSuggester {
          ["figure.and.child.holdinghands", "book.fill"]),
         (["путеше", "travel", "отпуск", "flight", "отель"],
          ["airplane", "suitcase.fill", "bed.double.fill"]),
-        (["связь", "phone", "internet", "mobile", "wifi"],
-         ["phone.fill", "wifi", "antenna.radiowaves.left.and.right"]),
+        (["связь", "phone", "internet", "mobile", "wifi", "телефон", "техник", "гаджет", "iphone"],
+         ["iphone", "phone.fill", "wifi", "antenna.radiowaves.left.and.right"]),
+        (["накоплен", "savings", "вклад", "копилк", "кредит", "debt"],
+         ["banknote.fill", "chart.line.uptrend.xyaxis", "safe.fill"]),
     ]
 
     static func suggest(nameRu: String, nameEn: String = "") -> [String] {

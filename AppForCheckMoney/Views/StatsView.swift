@@ -42,6 +42,12 @@ struct StatsView: View {
                             .frame(maxWidth: .infinity)
                         }
                     } else {
+                        if snapshot.expenseCount > 0 {
+                            averageCard
+                        }
+                        if !snapshot.top3.isEmpty {
+                            top3Section
+                        }
                         categorySection
                     }
 
@@ -100,6 +106,51 @@ struct StatsView: View {
         }
     }
 
+    private var averageCard: some View {
+        GlassPanel(padding: 16, corner: AppTheme.cornerMedium) {
+            HStack {
+                Text(L10n.string("stats.avgCheck"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 8)
+                Text(MoneyFormat.currency(snapshot.averageCheck, code: snapshot.displayCurrency))
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+            }
+        }
+    }
+
+    private var top3Section: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            QuietSectionLabel(text: L10n.string("stats.top3"))
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Array(snapshot.top3.enumerated()), id: \.element.id) { index, row in
+                        HStack(spacing: 10) {
+                            Text("\(index + 1)")
+                                .font(.caption.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(.tertiary)
+                                .frame(width: 16, alignment: .trailing)
+                            Image(systemName: row.symbolName)
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 22)
+                            Text(row.name)
+                                .font(.subheadline.weight(.medium))
+                                .lineLimit(1)
+                            Spacer(minLength: 8)
+                            Text(percentLabel(row.share))
+                                .font(.caption.weight(.medium).monospacedDigit())
+                                .foregroundStyle(.secondary)
+                            Text(MoneyFormat.currency(row.amount, code: snapshot.displayCurrency))
+                                .font(.subheadline.weight(.semibold).monospacedDigit())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             QuietSectionLabel(text: L10n.string("stats.byCategory"))
@@ -117,6 +168,9 @@ struct StatsView: View {
                                     .font(.subheadline.weight(.medium))
                                     .lineLimit(1)
                                 Spacer(minLength: 8)
+                                Text(percentLabel(row.share))
+                                    .font(.caption.weight(.medium).monospacedDigit())
+                                    .foregroundStyle(.secondary)
                                 Text(MoneyFormat.currency(row.amount, code: snapshot.displayCurrency))
                                     .font(.subheadline.weight(.semibold).monospacedDigit())
                             }
@@ -135,5 +189,13 @@ struct StatsView: View {
                 }
             }
         }
+    }
+
+    private func percentLabel(_ share: Double) -> String {
+        let pct = (share * 1000).rounded() / 10
+        if pct.truncatingRemainder(dividingBy: 1) == 0 {
+            return "\(Int(pct))%"
+        }
+        return String(format: "%.1f%%", pct)
     }
 }

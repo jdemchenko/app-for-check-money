@@ -19,6 +19,7 @@
 		A10000000000000000000018 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001B /* StatsView.swift */; };
 		A10000000000000000000019 /* StatsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* StatsEngine.swift */; };
 		A10000000000000000000006 /* VoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* VoiceParser.swift */; };
+		A1000000000000000000001A /* AmountWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* AmountWords.swift */; };
 		A10000000000000000000007 /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* SpeechRecognizer.swift */; };
 		A10000000000000000000008 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* L10n.swift */; };
 		A10000000000000000000009 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* RootTabView.swift */; };
@@ -45,6 +46,7 @@
 		B1000000000000000000001B /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		B1000000000000000000001C /* StatsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsEngine.swift; sourceTree = "<group>"; };
 		B10000000000000000000006 /* VoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceParser.swift; sourceTree = "<group>"; };
+		B1000000000000000000001D /* AmountWords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountWords.swift; sourceTree = "<group>"; };
 		B10000000000000000000007 /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		B10000000000000000000008 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		B10000000000000000000009 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				B10000000000000000000019 /* SymbolSuggester.swift */,
 				B10000000000000000000018 /* AppCurrency.swift */,
 				B1000000000000000000001C /* StatsEngine.swift */,
+				B1000000000000000000001D /* AmountWords.swift */,
 				B10000000000000000000006 /* VoiceParser.swift */,
 				B10000000000000000000007 /* SpeechRecognizer.swift */,
 				B10000000000000000000008 /* L10n.swift */,
@@ -239,6 +242,7 @@
 				A10000000000000000000016 /* SymbolSuggester.swift in Sources */,
 				A10000000000000000000015 /* AppCurrency.swift in Sources */,
 				A10000000000000000000019 /* StatsEngine.swift in Sources */,
+				A1000000000000000000001A /* AmountWords.swift in Sources */,
 				A10000000000000000000006 /* VoiceParser.swift in Sources */,
 				A10000000000000000000007 /* SpeechRecognizer.swift in Sources */,
 				A10000000000000000000008 /* L10n.swift in Sources */,

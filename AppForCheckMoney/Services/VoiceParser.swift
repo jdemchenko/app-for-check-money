@@ -25,7 +25,7 @@ enum VoiceParser {
     private static let wa = #"(?![0-9A-Za-zА-Яа-яЁё])"#
 
     private static let expenseCues = try! NSRegularExpression(
-        pattern: wb + #"(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход)"# + wa,
+        pattern: wb + #"(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)"# + wa,
         options: [.caseInsensitive]
     )
     private static let incomeCues = try! NSRegularExpression(
@@ -87,10 +87,15 @@ enum VoiceParser {
         "такси", "taxi", "метро", "metro", "subway", "автобус", "bus", "парковка",
         "parking", "station", "uber", "яндекс", "yandex", "поезд", "train",
         // Other category labels / signals
-        "жильё", "жилье", "housing", "аренда", "rent",
-        "покупки", "shopping",
-        "здоровье", "health", "аптека", "pharmacy",
+        // Category *labels* only — keep descriptive phrases (аренда квартиры, проезд…) as notes.
+        "жильё", "жилье", "housing",
+        "еда", "food", "продукты",
+        "транспорт", "transport",
+        "здоровье", "health",
+        "одежда", "clothing", "clothes",
         "развлечения", "entertainment",
+        "связь", "техника",
+        "накопления", "savings",
         "другое", "other", "разное", "misc",
         "зарплата", "зарплату", "зарплаты", "salary", "зп", "оклад", "wage",
         "paycheck", "аванс",
@@ -98,15 +103,20 @@ enum VoiceParser {
         "подарок", "подарки", "gift", "gifts",
         "доход", "income", "перевод", "transfer", "возврат", "refund",
         "рублей", "рубль", "рубля", "ruble", "rubles", "byn", "br",
-        "dollar", "dollars", "usd", "eur", "euro",
-        "косметика", "cosmetics", "красота", "beauty", "макияж", "makeup",
-        "маникюр", "manicure", "салон", "salon",
+        "dollar", "dollars", "usd", "eur", "euro", "копеек", "копейки", "копейка",
+        "косметика", "cosmetics", "красота", "beauty",
+        "категория", "category",
         "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
-        "got", "received", "spent", "paid",
-        // NOTE: keep detail words like «кинотеатр» / cinema / movie OUT of suppress
+        "закинул", "закинула", "пополнил", "купил", "купила", "добавь", "кажется",
+        "сегодня", "это", "будет", "свой", "свою",
+        "got", "received", "spent", "paid", "bought",
+        // NOTE: keep «аренда квартиры», «проезд», «телефон» OUT — those are descriptions
     ].map { TextNormalizer.normalize($0) })
 
     static func parseAmount(from text: String) -> Double? {
+        if let fromWords = AmountWords.parse(from: text) {
+            return fromWords
+        }
         var cleaned = text
         cleaned = cleaned.replacingOccurrences(
             of: #"(\d)\s+(\d{3})\b"#,
@@ -325,6 +335,7 @@ enum VoiceParser {
             range: NSRange(working.startIndex..., in: working),
             withTemplate: " "
         )
+        working = AmountWords.stripSpelled(from: working)
         return working
     }
 
@@ -443,6 +454,27 @@ extension VoiceParser {
             "en-gas",
             "200 dollars gas station",
             amount: 200, categoryId: "transport", note: ""
+        )
+        // DeepSeek free-form patterns
+        check(
+            "ds-phone",
+            "20 рублей закинул на свой телефон",
+            amount: 20, categoryId: "telecom", note: "телефон"
+        )
+        check(
+            "ds-fare",
+            "70 рублей это будет проезд на автобусе",
+            amount: 70, categoryId: "transport", note: "проезд автобусе"
+        )
+        check(
+            "ds-rent",
+            "добавь тысяча тридцать пять рублей. Аренда квартиры.",
+            amount: 1035, categoryId: "housing", note: "Аренда квартиры"
+        )
+        check(
+            "ds-kopeks",
+            "купил картошки гарнир огурцов итого 7 рублей 40 копеек",
+            amount: 7.4, categoryId: "food", note: "картошки гарнир огурцов"
         )
 
         return failures
