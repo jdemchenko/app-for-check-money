@@ -13,6 +13,9 @@
 		A10000000000000000000004 /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* SeedData.swift */; };
 		A10000000000000000000005 /* CategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* CategoryMatcher.swift */; };
 		A10000000000000000000014 /* KeywordSuggester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* KeywordSuggester.swift */; };
+		A10000000000000000000015 /* AppCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* AppCurrency.swift */; };
+		A10000000000000000000016 /* SymbolSuggester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* SymbolSuggester.swift */; };
+		A10000000000000000000017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001A /* SettingsView.swift */; };
 		A10000000000000000000006 /* VoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* VoiceParser.swift */; };
 		A10000000000000000000007 /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* SpeechRecognizer.swift */; };
 		A10000000000000000000008 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* L10n.swift */; };
@@ -34,6 +37,9 @@
 		B10000000000000000000004 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		B10000000000000000000005 /* CategoryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryMatcher.swift; sourceTree = "<group>"; };
 		B10000000000000000000017 /* KeywordSuggester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeywordSuggester.swift; sourceTree = "<group>"; };
+		B10000000000000000000018 /* AppCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCurrency.swift; sourceTree = "<group>"; };
+		B10000000000000000000019 /* SymbolSuggester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolSuggester.swift; sourceTree = "<group>"; };
+		B1000000000000000000001A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B10000000000000000000006 /* VoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceParser.swift; sourceTree = "<group>"; };
 		B10000000000000000000007 /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		B10000000000000000000008 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
@@ -106,6 +112,8 @@
 			children = (
 				B10000000000000000000005 /* CategoryMatcher.swift */,
 				B10000000000000000000017 /* KeywordSuggester.swift */,
+				B10000000000000000000019 /* SymbolSuggester.swift */,
+				B10000000000000000000018 /* AppCurrency.swift */,
 				B10000000000000000000006 /* VoiceParser.swift */,
 				B10000000000000000000007 /* SpeechRecognizer.swift */,
 				B10000000000000000000008 /* L10n.swift */,
@@ -121,6 +129,7 @@
 				B1000000000000000000000B /* AddTransactionView.swift */,
 				B1000000000000000000000C /* CategoriesView.swift */,
 				B1000000000000000000000D /* HistoryView.swift */,
+				B1000000000000000000001A /* SettingsView.swift */,
 				E10000000000000000000008 /* Components */,
 			);
 			path = Views;
@@ -221,6 +230,8 @@
 				A10000000000000000000004 /* SeedData.swift in Sources */,
 				A10000000000000000000005 /* CategoryMatcher.swift in Sources */,
 				A10000000000000000000014 /* KeywordSuggester.swift in Sources */,
+				A10000000000000000000016 /* SymbolSuggester.swift in Sources */,
+				A10000000000000000000015 /* AppCurrency.swift in Sources */,
 				A10000000000000000000006 /* VoiceParser.swift in Sources */,
 				A10000000000000000000007 /* SpeechRecognizer.swift in Sources */,
 				A10000000000000000000008 /* L10n.swift in Sources */,
@@ -229,6 +240,7 @@
 				A1000000000000000000000B /* AddTransactionView.swift in Sources */,
 				A1000000000000000000000C /* CategoriesView.swift in Sources */,
 				A1000000000000000000000D /* HistoryView.swift in Sources */,
+				A10000000000000000000017 /* SettingsView.swift in Sources */,
 				A1000000000000000000000E /* Theme.swift in Sources */,
 				A1000000000000000000000F /* TransactionRowView.swift in Sources */,
 			);

@@ -11,9 +11,9 @@
 "home.recent" = "Recent";
 "home.empty" = "No transactions yet";
 "home.emptyHint" = "Add a manual or voice entry to get started.";
-"home.quickEntry" = "Quick voice entry";
-"home.quickEntryHint" = "Tap, speak amount and category — saves automatically";
-"home.quickEntryStop" = "Tap to stop";
+"home.quickEntry" = "Hold to talk";
+"home.quickEntryHint" = "Press and hold, speak amount and category — release to save";
+"home.quickEntryStop" = "Release to save";
 "home.quickEntryEmpty" = "Didn’t catch that. Try again.";
 "home.quickEntryNoAmount" = "Couldn’t hear an amount. Try again or use Add.";
 
@@ -21,6 +21,15 @@
 "add.manual" = "Manual";
 "add.voice" = "Voice";
 "add.saved" = "Saved";
+
+"settings.title" = "Settings";
+"settings.currency" = "Currency";
+"settings.currencyHint" = "Amounts are stored as numbers. “руб” in voice is treated as your selected currency (default Br).";
+"currency.byn" = "Belarusian ruble (Br)";
+"currency.rub" = "Russian ruble (₽)";
+"currency.usd" = "US dollar ($)";
+"currency.eur" = "Euro (€)";
+"common.done" = "Done";
 
 "field.amount" = "Amount";
 "field.type" = "Type";
@@ -59,6 +68,7 @@
 "categories.keywordsAuto" = "Suggested from the name — edit anytime";
 "categories.colorHex" = "Color hex";
 "categories.symbol" = "SF Symbol name";
+"categories.symbolSuggest" = "Suggested icons";
 
 "history.empty" = "Nothing found";
 "history.emptyHint" = "Try adjusting filters or add a transaction.";

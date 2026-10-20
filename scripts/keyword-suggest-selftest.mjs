@@ -111,6 +111,20 @@ const CATEGORIES = [
     ],
   },
   {
+    id: "beauty",
+    nameRu: "Красота",
+    nameEn: "Beauty",
+    kind: "expense",
+    symbolName: "sparkles",
+    keywords: [
+      "красота", "beauty", "косметика", "cosmetics", "макияж", "makeup",
+      "помада", "lipstick", "крем", "cream", "шампунь", "shampoo",
+      "маникюр", "manicure", "педикюр", "pedicure", "салон", "salon",
+      "парикмахер", "hairdresser", "стрижка", "haircut", "парфюм",
+      "perfume", "духи", "ногти", "nails", "spas", "spa",
+    ],
+  },
+  {
     id: "other-expense",
     nameRu: "Другое",
     nameEn: "Other",
@@ -353,6 +367,11 @@ const cases = [
     name: "housing ё→е",
     input: { nameRu: "Жилье" },
     expectFamilyMarkers: ["аренда", "жкх"],
+  },
+  {
+    name: "beauty cosmetics RU",
+    input: { nameRu: "Косметика" },
+    expectFamilyMarkers: ["макияж", "салон", "beauty"],
   },
 ];
 

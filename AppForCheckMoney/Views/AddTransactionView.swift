@@ -23,7 +23,7 @@ struct AddTransactionView: View {
     @State private var date = Date.now
     @State private var autoAssigned = false
     @State private var draft: VoiceDraft?
-    @State private var showSavedToast = false
+    @State private var isHoldingMic = false
     @StateObject private var speech = SpeechRecognizer()
 
     private var availableCategories: [MoneyCategory] {
@@ -59,6 +59,7 @@ struct AddTransactionView: View {
             }
         }
         .onAppear {
+            speech.allowsSilenceFinish = false
             if categoryId == nil {
                 categoryId = availableCategories.first?.id
             }
@@ -105,11 +106,6 @@ struct AddTransactionView: View {
                 note = parsed.note
             }
         }
-        .alert(L10n.string("add.saved"), isPresented: $showSavedToast) {
-            Button(L10n.string("common.ok"), role: .cancel) {
-                if embeddedInSheet { dismiss() }
-            }
-        }
     }
 
     private var voiceBlock: some View {
@@ -129,33 +125,36 @@ struct AddTransactionView: View {
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
 
-                    Button {
-                        if speech.status == .listening {
-                            speech.stop()
-                        } else {
-                            speech.start()
-                        }
-                    } label: {
-                        ZStack {
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .frame(width: 84, height: 84)
-                                .overlay {
-                                    Circle().fill(
-                                        (speech.status == .listening
-                                            ? AppTheme.expense : AppTheme.accent)
-                                        .opacity(0.9)
-                                    )
-                                }
-                                .overlay {
-                                    Circle().strokeBorder(AppTheme.glassStroke, lineWidth: 1)
-                                }
-                            Image(systemName: speech.status == .listening ? "waveform" : "mic.fill")
-                                .font(.system(size: 28, weight: .semibold))
-                                .foregroundStyle(.white)
-                        }
+                    Text(L10n.string("home.quickEntryHint"))
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+
+                    ZStack {
+                        Circle()
+                            .fill(.ultraThinMaterial)
+                            .frame(width: 84, height: 84)
+                            .overlay {
+                                Circle().fill(Color.primary.opacity(speech.isListening ? 0.12 : 0.06))
+                            }
+                            .overlay {
+                                Circle().strokeBorder(AppTheme.glassStroke, lineWidth: 1)
+                            }
+                        Image(systemName: speech.isListening ? "waveform" : "mic.fill")
+                            .font(.system(size: 28, weight: .medium))
+                            .foregroundStyle(.primary)
                     }
-                    .buttonStyle(.plain)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in
+                                guard !isHoldingMic else { return }
+                                isHoldingMic = true
+                                if !speech.isListening { speech.start() }
+                            }
+                            .onEnded { _ in
+                                isHoldingMic = false
+                                if speech.isListening { speech.stop() }
+                            }
+                    )
 
                     if !speech.transcript.isEmpty {
                         Text("“\(speech.transcript)”")
@@ -172,7 +171,7 @@ struct AddTransactionView: View {
                             speech.clearTranscript()
                         }
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(AppTheme.accent)
+                        .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -214,7 +213,7 @@ struct AddTransactionView: View {
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
                                 .background(.thinMaterial, in: Capsule())
-                                .foregroundStyle(AppTheme.accent)
+                                .foregroundStyle(.secondary)
                         }
                     }
 
@@ -243,8 +242,8 @@ struct AddTransactionView: View {
                                             RoundedRectangle(cornerRadius: 12, style: .continuous)
                                                 .strokeBorder(
                                                     categoryId == cat.id
-                                                        ? AppTheme.accent.opacity(0.5)
-                                                        : Color.white.opacity(0.15),
+                                                        ? Color.primary.opacity(0.35)
+                                                        : Color.primary.opacity(0.08),
                                                     lineWidth: categoryId == cat.id ? 1.1 : 0.5
                                                 )
                                         }
@@ -296,20 +295,10 @@ struct AddTransactionView: View {
                         .fill(.thinMaterial)
                         .overlay {
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(
-                                    type == value
-                                        ? (value == .expense
-                                            ? AppTheme.expense.opacity(0.16)
-                                            : AppTheme.income.opacity(0.16))
-                                        : Color.clear
-                                )
+                                .fill(type == value ? Color.primary.opacity(0.08) : Color.clear)
                         }
                 }
-                .foregroundStyle(
-                    type == value
-                        ? (value == .expense ? AppTheme.expense : AppTheme.income)
-                        : .secondary
-                )
+                .foregroundStyle(type == value ? Color.primary : Color.secondary)
         }
         .buttonStyle(.plain)
     }
@@ -335,7 +324,9 @@ struct AddTransactionView: View {
         draft = nil
         autoAssigned = false
         speech.clearTranscript()
-        showSavedToast = true
+        if embeddedInSheet {
+            dismiss()
+        }
     }
 }
 

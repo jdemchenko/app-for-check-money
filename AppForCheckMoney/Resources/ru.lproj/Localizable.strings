@@ -11,9 +11,9 @@
 "home.recent" = "Недавние";
 "home.empty" = "Пока нет операций";
 "home.emptyHint" = "Добавьте запись вручную или голосом.";
-"home.quickEntry" = "Быстрый голос";
-"home.quickEntryHint" = "Нажмите и скажите сумму и категорию — сохранится само";
-"home.quickEntryStop" = "Нажмите, чтобы остановить";
+"home.quickEntry" = "Удерживайте микрофон";
+"home.quickEntryHint" = "Зажмите, скажите сумму и категорию — отпустите, чтобы сохранить";
+"home.quickEntryStop" = "Отпустите, чтобы сохранить";
 "home.quickEntryEmpty" = "Не расслышала. Попробуйте ещё раз.";
 "home.quickEntryNoAmount" = "Не услышала сумму. Повторите или добавьте вручную.";
 
@@ -21,6 +21,15 @@
 "add.manual" = "Вручную";
 "add.voice" = "Голосом";
 "add.saved" = "Сохранено";
+
+"settings.title" = "Настройки";
+"settings.currency" = "Валюта";
+"settings.currencyHint" = "Суммы хранятся как числа. Слово «руб» в голосе считается выбранной валютой (по умолчанию Br).";
+"currency.byn" = "Белорусский рубль (Br)";
+"currency.rub" = "Российский рубль (₽)";
+"currency.usd" = "Доллар США ($)";
+"currency.eur" = "Евро (€)";
+"common.done" = "Готово";
 
 "field.amount" = "Сумма";
 "field.type" = "Тип";
@@ -59,6 +68,7 @@
 "categories.keywordsAuto" = "Подставляются по названию — можно править";
 "categories.colorHex" = "Цвет (hex)";
 "categories.symbol" = "Имя SF Symbol";
+"categories.symbolSuggest" = "Подсказки иконок";
 
 "history.empty" = "Ничего не найдено";
 "history.emptyHint" = "Измените фильтры или добавьте операцию.";

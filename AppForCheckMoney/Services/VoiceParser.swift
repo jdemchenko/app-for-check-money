@@ -30,8 +30,10 @@ enum VoiceParser {
         options: [.caseInsensitive]
     )
 
+    /// Currency *words* only — stripped from notes. «руб» never switches currency;
+    /// amounts always use the app default (BYN) / Settings selection.
     private static let currencyWords = try! NSRegularExpression(
-        pattern: #"(?i)"# + wb + #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"# + wa,
+        pattern: #"(?i)"# + wb + #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"# + wa,
         options: []
     )
 
@@ -79,8 +81,10 @@ enum VoiceParser {
         "фриланс", "freelance",
         "подарок", "подарки", "gift", "gifts",
         "доход", "income", "перевод", "transfer", "возврат", "refund",
-        "рублей", "рубль", "рубля", "ruble", "rubles", "dollar", "dollars",
-        "usd", "eur", "euro",
+        "рублей", "рубль", "рубля", "ruble", "rubles", "byn", "br",
+        "dollar", "dollars", "usd", "eur", "euro",
+        "косметика", "cosmetics", "красота", "beauty", "макияж", "makeup",
+        "маникюр", "manicure", "салон", "salon",
         "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
         "got", "received", "spent", "paid",
         // NOTE: keep detail words like «кинотеатр» / cinema / movie OUT of suppress
@@ -96,8 +100,8 @@ enum VoiceParser {
         cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
 
         let patterns = [
-            #"(?i)(\d+(?:[.,]\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|dollars?|\$|usd|eur|€)"#,
-            #"(?i)(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|dollars?|\$|usd|eur|€)\s*(\d+(?:[.,]\d{1,2})?)"#,
+            #"(?i)(\d+(?:[.,]\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)"#,
+            #"(?i)(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)\s*(\d+(?:[.,]\d{1,2})?)"#,
             #"(\d+(?:[.,]\d{1,2})?)"#,
         ]
         for pattern in patterns {

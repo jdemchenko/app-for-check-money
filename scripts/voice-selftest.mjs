@@ -54,6 +54,19 @@ const CATEGORIES = [
     ],
   },
   {
+    id: "beauty",
+    nameRu: "Красота",
+    nameEn: "Beauty",
+    kind: "expense",
+    keywords: [
+      "красота", "beauty", "косметика", "cosmetics", "макияж", "makeup",
+      "помада", "lipstick", "крем", "cream", "шампунь", "shampoo",
+      "маникюр", "manicure", "педикюр", "pedicure", "салон", "salon",
+      "парикмахер", "hairdresser", "стрижка", "haircut", "парфюм",
+      "perfume", "духи", "ногти", "nails", "spas", "spa",
+    ],
+  },
+  {
     id: "salary",
     nameRu: "Зарплата",
     nameEn: "Salary",
@@ -83,8 +96,11 @@ const NOTE_SUPPRESS = new Set(
     "такси", "taxi", "метро", "metro", "subway", "автобус", "bus", "парковка",
     "parking", "station", "uber", "яндекс", "yandex", "поезд", "train",
     "развлечения", "entertainment",
+    "косметика", "cosmetics", "красота", "beauty", "макияж", "makeup",
+    "маникюр", "manicure", "салон", "salon",
     "зарплата", "зарплату", "зарплаты", "salary", "зп", "оклад", "wage",
-    "рублей", "рубль", "рубля", "ruble", "rubles", "dollar", "dollars", "usd", "eur", "euro",
+    "рублей", "рубль", "рубля", "ruble", "rubles", "byn", "br",
+    "dollar", "dollars", "usd", "eur", "euro",
     "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
     "got", "received", "spent", "paid",
   ].map(normalize)
@@ -169,7 +185,7 @@ function cleanNoteFragment(text) {
 function stripAmountsAndCurrency(text) {
   let working = text.replace(/\d[\d\s.,]*/g, " ");
   working = working.replace(
-    new RegExp(`${WB}(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)${WA}`, "gi"),
+    new RegExp(`${WB}(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)${WA}`, "gi"),
     " "
   );
   return working;
@@ -331,6 +347,11 @@ const cases = [
     name: "edge income salary",
     input: "получил зарплату 80000",
     expect: { amount: 80000, categoryId: "salary", note: "", autosave: true, type: "income" },
+  },
+  {
+    name: "7 RU beauty / косметика (руб → amount only)",
+    input: "17 руб косметика",
+    expect: { amount: 17, categoryId: "beauty", note: "", autosave: true },
   },
 ];
 

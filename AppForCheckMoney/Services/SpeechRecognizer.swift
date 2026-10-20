@@ -19,6 +19,9 @@ final class SpeechRecognizer: ObservableObject {
     /// Fired once when listening ends with the final transcript (silence timeout, stop, or isFinal).
     var onUtteranceFinished: ((String) -> Void)?
 
+    /// When false (hold-to-talk), only an explicit `stop()` ends the utterance — no silence timer.
+    var allowsSilenceFinish = true
+
     private var audioEngine: AVAudioEngine?
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
@@ -237,6 +240,7 @@ final class SpeechRecognizer: ObservableObject {
     // MARK: - Lifecycle helpers
 
     private func scheduleSilenceFinish() {
+        guard allowsSilenceFinish else { return }
         cancelSilenceWatch()
         silenceTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: silenceNanoseconds)

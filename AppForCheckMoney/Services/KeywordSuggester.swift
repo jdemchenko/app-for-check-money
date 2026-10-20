@@ -44,6 +44,16 @@ enum KeywordSuggester {
             .joined(separator: ", ")
     }
 
+    /// Best SeedData family for a typed name (used by SymbolSuggester).
+    static func matchedFamily(
+        nameRu: String,
+        nameEn: String = "",
+        symbolName: String = "",
+        kind: CategoryKind? = nil
+    ) -> SeedData.SynonymBank? {
+        bestFamily(nameRu: nameRu, nameEn: nameEn, symbolName: symbolName, kind: kind)
+    }
+
     // MARK: - Family match
 
     private static func bestFamily(
@@ -65,7 +75,8 @@ enum KeywordSuggester {
             if let kind {
                 score += kindAffinity(bank.kind, preferred: kind)
             }
-            if score > familyThreshold, best == nil || score > best!.score {
+            // Slightly softer threshold so short names like «Косметика» still pull the bank.
+            if score > familyThreshold - 0.5, best == nil || score > best!.score {
                 best = (bank, score)
             }
         }

@@ -97,7 +97,7 @@ enum SeedData {
                 "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
                 "supermarket", "макдональдс", "mcdonalds",
             ],
-            colorHex: "FF9F0A",
+            colorHex: "8E8E93",
             symbolName: "fork.knife"
         ),
         .init(
@@ -112,7 +112,7 @@ enum SeedData {
                 "uber", "яндекс", "yandex", "парковка", "parking", "поезд", "train",
                 "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare",
             ],
-            colorHex: "64D2FF",
+            colorHex: "8E8E93",
             symbolName: "car.fill"
         ),
         .init(
@@ -125,7 +125,7 @@ enum SeedData {
                 "apartment", "коммуналка", "utilities", "свет", "electricity",
                 "вода", "water", "ипотека", "mortgage", "жкх", "газ",
             ],
-            colorHex: "AC8E68",
+            colorHex: "8E8E93",
             symbolName: "house.fill"
         ),
         .init(
@@ -138,7 +138,7 @@ enum SeedData {
                 "store", "amazon", "ozon", "wildberries", "wb", "маркет",
                 "одежда", "shoes", "обувь",
             ],
-            colorHex: "FF375F",
+            colorHex: "8E8E93",
             symbolName: "bag.fill"
         ),
         .init(
@@ -151,7 +151,7 @@ enum SeedData {
                 "медицина", "medicine", "спорт", "gym", "фитнес", "fitness",
                 "таблетки", "больница", "hospital", "стоматолог", "dentist",
             ],
-            colorHex: "30D158",
+            colorHex: "8E8E93",
             symbolName: "heart.fill"
         ),
         .init(
@@ -165,8 +165,23 @@ enum SeedData {
                 "подписка", "subscription", "netflix", "spotify", "концерт",
                 "concert", "клуб", "club", "бар", "bar", "bowling",
             ],
-            colorHex: "FF9F0A",
+            colorHex: "8E8E93",
             symbolName: "film.fill"
+        ),
+        .init(
+            id: "beauty",
+            nameRu: "Красота",
+            nameEn: "Beauty",
+            kind: .expense,
+            keywords: [
+                "красота", "beauty", "косметика", "cosmetics", "макияж", "makeup",
+                "помада", "lipstick", "крем", "cream", "шампунь", "shampoo",
+                "маникюр", "manicure", "педикюр", "pedicure", "салон", "salon",
+                "парикмахер", "hairdresser", "стрижка", "haircut", "парфюм",
+                "perfume", "духи", "ногти", "nails", "spas", "spa",
+            ],
+            colorHex: "AEAEB2",
+            symbolName: "sparkles"
         ),
         .init(
             id: "other-expense",
@@ -186,7 +201,7 @@ enum SeedData {
                 "зарплата", "зарплату", "зарплаты", "зарплатой", "salary", "зп",
                 "оклад", "wage", "paycheck", "аванс", "payroll",
             ],
-            colorHex: "32D74B",
+            colorHex: "8E8E93",
             symbolName: "briefcase.fill"
         ),
         .init(
@@ -198,7 +213,7 @@ enum SeedData {
                 "фриланс", "freelance", "проект", "project", "клиент", "client",
                 "заказ", "contract",
             ],
-            colorHex: "0A84FF",
+            colorHex: "8E8E93",
             symbolName: "laptopcomputer"
         ),
         .init(
@@ -209,7 +224,7 @@ enum SeedData {
             keywords: [
                 "подарок", "gift", "подарки", "gifts", "день рождения", "birthday",
             ],
-            colorHex: "FF2D55",
+            colorHex: "8E8E93",
             symbolName: "gift.fill"
         ),
         .init(
@@ -220,7 +235,7 @@ enum SeedData {
             keywords: [
                 "доход", "income", "перевод", "transfer", "возврат", "refund",
             ],
-            colorHex: "64D2FF",
+            colorHex: "8E8E93",
             symbolName: "creditcard.fill"
         ),
     ]

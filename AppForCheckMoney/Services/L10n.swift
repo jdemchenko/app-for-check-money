@@ -13,15 +13,33 @@ enum L10n {
 }
 
 enum MoneyFormat {
+    /// Formats with the user-selected app currency (default BYN → `Br`).
+    @MainActor
     static func currency(_ value: Double) -> String {
-        let code = L10n.isRussian ? "RUB" : "USD"
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = code
-        formatter.locale = Locale.current
-        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+        currency(value, code: CurrencySettings.shared.currency)
     }
 
+    static func currency(_ value: Double, code: AppCurrency) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = value.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let number = formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+        // Explicit symbols keep BYN as «Br» regardless of device locale quirks.
+        switch code {
+        case .byn:
+            return "\(number) Br"
+        case .rub:
+            return "\(number) ₽"
+        case .usd:
+            return "$\(number)"
+        case .eur:
+            return "\(number) €"
+        }
+    }
+
+    @MainActor
     static func signed(_ value: Double, type: TransactionType) -> String {
         let sign = type == .income ? "+" : "−"
         return sign + currency(value)

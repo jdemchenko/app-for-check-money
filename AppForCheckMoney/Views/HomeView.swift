@@ -8,12 +8,15 @@ struct HomeView: View {
     @Query(sort: \MoneyCategory.sortOrder)
     private var categories: [MoneyCategory]
 
+    @ObservedObject private var currencySettings = CurrencySettings.shared
     @StateObject private var speech = SpeechRecognizer()
     @State private var pendingDraft: VoiceDraft?
     @State private var overrideCategoryId: String?
     @State private var statusMessage: String?
     @State private var showStatus = false
     @State private var showManualAdd = false
+    @State private var showSettings = false
+    @State private var isHoldingMic = false
 
     private var monthTransactions: [MoneyTransaction] {
         let cal = Calendar.current
@@ -60,16 +63,26 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showManualAdd = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.body.weight(.semibold))
+                    HStack(spacing: 12) {
+                        Button {
+                            showSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                        .accessibilityLabel(L10n.string("settings.title"))
+
+                        Button {
+                            showManualAdd = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.body.weight(.semibold))
+                        }
+                        .accessibilityLabel(L10n.string("tab.add"))
                     }
-                    .accessibilityLabel(L10n.string("tab.add"))
                 }
             }
             .onAppear {
+                speech.allowsSilenceFinish = false
                 speech.onUtteranceFinished = { text in
                     handleUtterance(text)
                 }
@@ -105,9 +118,16 @@ struct HomeView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+            }
             .alert(statusMessage ?? "", isPresented: $showStatus) {
                 Button(L10n.string("common.ok"), role: .cancel) {}
             }
+            // Re-render amounts when currency changes.
+            .id(currencySettings.currency.rawValue)
         }
     }
 
@@ -121,27 +141,27 @@ struct HomeView: View {
                     .foregroundStyle(.secondary)
 
                 Text(MoneyFormat.currency(balance))
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
-                    .foregroundStyle(balance >= 0 ? .primary : AppTheme.expense)
+                    .font(.system(size: 42, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
                     .minimumScaleFactor(0.55)
                     .lineLimit(1)
 
                 HStack(spacing: 16) {
                     Label {
                         Text(MoneyFormat.currency(income))
-                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                            .font(.subheadline.weight(.medium).monospacedDigit())
                     } icon: {
                         Image(systemName: "arrow.down.left")
                     }
-                    .foregroundStyle(AppTheme.income)
+                    .foregroundStyle(.secondary)
 
                     Label {
                         Text(MoneyFormat.currency(expense))
-                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                            .font(.subheadline.weight(.medium).monospacedDigit())
                     } icon: {
                         Image(systemName: "arrow.up.right")
                     }
-                    .foregroundStyle(AppTheme.expense)
+                    .foregroundStyle(.secondary)
                 }
                 .font(.footnote)
                 .padding(.top, 2)
@@ -149,51 +169,36 @@ struct HomeView: View {
         }
     }
 
-    /// Single primary action — floating glass mic orb.
+    /// Hold to talk — press starts listening, release stops and saves.
     private var quickMic: some View {
         VStack(spacing: 14) {
-            Button {
-                toggleQuickListen()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .frame(width: 108, height: 108)
-                        .overlay {
-                            Circle()
-                                .fill(
-                                    (speech.isListening ? AppTheme.expense : AppTheme.accent)
-                                        .opacity(0.88)
-                                )
-                        }
-                        .overlay {
-                            Circle()
-                                .strokeBorder(AppTheme.glassStroke, lineWidth: 1.2)
-                        }
-                        .shadow(
-                            color: (speech.isListening ? AppTheme.expense : AppTheme.accent)
-                                .opacity(0.4),
-                            radius: 22,
-                            y: 10
-                        )
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 108, height: 108)
+                    .overlay {
+                        Circle()
+                            .fill(Color.primary.opacity(speech.isListening ? 0.12 : 0.06))
+                    }
+                    .overlay {
+                        Circle()
+                            .strokeBorder(AppTheme.glassStroke, lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
 
-                    Image(systemName: speech.isListening ? "waveform" : "mic.fill")
-                        .font(.system(size: 36, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .contentTransition(.symbolEffect(.replace))
-                }
+                Image(systemName: speech.isListening ? "waveform" : "mic.fill")
+                    .font(.system(size: 34, weight: .medium))
+                    .foregroundStyle(.primary)
+                    .contentTransition(.symbolEffect(.replace))
             }
-            .buttonStyle(.plain)
+            .gesture(holdToTalkGesture)
             .disabled({
                 if case .unavailable = speech.status { return true }
                 if case .failed = speech.status { return true }
                 return false
             }())
-            .accessibilityLabel(
-                speech.isListening
-                    ? L10n.string("voice.stop")
-                    : L10n.string("home.quickEntry")
-            )
+            .accessibilityLabel(L10n.string("home.quickEntry"))
+            .accessibilityHint(L10n.string("home.quickEntryHint"))
 
             Text(
                 speech.isListening
@@ -220,7 +225,7 @@ struct HomeView: View {
             } else if case .failed(let message) = speech.status {
                 Text(message)
                     .font(.caption)
-                    .foregroundStyle(AppTheme.expense)
+                    .foregroundStyle(.secondary)
             } else if speech.isListening, !speech.transcript.isEmpty {
                 Text("“\(speech.transcript)”")
                     .font(.footnote)
@@ -235,6 +240,23 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
+    }
+
+    private var holdToTalkGesture: some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { _ in
+                guard !isHoldingMic else { return }
+                isHoldingMic = true
+                if !speech.isListening {
+                    speech.start()
+                }
+            }
+            .onEnded { _ in
+                isHoldingMic = false
+                if speech.isListening {
+                    speech.stop()
+                }
+            }
     }
 
     private var recentBlock: some View {
@@ -267,10 +289,6 @@ struct HomeView: View {
     }
 
     // MARK: - Actions
-
-    private func toggleQuickListen() {
-        if speech.isListening { speech.stop() } else { speech.start() }
-    }
 
     private func handleUtterance(_ text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -305,7 +323,7 @@ struct HomeView: View {
         try? modelContext.save()
         speech.clearTranscript()
         pendingDraft = nil
-        flash(L10n.string("add.saved"))
+        // No success toast — quiet save (Apple Design Awards restraint).
     }
 
     private func flash(_ message: String) {
@@ -314,7 +332,7 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Confirm sheet (glass, minimal)
+// MARK: - Confirm sheet
 
 struct ConfirmDraftSheet: View {
     let draft: VoiceDraft
@@ -334,7 +352,7 @@ struct ConfirmDraftSheet: View {
                     GlassPanel {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(MoneyFormat.currency(draft.amount ?? 0))
-                                .font(.system(size: 36, weight: .bold, design: .rounded))
+                                .font(.system(size: 34, weight: .semibold, design: .rounded))
                             Text(draft.rawText)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -374,9 +392,9 @@ struct ConfirmDraftSheet: View {
                                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                                 .strokeBorder(
                                                     categoryId == cat.id
-                                                        ? AppTheme.accent.opacity(0.55)
-                                                        : Color.white.opacity(0.2),
-                                                    lineWidth: categoryId == cat.id ? 1.2 : 0.5
+                                                        ? Color.primary.opacity(0.35)
+                                                        : Color.primary.opacity(0.08),
+                                                    lineWidth: categoryId == cat.id ? 1.1 : 0.5
                                                 )
                                         }
                                 }

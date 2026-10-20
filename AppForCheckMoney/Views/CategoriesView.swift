@@ -166,14 +166,19 @@ struct CategoryEditorSheet: View {
     @State private var nameEn = ""
     @State private var kind: CategoryKind = .expense
     @State private var keywordsText = ""
-    @State private var colorHex = "0A84FF"
+    @State private var colorHex = "8E8E93"
     @State private var symbolName = "circle.fill"
+    @State private var symbolSuggestions: [String] = []
 
-    /// Once the user edits keywords by hand, stop overwriting — unless the field still equals the last auto-fill.
-    @State private var keywordsUserEdited = false
+    /// Track last auto-fill; treat field as user-edited only when it diverges.
     @State private var lastAutoKeywords = ""
-    @State private var suppressKeywordsTracking = false
     @State private var suggestTask: Task<Void, Never>?
+    @State private var symbolLocked = false
+
+    private var keywordsAreAutoSynced: Bool {
+        let trimmed = keywordsText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty || trimmed == lastAutoKeywords
+    }
 
     var body: some View {
         NavigationStack {
@@ -208,16 +213,57 @@ struct CategoryEditorSheet: View {
                     }
 
                     GlassPanel {
-                        VStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 TextField(L10n.string("categories.colorHex"), text: $colorHex)
                                     .glassField()
                                 TextField(L10n.string("categories.symbol"), text: $symbolName)
                                     .glassField()
+                                    .onChange(of: symbolName) { _, _ in
+                                        symbolLocked = true
+                                    }
                             }
                             CategoryGlyph(symbolName: symbolName, colorHex: colorHex, size: 56)
+                                .frame(maxWidth: .infinity)
+
+                            if !symbolSuggestions.isEmpty {
+                                Text(L10n.string("categories.symbolSuggest"))
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 8) {
+                                        ForEach(symbolSuggestions, id: \.self) { symbol in
+                                            Button {
+                                                symbolName = symbol
+                                                symbolLocked = true
+                                            } label: {
+                                                Image(systemName: symbol)
+                                                    .font(.body.weight(.medium))
+                                                    .foregroundStyle(
+                                                        symbolName == symbol ? Color.primary : Color.secondary
+                                                    )
+                                                    .frame(width: 40, height: 40)
+                                                    .background {
+                                                        Circle()
+                                                            .fill(.thinMaterial)
+                                                            .overlay {
+                                                                Circle()
+                                                                    .strokeBorder(
+                                                                        symbolName == symbol
+                                                                            ? Color.primary.opacity(0.35)
+                                                                            : Color.primary.opacity(0.08),
+                                                                        lineWidth: 0.8
+                                                                    )
+                                                            }
+                                                    }
+                                            }
+                                            .buttonStyle(.plain)
+                                            .accessibilityLabel(symbol)
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        .frame(maxWidth: .infinity)
                     }
 
                     GlassActionButton(title: L10n.string("common.save")) {
@@ -246,14 +292,9 @@ struct CategoryEditorSheet: View {
                 }
             }
             .onAppear { load() }
-            .onChange(of: nameRu) { _, _ in scheduleKeywordSuggest() }
-            .onChange(of: nameEn) { _, _ in scheduleKeywordSuggest() }
-            .onChange(of: symbolName) { _, _ in scheduleKeywordSuggest() }
-            .onChange(of: kind) { _, _ in scheduleKeywordSuggest() }
-            .onChange(of: keywordsText) { _, _ in
-                guard !suppressKeywordsTracking else { return }
-                keywordsUserEdited = true
-            }
+            .onChange(of: nameRu) { _, _ in scheduleSuggest() }
+            .onChange(of: nameEn) { _, _ in scheduleSuggest() }
+            .onChange(of: kind) { _, _ in scheduleSuggest() }
             .onDisappear { suggestTask?.cancel() }
         }
     }
@@ -265,7 +306,7 @@ struct CategoryEditorSheet: View {
                 .foregroundStyle(.secondary)
             TextField(title, text: text)
                 .glassField()
-                .onSubmit { applyKeywordSuggest(immediate: true) }
+                .onSubmit { applySuggest(immediate: true) }
         }
     }
 
@@ -274,56 +315,55 @@ struct CategoryEditorSheet: View {
             nameRu = cat.nameRu
             nameEn = cat.nameEn
             kind = cat.kind
-            suppressKeywordsTracking = true
             keywordsText = cat.keywords.joined(separator: ", ")
             lastAutoKeywords = keywordsText
-            suppressKeywordsTracking = false
-            // Preserve saved keywords until the user clears them or they still match auto-fill.
-            keywordsUserEdited = !cat.keywords.isEmpty
             colorHex = cat.colorHex
             symbolName = cat.symbolName
+            symbolLocked = true
         } else {
-            keywordsUserEdited = false
             lastAutoKeywords = ""
+            symbolLocked = false
         }
+        refreshSymbolSuggestions()
         if keywordsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            applyKeywordSuggest(immediate: true)
+            applySuggest(immediate: true)
         }
     }
 
-    private func scheduleKeywordSuggest() {
+    private func scheduleSuggest() {
         suggestTask?.cancel()
         suggestTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 350_000_000)
+            try? await Task.sleep(nanoseconds: 280_000_000)
             guard !Task.isCancelled else { return }
-            applyKeywordSuggest(immediate: false)
+            applySuggest(immediate: false)
         }
     }
 
-    private func applyKeywordSuggest(immediate: Bool) {
+    private func applySuggest(immediate: Bool) {
         if immediate {
             suggestTask?.cancel()
         }
+        refreshSymbolSuggestions()
+
         let csv = KeywordSuggester.suggestCSV(
             nameRu: nameRu,
             nameEn: nameEn,
             symbolName: symbolName,
             kind: kind
         )
-        guard !csv.isEmpty else { return }
+        if !csv.isEmpty, keywordsAreAutoSynced {
+            // Compare-to-lastAuto avoids the SwiftUI onChange race that used to lock keywords.
+            keywordsText = csv
+            lastAutoKeywords = csv
+        }
 
-        let canReplace =
-            !keywordsUserEdited
-            || keywordsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || keywordsText == lastAutoKeywords
+        if !symbolLocked, let first = symbolSuggestions.first {
+            symbolName = first
+        }
+    }
 
-        guard canReplace else { return }
-
-        suppressKeywordsTracking = true
-        keywordsText = csv
-        lastAutoKeywords = csv
-        suppressKeywordsTracking = false
-        keywordsUserEdited = false
+    private func refreshSymbolSuggestions() {
+        symbolSuggestions = SymbolSuggester.suggest(nameRu: nameRu, nameEn: nameEn)
     }
 
     private func save() {
@@ -343,7 +383,7 @@ struct CategoryEditorSheet: View {
                 nameEn: en.isEmpty ? ru : en,
                 kind: kind,
                 keywords: keywords,
-                colorHex: hex.isEmpty ? "0A84FF" : hex,
+                colorHex: hex.isEmpty ? "8E8E93" : hex,
                 symbolName: symbolName.isEmpty ? "circle.fill" : symbolName,
                 isDefault: false,
                 sortOrder: 1000
@@ -354,7 +394,7 @@ struct CategoryEditorSheet: View {
             cat.nameEn = en.isEmpty ? ru : en
             cat.kind = kind
             cat.keywords = keywords
-            cat.colorHex = hex.isEmpty ? "0A84FF" : hex
+            cat.colorHex = hex.isEmpty ? "8E8E93" : hex
             cat.symbolName = symbolName.isEmpty ? "circle.fill" : symbolName
         }
         try? modelContext.save()
