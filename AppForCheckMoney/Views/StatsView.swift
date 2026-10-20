@@ -102,6 +102,16 @@ struct StatsView: View {
                     }
                     Spacer(minLength: 0)
                 }
+
+                if let delta = snapshot.expenseDelta, period != .all {
+                    let priorLabel = period == .week
+                        ? L10n.string("stats.vsLastWeek")
+                        : L10n.string("stats.vsLastMonth")
+                    let sign = delta > 0 ? "+" : ""
+                    Text("\(priorLabel) \(sign)\(MoneyFormat.currency(delta, code: snapshot.displayCurrency))")
+                        .font(.caption)
+                        .foregroundStyle(delta > 0 ? AppTheme.expense : AppTheme.income)
+                }
             }
         }
     }

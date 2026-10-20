@@ -89,4 +89,23 @@ enum StatsPeriod: String, CaseIterable, Identifiable {
             return date >= start && date <= now.addingTimeInterval(86400)
         }
     }
+
+    /// Prior window of the same length (for quiet “vs last …” comparisons). Nil for `.all`.
+    func previousRange(now: Date = .now, calendar: Calendar = .current) -> (start: Date, end: Date)? {
+        switch self {
+        case .all:
+            return nil
+        case .week:
+            guard let thisStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)),
+                  let prevStart = calendar.date(byAdding: .weekOfYear, value: -1, to: thisStart)
+            else { return nil }
+            return (prevStart, thisStart)
+        case .month:
+            let comps = calendar.dateComponents([.year, .month], from: now)
+            guard let thisStart = calendar.date(from: comps),
+                  let prevStart = calendar.date(byAdding: .month, value: -1, to: thisStart)
+            else { return nil }
+            return (prevStart, thisStart)
+        }
+    }
 }

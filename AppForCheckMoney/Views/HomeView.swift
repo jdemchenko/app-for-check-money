@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
+    @Binding var selectedTab: AppTab
+
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \MoneyTransaction.createdAt, order: .reverse)
     private var transactions: [MoneyTransaction]
@@ -46,6 +48,14 @@ struct HomeView: View {
     }
 
     private var balance: Double { income - expense }
+
+    private var todayExpense: Double {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: .now)
+        return transactions
+            .filter { $0.type == .expense && $0.date >= start }
+            .reduce(0) { $0 + $1.amountIn(displayCurrency) }
+    }
 
     private var recent: [MoneyTransaction] {
         Array(transactions.prefix(6))
@@ -163,6 +173,7 @@ struct HomeView: View {
                     .foregroundStyle(.primary)
                     .minimumScaleFactor(0.55)
                     .lineLimit(1)
+                    .contentTransition(.numericText())
 
                 Text(L10n.string("home.monthIn") + " " + displayCurrency.displaySymbol)
                     .font(.caption2)
@@ -187,6 +198,21 @@ struct HomeView: View {
                 }
                 .font(.footnote)
                 .padding(.top, 2)
+
+                // Quiet “today” strip — Spendee/Money Lover glance without extra cards.
+                if todayExpense > 0 {
+                    Divider().opacity(0.2).padding(.vertical, 2)
+                    HStack {
+                        Text(L10n.string("home.today"))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 8)
+                        Text("−" + MoneyFormat.currency(todayExpense, code: displayCurrency))
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(AppTheme.expense)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
             }
         }
     }
@@ -212,7 +238,12 @@ struct HomeView: View {
                     .font(.system(size: 34, weight: .medium))
                     .foregroundStyle(.primary)
                     .contentTransition(.symbolEffect(.replace))
+                    .symbolEffect(.pulse, isActive: speech.isListening)
             }
+            .scaleEffect(isHoldingMic || speech.isListening ? 1.06 : 1.0)
+            .animation(.spring(response: 0.28, dampingFraction: 0.72), value: isHoldingMic)
+            .animation(.spring(response: 0.28, dampingFraction: 0.72), value: speech.isListening)
+            .sensoryFeedback(.impact(flexibility: .medium, intensity: 0.8), trigger: isHoldingMic)
             .frame(minWidth: AppTheme.touchMin, minHeight: AppTheme.touchMin)
             .contentShape(Circle())
             .gesture(holdToTalkGesture)
@@ -285,13 +316,23 @@ struct HomeView: View {
 
     private var recentBlock: some View {
         VStack(alignment: .leading, spacing: 12) {
-            QuietSectionLabel(text: L10n.string("home.recent"))
+            HStack {
+                QuietSectionLabel(text: L10n.string("home.recent"))
+                Spacer(minLength: 8)
+                if !recent.isEmpty {
+                    Button(L10n.string("home.seeAll")) {
+                        selectedTab = .history
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                }
+            }
 
             if recent.isEmpty {
                 GlassPanel(padding: 28, corner: AppTheme.cornerMedium) {
                     ContentUnavailableView(
                         L10n.string("home.empty"),
-                        systemImage: "tray",
+                        systemImage: "mic.fill",
                         description: Text(L10n.string("home.emptyHint"))
                     )
                     .frame(maxWidth: .infinity)

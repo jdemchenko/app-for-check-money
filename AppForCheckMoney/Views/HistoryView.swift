@@ -76,40 +76,41 @@ struct HistoryView: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 22, pinnedViews: []) {
-                            ForEach(grouped, id: \.day) { group in
-                                VStack(alignment: .leading, spacing: 8) {
-                                    QuietSectionLabel(text: MoneyFormat.dayLabel(group.day))
-                                        .padding(.horizontal, 4)
-
-                                    GlassPanel(padding: 6, corner: AppTheme.cornerMedium) {
-                                        LazyVStack(spacing: 0) {
-                                            ForEach(group.items, id: \.id) { tx in
-                                                Button {
-                                                    selected = tx
-                                                } label: {
-                                                    TransactionRowView(
-                                                        transaction: tx,
-                                                        category: categories.first { $0.id == tx.categoryId },
-                                                        displayCurrency: currencySettings.displayCurrency
-                                                    )
-                                                    .padding(.horizontal, 10)
-                                                }
-                                                .buttonStyle(.plain)
-
-                                                if tx.id != group.items.last?.id {
-                                                    Divider().opacity(0.25).padding(.leading, 54)
-                                                }
-                                            }
+                    List {
+                        ForEach(grouped, id: \.day) { group in
+                            Section {
+                                ForEach(group.items, id: \.id) { tx in
+                                    Button {
+                                        selected = tx
+                                    } label: {
+                                        TransactionRowView(
+                                            transaction: tx,
+                                            category: categories.first { $0.id == tx.categoryId },
+                                            displayCurrency: currencySettings.displayCurrency
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .listRowBackground(
+                                        AppTheme.continuousRect(AppTheme.radiusControl)
+                                            .fill(.ultraThinMaterial)
+                                            .padding(.vertical, 2)
+                                    )
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(role: .destructive) {
+                                            modelContext.delete(tx)
+                                            try? modelContext.save()
+                                        } label: {
+                                            Label(L10n.string("common.delete"), systemImage: "trash")
                                         }
                                     }
                                 }
+                            } header: {
+                                dayHeader(group.day, items: group.items)
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
                     }
+                    .listStyle(.insetGrouped)
+                    .scrollContentBackground(.hidden)
                 }
             }
             .liquidScreen()
@@ -137,6 +138,24 @@ struct HistoryView: View {
                     .presentationDragIndicator(.visible)
             }
         }
+    }
+
+    private func dayHeader(_ day: Date, items: [MoneyTransaction]) -> some View {
+        let daySpend = items
+            .filter { $0.type == .expense }
+            .reduce(0.0) { $0 + $1.amountIn(currencySettings.displayCurrency) }
+        return HStack {
+            Text(MoneyFormat.dayLabel(day))
+            Spacer(minLength: 8)
+            if daySpend > 0 {
+                Text("−" + MoneyFormat.currency(daySpend, code: currencySettings.displayCurrency))
+                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(.secondary)
+        .textCase(nil)
     }
 
     private var filtersSheet: some View {

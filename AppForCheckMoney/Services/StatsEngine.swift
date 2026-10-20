@@ -25,6 +25,8 @@ struct StatsSnapshot {
         return (expense / Double(expenseCount) * 100).rounded() / 100
     }
     var top3: [CategorySpend] { Array(categoryBreakdown.prefix(3)) }
+    /// Expense delta vs prior equal window (week/month). Nil when not applicable.
+    let expenseDelta: Double?
 }
 
 enum StatsEngine {
@@ -68,6 +70,14 @@ enum StatsEngine {
             }
             .sorted { $0.amount > $1.amount }
 
+        let expenseDelta: Double? = {
+            guard let range = period.previousRange(now: now) else { return nil }
+            let priorExpense = transactions
+                .filter { $0.type == .expense && $0.date >= range.start && $0.date < range.end }
+                .reduce(0.0) { $0 + $1.amountIn(displayCurrency) }
+            return ((expense - priorExpense) * 100).rounded() / 100
+        }()
+
         return StatsSnapshot(
             period: period,
             displayCurrency: displayCurrency,
@@ -75,7 +85,8 @@ enum StatsEngine {
             expense: expense,
             categoryBreakdown: breakdown,
             transactionCount: filtered.count,
-            expenseCount: expenseCount
+            expenseCount: expenseCount,
+            expenseDelta: expenseDelta
         )
     }
 
