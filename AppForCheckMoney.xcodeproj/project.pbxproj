@@ -50,15 +50,15 @@
 		A30000000000000000000002 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
 		A30000000000000000000003 /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
 		A30000000000000000000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000002 /* Assets.xcassets */; };
-		A10000000000000000000020 /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* TextNormalizer.swift */; };
-		A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* SharedCategoryMatcher.swift */; };
-		A10000000000000000000022 /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* SharedVoiceParser.swift */; };
-		A2000000000000000000000A /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* TextNormalizer.swift */; };
-		A2000000000000000000000B /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* SharedCategoryMatcher.swift */; };
-		A2000000000000000000000C /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* SharedVoiceParser.swift */; };
+		A10000000000000000000020 /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000001 /* TextNormalizer.swift */; };
+		A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* SharedCategoryMatcher.swift */; };
+		A10000000000000000000022 /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000003 /* SharedVoiceParser.swift */; };
+		A2000000000000000000000A /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000001 /* TextNormalizer.swift */; };
+		A2000000000000000000000B /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* SharedCategoryMatcher.swift */; };
+		A2000000000000000000000C /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000003 /* SharedVoiceParser.swift */; };
 		A2000000000000000000000D /* AmountWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* AmountWords.swift */; };
-		A2000000000000000000000E /* WatchDictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* WatchDictateView.swift */; };
-		A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* WatchSpeechRecognizer.swift */; };
+		A2000000000000000000000E /* WatchDictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000004 /* WatchDictateView.swift */; };
+		A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000005 /* WatchSpeechRecognizer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -134,6 +134,11 @@
 		B30000000000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B30000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B30000000000000000000004 /* CheckMoneyWatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CheckMoneyWatchWidgets.entitlements; sourceTree = "<group>"; };
+		B40000000000000000000001 /* TextNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextNormalizer.swift; sourceTree = "<group>"; };
+		B40000000000000000000002 /* SharedCategoryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCategoryMatcher.swift; sourceTree = "<group>"; };
+		B40000000000000000000003 /* SharedVoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedVoiceParser.swift; sourceTree = "<group>"; };
+		B40000000000000000000004 /* WatchDictateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDictateView.swift; sourceTree = "<group>"; };
+		B40000000000000000000005 /* WatchSpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSpeechRecognizer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -262,9 +267,9 @@
 				B10000000000000000000020 /* SyncModels.swift */,
 				B10000000000000000000021 /* LocalSyncStore.swift */,
 				B1000000000000000000001D /* AmountWords.swift */,
-				B10000000000000000000022 /* TextNormalizer.swift */,
-				B10000000000000000000023 /* SharedCategoryMatcher.swift */,
-				B10000000000000000000024 /* SharedVoiceParser.swift */,
+				B40000000000000000000001 /* TextNormalizer.swift */,
+				B40000000000000000000002 /* SharedCategoryMatcher.swift */,
+				B40000000000000000000003 /* SharedVoiceParser.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -275,8 +280,8 @@
 				B20000000000000000000001 /* CheckMoneyWatchApp.swift */,
 				B20000000000000000000002 /* WatchStore.swift */,
 				B20000000000000000000003 /* WatchRootView.swift */,
-				B2000000000000000000000A /* WatchDictateView.swift */,
-				B2000000000000000000000B /* WatchSpeechRecognizer.swift */,
+				B40000000000000000000004 /* WatchDictateView.swift */,
+				B40000000000000000000005 /* WatchSpeechRecognizer.swift */,
 				B20000000000000000000004 /* WatchHomeView.swift */,
 				B20000000000000000000005 /* WatchAddView.swift */,
 				B20000000000000000000006 /* WatchRecentView.swift */,
