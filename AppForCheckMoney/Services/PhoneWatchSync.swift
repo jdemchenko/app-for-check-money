@@ -20,7 +20,11 @@ final class PhoneWatchSync: NSObject, ObservableObject {
 
     func start(modelContext: ModelContext) {
         self.modelContext = modelContext
-        guard WCSession.isSupported() else { return }
+        // Never block UI / SwiftData setup if WatchConnectivity misbehaves.
+        guard WCSession.isSupported() else {
+            pushSnapshot()
+            return
+        }
         let session = WCSession.default
         session.delegate = self
         session.activate()
@@ -34,12 +38,13 @@ final class PhoneWatchSync: NSObject, ObservableObject {
         guard let modelContext else { return }
         do {
             let snapshot = try buildSnapshot(in: modelContext)
-            try AppGroupStore.writeSnapshot(snapshot)
+            try? AppGroupStore.writeSnapshot(snapshot)
             lastPushAt = .now
 
             if let session, session.activationState == .activated {
                 let data = try JSONEncoder.iso8601.encode(snapshot)
-                try session.updateApplicationContext([
+                // updateApplicationContext throws if payload too large / not activated — ignore.
+                try? session.updateApplicationContext([
                     "snapshot": data.base64EncodedString(),
                     "updatedAt": snapshot.updatedAt.timeIntervalSince1970,
                 ])
@@ -58,15 +63,17 @@ final class PhoneWatchSync: NSObject, ObservableObject {
 
         var mergedIds = Set<String>()
         for item in pending {
+            // #Predicate must capture a local constant (not `item.id` directly).
+            let pendingId = item.id
             let existing = FetchDescriptor<MoneyTransaction>(
-                predicate: #Predicate { $0.id == item.id }
+                predicate: #Predicate { $0.id == pendingId }
             )
             if let found = try? modelContext.fetch(existing), !found.isEmpty {
-                mergedIds.insert(item.id)
+                mergedIds.insert(pendingId)
                 continue
             }
             let tx = MoneyTransaction(
-                id: item.id,
+                id: pendingId,
                 amount: item.amount,
                 type: .expense,
                 categoryId: item.categoryId,
@@ -77,7 +84,7 @@ final class PhoneWatchSync: NSObject, ObservableObject {
                 currency: AppCurrency.parse(item.currencyRaw)
             )
             modelContext.insert(tx)
-            mergedIds.insert(item.id)
+            mergedIds.insert(pendingId)
         }
         try? modelContext.save()
         try? AppGroupStore.clearPendingAdds(ids: mergedIds)

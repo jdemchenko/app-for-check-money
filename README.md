@@ -34,9 +34,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 ### Apple Watch (Simulator or physical / paired)
 
-**Install Watch companion (watchOS 26.6)**: Xcode **26+** → same Team → Clean → scheme **AppForCheckMoney** → **iPhone** → Run → open the app once. Then iPhone **Watch** app → **My Watch** → scroll to **Available Apps** (RU: **«Доступные приложения»**) → **CheckMoney** → Install. Look for display name **CheckMoney**, not AppForCheckMoney. Companion lives under **`PlugIns/`**. See agent-store `apple-watch.md` (EN+RU).
-
-**Debug on Watch**: scheme **CheckMoneyWatch** → Watch → Run.
+**Install Watch companion (watchOS 26.6)**: Xcode **26+**, Developer Mode on Watch, same Team → Clean → **AppForCheckMoney → iPhone → Run**. Build log must say `Watch companion OK → …/PlugIns/CheckMoneyWatch.app`. Then Watch app → **Available Apps** / **«Доступные приложения»** → **CheckMoney**. Confirm package: `AppForCheckMoney.app/PlugIns/CheckMoneyWatch.app`. Fallback: scheme **CheckMoneyWatch** → Watch → Run. Details: agent-store `apple-watch.md`.
 
 ### Voice on Simulator
 

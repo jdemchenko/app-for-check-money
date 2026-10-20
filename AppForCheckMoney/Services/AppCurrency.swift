@@ -77,10 +77,14 @@ final class CurrencySettings: ObservableObject {
     /// Legacy key from the global-currency era — migrates to both display + entry once.
     private static let legacyKey = "app.currency.code"
 
+    /// Skip Watch push while restoring defaults in `init`.
+    private var publishesWatchUpdates = false
+
     /// Currency used for Home / Stats totals (converts each tx; does not mutate storage).
     @Published var displayCurrency: AppCurrency {
         didSet {
             UserDefaults.standard.set(displayCurrency.rawValue, forKey: Self.displayKey)
+            guard publishesWatchUpdates else { return }
             PhoneWatchSync.shared.pushSnapshot()
         }
     }
@@ -107,6 +111,7 @@ final class CurrencySettings: ObservableObject {
         } else {
             entryCurrency = .byn
         }
+        publishesWatchUpdates = true
     }
 
     /// Back-compat alias used by older call sites.

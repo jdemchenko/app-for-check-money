@@ -14,7 +14,9 @@ struct AppForCheckMoneyApp: App {
             switch result {
             case .success(let container):
                 SeedData.ensureDefaults(in: container.mainContext)
+                // Defer Watch sync so Home / Speech / tabs come up first.
                 Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 300_000_000)
                     PhoneWatchSync.shared.start(modelContext: container.mainContext)
                 }
             case .failure(let error):
