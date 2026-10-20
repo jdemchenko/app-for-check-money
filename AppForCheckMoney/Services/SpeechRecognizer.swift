@@ -16,16 +16,24 @@ final class SpeechRecognizer: ObservableObject {
     @Published private(set) var transcript: String = ""
     @Published private(set) var isAuthorized = false
 
+    /// Fired once when listening ends with the final transcript (silence timeout, stop, or isFinal).
+    var onUtteranceFinished: ((String) -> Void)?
+
     private var audioEngine: AVAudioEngine?
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
     private var recognizer: SFSpeechRecognizer?
+    private var silenceTask: Task<Void, Never>?
+    private var didEmitFinished = false
+    private let silenceNanoseconds: UInt64 = 1_600_000_000
 
     var isAvailable: Bool {
         let auth = SFSpeechRecognizer.authorizationStatus()
         guard auth != .denied, auth != .restricted else { return false }
         return recognizer?.isAvailable == true
     }
+
+    var isListening: Bool { status == .listening }
 
     init() {
         let locale = Locale.current
@@ -67,8 +75,13 @@ final class SpeechRecognizer: ObservableObject {
             return
         }
 
-        stop()
+        cancelSilenceWatch()
+        stopEngineOnly()
+        task?.cancel()
+        task = nil
+        request = nil
         transcript = ""
+        didEmitFinished = false
 
         let audioEngine = AVAudioEngine()
         let request = SFSpeechAudioBufferRecognitionRequest()
@@ -107,12 +120,14 @@ final class SpeechRecognizer: ObservableObject {
                 guard let self else { return }
                 if let result {
                     self.transcript = result.bestTranscription.formattedString
+                    if !self.transcript.isEmpty {
+                        self.scheduleSilenceFinish()
+                    }
                     if result.isFinal {
-                        self.stop()
+                        self.finishUtterance()
                     }
                 }
                 if let error {
-                    // Cancellation is expected when stopping.
                     let ns = error as NSError
                     if ns.domain == "kAFAssistantErrorDomain", ns.code == 216 {
                         return
@@ -120,25 +135,52 @@ final class SpeechRecognizer: ObservableObject {
                     if self.status == .listening {
                         self.status = .failed(error.localizedDescription)
                     }
+                    self.cancelSilenceWatch()
                     self.stopEngineOnly()
                 }
             }
         }
     }
 
+    /// User tapped stop — end and emit whatever we have.
     func stop() {
+        finishUtterance()
+    }
+
+    func clearTranscript() {
+        transcript = ""
+    }
+
+    private func scheduleSilenceFinish() {
+        cancelSilenceWatch()
+        silenceTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: silenceNanoseconds)
+            guard !Task.isCancelled else { return }
+            guard status == .listening else { return }
+            finishUtterance()
+        }
+    }
+
+    private func cancelSilenceWatch() {
+        silenceTask?.cancel()
+        silenceTask = nil
+    }
+
+    private func finishUtterance() {
+        cancelSilenceWatch()
         request?.endAudio()
         stopEngineOnly()
         task?.cancel()
         task = nil
         request = nil
+
+        let text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         if status == .listening {
             status = .idle
         }
-    }
-
-    func clearTranscript() {
-        transcript = ""
+        guard !didEmitFinished else { return }
+        didEmitFinished = true
+        onUtteranceFinished?(text)
     }
 
     private func stopEngineOnly() {

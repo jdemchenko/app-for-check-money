@@ -11,6 +11,11 @@
 "home.recent" = "Recent";
 "home.empty" = "No transactions yet";
 "home.emptyHint" = "Add a manual or voice entry to get started.";
+"home.quickEntry" = "Quick voice entry";
+"home.quickEntryHint" = "Tap, speak amount and category — saves automatically";
+"home.quickEntryStop" = "Tap to stop";
+"home.quickEntryEmpty" = "Didn’t catch that. Try again.";
+"home.quickEntryNoAmount" = "Couldn’t hear an amount. Try again or use Add.";
 
 "add.mode" = "Mode";
 "add.manual" = "Manual";

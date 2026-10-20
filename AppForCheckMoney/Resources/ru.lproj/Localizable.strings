@@ -11,6 +11,11 @@
 "home.recent" = "Недавние";
 "home.empty" = "Пока нет операций";
 "home.emptyHint" = "Добавьте запись вручную или голосом.";
+"home.quickEntry" = "Быстрый голос";
+"home.quickEntryHint" = "Нажмите и скажите сумму и категорию — сохранится само";
+"home.quickEntryStop" = "Нажмите, чтобы остановить";
+"home.quickEntryEmpty" = "Не расслышала. Попробуйте ещё раз.";
+"home.quickEntryNoAmount" = "Не услышала сумму. Повторите или добавьте вручную.";
 
 "add.mode" = "Режим";
 "add.manual" = "Вручную";

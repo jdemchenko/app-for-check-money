@@ -6,21 +6,88 @@ struct VoiceDraft: Equatable {
     var categoryId: String?
     var note: String
     var rawText: String
+    /// True when a category keyword actually matched (not a blind fallback).
+    var categoryMatchedByKeyword: Bool
+
+    /// Happy-path autosave: amount + keyword category.
+    var isAutosaveReady: Bool {
+        guard let amount, amount > 0 else { return false }
+        return categoryMatchedByKeyword && categoryId != nil
+    }
 }
 
 enum VoiceParser {
+    /// Unicode-safe token boundary (JS `\b` breaks on Cyrillic).
+    private static let wb = #"(?<![0-9A-Za-zА-Яа-яЁё])"#
+    private static let wa = #"(?![0-9A-Za-zА-Яа-яЁё])"#
+
     private static let expenseCues = try! NSRegularExpression(
-        pattern: #"\b(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход)\b"#,
+        pattern: wb + #"(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход)"# + wa,
         options: [.caseInsensitive]
     )
     private static let incomeCues = try! NSRegularExpression(
-        pattern: #"\b(got|received|earned|salary|income|получил|получила|зарплата|доход|заработал|заработала)\b"#,
+        pattern: wb + #"(got|received|earned|salary|income|получил|получила|зарплат[аыуеой]|доход|заработал|заработала)"# + wa,
         options: [.caseInsensitive]
     )
 
+    private static let currencyWords = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb + #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"# + wa,
+        options: []
+    )
+
+    private static let leftoverPrepositions = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb + #"(на|за|для|про|из|от|по|и|a|an|the|for|on|at|to|of)"# + wa,
+        options: []
+    )
+
+    private static let noteCommands: [String] = [
+        #"(?i)в\s+скобочк(?:ах|и)\s+напиши\s*[,:\-]?\s*(.+)$"#,
+        #"(?i)в\s+скобках\s+напиши\s*[,:\-]?\s*(.+)$"#,
+        #"(?i)в\s+скобочк(?:ах|и)\s*[,:\-]?\s*(.+)$"#,
+        #"(?i)в\s+скобках\s*[,:\-]?\s*(.+)$"#,
+        #"(?i)(?:заметка|комментарий|note|comment)\s*[,:\-]?\s*(.+)$"#,
+        #"(?i)напиши\s*[,:\-]?\s*(.+)$"#,
+        #"(?i)write\s+(?:down\s+)?(.+)$"#,
+        #"(?i)in\s+parentheses\s*[,:\-]?\s*(.+)$"#,
+    ]
+
+    private static let fillerWords = try! NSRegularExpression(
+        pattern: #"(?i)\b(пожалуйста|please|точка|point|ээ+|эм+|hmm+|uh+|um+)\b"#,
+        options: []
+    )
+
+    /// Category-signal words that must never become a stored note by themselves.
+    private static let noteSuppress: Set<String> = Set([
+        // Food signals (not venue details)
+        "еда", "food", "продукт", "продукты", "grocery", "groceries", "кофе",
+        "coffee", "обед", "lunch", "ужин", "dinner", "завтрак", "breakfast",
+        "пицца", "pizza", "бургер", "burger", "снек", "snack", "ресторан",
+        "restaurant", "кафе", "cafe", "столовая", "супермаркет", "supermarket",
+        // Transport / fuel signals
+        "транспорт", "transport", "азс", "azs", "заправка", "бензин", "топливо",
+        "gas", "fuel", "petrol", "diesel", "дизель", "gas station", "petrol station",
+        "такси", "taxi", "метро", "metro", "subway", "автобус", "bus", "парковка",
+        "parking", "station", "uber", "яндекс", "yandex", "поезд", "train",
+        // Other category labels / signals
+        "жильё", "жилье", "housing", "аренда", "rent",
+        "покупки", "shopping",
+        "здоровье", "health", "аптека", "pharmacy",
+        "развлечения", "entertainment",
+        "другое", "other", "разное", "misc",
+        "зарплата", "зарплату", "зарплаты", "salary", "зп", "оклад", "wage",
+        "paycheck", "аванс",
+        "фриланс", "freelance",
+        "подарок", "подарки", "gift", "gifts",
+        "доход", "income", "перевод", "transfer", "возврат", "refund",
+        "рублей", "рубль", "рубля", "ruble", "rubles", "dollar", "dollars",
+        "usd", "eur", "euro",
+        "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
+        "got", "received", "spent", "paid",
+        // NOTE: keep detail words like «кинотеатр» / cinema / movie OUT of suppress
+    ].map { TextNormalizer.normalize($0) })
+
     static func parseAmount(from text: String) -> Double? {
         var cleaned = text
-        // 80 000 → 80000
         cleaned = cleaned.replacingOccurrences(
             of: #"(\d)\s+(\d{3})\b"#,
             with: "$1$2",
@@ -28,11 +95,18 @@ enum VoiceParser {
         )
         cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
 
-        let pattern = #"(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|\$|usd|eur|€)?\s*(\d+(?:\.\d{1,2})?)"#
-        if let match = firstCapture(pattern: pattern, in: cleaned),
-           let value = Double(match),
-           value > 0 {
-            return (value * 100).rounded() / 100
+        let patterns = [
+            #"(?i)(\d+(?:[.,]\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|dollars?|\$|usd|eur|€)"#,
+            #"(?i)(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|dollars?|\$|usd|eur|€)\s*(\d+(?:[.,]\d{1,2})?)"#,
+            #"(\d+(?:[.,]\d{1,2})?)"#,
+        ]
+        for pattern in patterns {
+            if let match = firstCapture(pattern: pattern, in: cleaned) {
+                let normalized = match.replacingOccurrences(of: ",", with: ".")
+                if let value = Double(normalized), value > 0 {
+                    return (value * 100).rounded() / 100
+                }
+            }
         }
         return nil
     }
@@ -55,11 +129,18 @@ enum VoiceParser {
         let amount = parseAmount(from: rawText)
         var type = inferType(from: rawText)
 
-        let matched = CategoryMatcher.autoAssign(
+        var matched = CategoryMatcher.autoAssign(
             text: rawText,
             categories: categories,
             preferredType: type
         )
+        if matched == nil {
+            matched = CategoryMatcher.autoAssign(
+                text: rawText,
+                categories: categories,
+                preferredType: nil
+            )
+        }
 
         if type == nil, let matched {
             type = matched.kind == .both ? .expense : (
@@ -68,26 +149,211 @@ enum VoiceParser {
         }
         if type == nil { type = .expense }
 
-        let category = matched
-            ?? CategoryMatcher.autoAssign(text: rawText, categories: categories, preferredType: type)
-            ?? CategoryMatcher.categories(for: type!, in: categories).first
+        // Re-score with final type preference, then unrestricted fallback.
+        matched = CategoryMatcher.autoAssign(
+            text: rawText,
+            categories: categories,
+            preferredType: type
+        ) ?? CategoryMatcher.autoAssign(
+            text: rawText,
+            categories: categories,
+            preferredType: nil
+        )
 
-        let note = rawText
-            .replacingOccurrences(of: #"\d[\d\s.,]*"#, with: " ", options: .regularExpression)
-            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let categoryMatchedByKeyword = matched != nil
+        let categoryId = matched?.id
+            ?? CategoryMatcher.categories(for: type!, in: categories).first?.id
+
+        let note = extractNote(
+            from: rawText,
+            matchedCategory: matched,
+            allCategories: categories
+        )
 
         return VoiceDraft(
             amount: amount,
             type: type,
-            categoryId: category?.id,
+            categoryId: categoryId,
             note: note,
-            rawText: rawText
+            rawText: rawText,
+            categoryMatchedByKeyword: categoryMatchedByKeyword
         )
     }
 
+    // MARK: - Note extraction
+
+    static func extractNote(
+        from rawText: String,
+        matchedCategory: MoneyCategory?,
+        allCategories: [MoneyCategory]
+    ) -> String {
+        // 1) Explicit note command → trailing detail only
+        if let commanded = noteFromCommand(in: rawText) {
+            return finalizeNote(commanded, matchedCategory: matchedCategory)
+        }
+
+        // 2) Comma / dash tail: if prefix alone still matches same category, tail is the note
+        if let (prefix, tail) = splitTrailingDetail(rawText),
+           let matchedCategory {
+            let prefixMatch = CategoryMatcher.autoAssign(
+                text: prefix,
+                categories: allCategories,
+                preferredType: matchedCategory.kind == .both ? nil : (
+                    matchedCategory.kind == .income ? .income : .expense
+                )
+            )
+            if prefixMatch?.id == matchedCategory.id {
+                return finalizeNote(tail, matchedCategory: matchedCategory)
+            }
+        }
+
+        // 3) Remainder after stripping amount / currency / cues / names / suppress signals
+        var working = rawText
+        for pattern in noteCommands {
+            working = working.replacingOccurrences(of: pattern, with: " ", options: .regularExpression)
+        }
+        working = stripAmountsAndCurrency(working)
+        working = stripCues(working)
+        if let matchedCategory {
+            working = stripKeyword(matchedCategory.nameRu, from: working)
+            working = stripKeyword(matchedCategory.nameEn, from: working)
+        }
+        working = stripSuppressTokens(working)
+        working = stripFiller(working)
+        return finalizeNote(working, matchedCategory: matchedCategory)
+    }
+
+    private static func noteFromCommand(in text: String) -> String? {
+        for pattern in noteCommands {
+            if let capture = firstCapture(pattern: pattern, in: text) {
+                let cleaned = cleanNoteFragment(capture)
+                if !cleaned.isEmpty { return cleaned }
+            }
+        }
+        return nil
+    }
+
+    private static func splitTrailingDetail(_ text: String) -> (prefix: String, tail: String)? {
+        let separators = [",", " — ", " – ", " - "]
+        var best: (prefix: String, tail: String)?
+        for sep in separators {
+            guard let range = text.range(of: sep, options: .backwards) else { continue }
+            let prefix = String(text[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let tail = String(text[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !prefix.isEmpty, !tail.isEmpty else { continue }
+            // Prefer the rightmost short-ish separator split
+            best = (prefix, tail)
+            break
+        }
+        return best
+    }
+
+    private static func finalizeNote(_ text: String, matchedCategory: MoneyCategory?) -> String {
+        var s = stripAmountsAndCurrency(text)
+        s = stripCues(s)
+        s = stripFiller(s)
+        if let matchedCategory {
+            s = stripKeyword(matchedCategory.nameRu, from: s)
+            s = stripKeyword(matchedCategory.nameEn, from: s)
+            for keyword in matchedCategory.keywords.sorted(by: { $0.count > $1.count }) {
+                // Keep detail-like keywords (кинотеатр) unless they're in noteSuppress
+                let norm = TextNormalizer.normalize(keyword)
+                if noteSuppress.contains(norm) {
+                    s = stripKeyword(keyword, from: s)
+                }
+            }
+        }
+        s = leftoverPrepositions.stringByReplacingMatches(
+            in: s,
+            options: [],
+            range: NSRange(s.startIndex..., in: s),
+            withTemplate: " "
+        )
+        s = stripSuppressTokens(s)
+        s = cleanNoteFragment(s)
+        let normalized = TextNormalizer.normalize(s)
+        if normalized.isEmpty { return "" }
+        // Drop pure category-signal notes («заправка», «АЗС», «food»)
+        if noteSuppress.contains(normalized) { return "" }
+        let tokens = normalized.split(separator: " ").map(String.init)
+        if !tokens.isEmpty, tokens.allSatisfy({ noteSuppress.contains($0) }) {
+            return ""
+        }
+        return s
+    }
+
+    private static func stripAmountsAndCurrency(_ text: String) -> String {
+        var working = text.replacingOccurrences(
+            of: #"\d[\d\s.,]*"#,
+            with: " ",
+            options: .regularExpression
+        )
+        working = currencyWords.stringByReplacingMatches(
+            in: working,
+            options: [],
+            range: NSRange(working.startIndex..., in: working),
+            withTemplate: " "
+        )
+        return working
+    }
+
+    private static func stripCues(_ text: String) -> String {
+        var working = expenseCues.stringByReplacingMatches(
+            in: text,
+            options: [],
+            range: NSRange(text.startIndex..., in: text),
+            withTemplate: " "
+        )
+        working = incomeCues.stringByReplacingMatches(
+            in: working,
+            options: [],
+            range: NSRange(working.startIndex..., in: working),
+            withTemplate: " "
+        )
+        return working
+    }
+
+    private static func stripFiller(_ text: String) -> String {
+        fillerWords.stringByReplacingMatches(
+            in: text,
+            options: [],
+            range: NSRange(text.startIndex..., in: text),
+            withTemplate: " "
+        )
+    }
+
+    private static func stripSuppressTokens(_ text: String) -> String {
+        var working = text
+        for token in noteSuppress.sorted(by: { $0.count > $1.count }) {
+            working = stripKeyword(token, from: working)
+        }
+        return working
+    }
+
+    private static func stripKeyword(_ keyword: String, from text: String) -> String {
+        let k = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !k.isEmpty else { return text }
+        let escaped = NSRegularExpression.escapedPattern(for: k)
+        let flexible = escaped.replacingOccurrences(of: #"\s+"#, with: #"\s+"#, options: .regularExpression)
+        let pattern = #"(?i)(?<![0-9A-Za-zА-Яа-яЁё])\#(flexible)(?![0-9A-Za-zА-Яа-яЁё])"#
+        return text.replacingOccurrences(of: pattern, with: " ", options: .regularExpression)
+    }
+
+    private static func cleanNoteFragment(_ text: String) -> String {
+        var s = text
+        s = s.replacingOccurrences(of: #"[«»\"“”]"#, with: "", options: .regularExpression)
+        s = s.replacingOccurrences(of: #"^[,\.\!\?;:\-\s]+"#, with: "", options: .regularExpression)
+        s = s.replacingOccurrences(of: #"[,.\s]+$"#, with: "", options: .regularExpression)
+        s = s.replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+        s = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        if s.count <= 1, s.unicodeScalars.allSatisfy({ CharacterSet.punctuationCharacters.contains($0) }) {
+            return ""
+        }
+        return s
+    }
+
     private static func firstCapture(pattern: String, in text: String) -> String? {
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
             return nil
         }
         let range = NSRange(text.startIndex..., in: text)
@@ -98,3 +364,57 @@ enum VoiceParser {
         return String(text[swiftRange])
     }
 }
+
+#if DEBUG
+extension VoiceParser {
+    static func debugSelfCheck(categories: [MoneyCategory]) -> [String] {
+        var failures: [String] = []
+
+        func check(_ label: String, _ raw: String, amount: Double, categoryId: String, note: String) {
+            let d = parse(rawText: raw, categories: categories)
+            if d.amount != amount {
+                failures.append("\(label) amount: got \(String(describing: d.amount)) expected \(amount)")
+            }
+            if d.categoryId != categoryId {
+                failures.append("\(label) category: got \(String(describing: d.categoryId)) expected \(categoryId)")
+            }
+            if TextNormalizer.normalize(d.note) != TextNormalizer.normalize(note) {
+                failures.append("\(label) note: got «\(d.note)» expected «\(note)»")
+            }
+            let banned = ["рублей", "dollars", "развлечения", "точка"]
+            for b in banned where TextNormalizer.normalize(d.note).contains(TextNormalizer.normalize(b))
+                && TextNormalizer.normalize(note) != TextNormalizer.normalize(b) {
+                failures.append("\(label) note contains filler «\(b)»")
+            }
+        }
+
+        check(
+            "ru-ent-cmd",
+            "150 рублей развлечения, в скобочках напиши кинотеатр",
+            amount: 150, categoryId: "entertainment", note: "кинотеатр"
+        )
+        check(
+            "ru-ent-short",
+            "150 рублей развлечения, кинотеатр",
+            amount: 150, categoryId: "entertainment", note: "кинотеатр"
+        )
+        check(
+            "en-food",
+            "20 dollars food",
+            amount: 20, categoryId: "food", note: ""
+        )
+        check(
+            "ru-gas",
+            "200 рублей АЗС, заправка",
+            amount: 200, categoryId: "transport", note: ""
+        )
+        check(
+            "en-gas",
+            "200 dollars gas station",
+            amount: 200, categoryId: "transport", note: ""
+        )
+
+        return failures
+    }
+}
+#endif

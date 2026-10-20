@@ -7,10 +7,9 @@ Native **SwiftUI** personal money tracker for iPhone and iPad — expenses and i
 ## Features
 
 - **Manual entry** — amount, expense/income, category, optional note, date
-- **Voice entry** — `SFSpeechRecognizer` + microphone → editable draft → confirm to save  
-  Graceful fallback when speech/mic is unavailable or permission is denied
-- **Categories** — seeded defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords with **manual override**
-- **Screens** — Home (month balance + recent), Add (manual / voice), Categories, History (search + filters)
+- **Voice entry** — `SFSpeechRecognizer` + microphone; Home **quick entry** autosaves on a confident parse (amount + category). Low-confidence cases get a one-tap confirm with manual category override. Full Add → Voice flow remains for manual editing.
+- **Categories** — seeded defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords (RU/EN synonyms, АЗС/заправка/gas station, …) with **manual override**
+- **Screens** — Home (month balance + recent + quick mic), Add (manual / voice), Categories, History (search + filters)
 - **System appearance** — follows Light/Dark Mode (no forced theme)
 - **Localization** — English + Russian (`en` / `ru` `.lproj`); UI language follows the device locale
 
@@ -30,7 +29,15 @@ Native **SwiftUI** personal money tracker for iPhone and iPad — expenses and i
 
 ### Voice on Simulator
 
-Speech recognition often needs a **physical device** (or a Simulator with a working mic input). If voice is unavailable, the Add → Voice tab shows a clear fallback and manual entry still works.
+Speech recognition often needs a **physical device** (or a Simulator with a working mic input). If voice is unavailable, Home quick entry / Add → Voice show a clear fallback and manual entry still works.
+
+### Logic self-test (no Xcode)
+
+Parse + category matcher examples (RU/EN) can be checked on any machine with Node:
+
+```bash
+node scripts/voice-selftest.mjs
+```
 
 ## Project structure
 
