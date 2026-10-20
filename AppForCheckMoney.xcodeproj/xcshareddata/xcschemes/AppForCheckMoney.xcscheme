@@ -3,11 +3,12 @@
    LastUpgradeVersion = "2600"
    version = "1.7">
    <!--
-      iPhone scheme ONLY. Runnable = AppForCheckMoney (UIDeviceFamily 1,2).
-      Watch is built/embedded via target dependency + Embed Watch Content, but is NOT
-      a LaunchAction runnable — otherwise Xcode installs the Watch .app (family 4) on iPhone
-      (IXUserPresentableErrorDomain 6 / «не создано для этого устройства»).
-      For Vanya’s Apple Watch use scheme CheckMoneyWatch.
+      PRIMARY scheme — one product: iPhone + Watch companion (связка).
+      Run destination = iPhone only. CheckMoneyWatch is built + embedded under PlugIns/
+      (buildForRunning YES) but is NOT a LaunchAction runnable — launching the Watch .app
+      on iPhone causes IXUserPresentableErrorDomain Code 6 (device family 4 vs 1).
+      After Run: Build log must show «Watch companion OK»; Watch installs via Available Apps
+      / auto-install. CheckMoneyWatch scheme = debug fallback only.
    -->
    <BuildAction
       parallelizeBuildables = "YES"
@@ -29,7 +30,7 @@
          </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "NO"
+            buildForRunning = "YES"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">

@@ -111,7 +111,7 @@ final class PhoneWatchSync: NSObject, ObservableObject {
             if !loggedMissingWatchApp {
                 loggedMissingWatchApp = true
                 #if DEBUG
-                print("PhoneWatchSync: Watch companion not installed — skipping WCSession. Run CheckMoneyWatch → Watch, or install from Available Apps after PlugIns embed.")
+                print("PhoneWatchSync: Watch companion not on Watch yet — skipping WCSession. After AppForCheckMoney→iPhone Run (Build: Watch companion OK), open Watch app → Available Apps → CheckMoney.")
                 #endif
             }
             return

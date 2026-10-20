@@ -3,8 +3,11 @@
    LastUpgradeVersion = "2600"
    version = "1.7">
    <!--
-      Watch scheme ONLY. Runnable = CheckMoneyWatch (UIDeviceFamily 4).
-      iPhone host is a dependency (built/installed as companion), not the launch product.
+      DEBUG FALLBACK ONLY — not the normal user path.
+      Product is still the same CheckMoney companion (not a second App Store app).
+      Prefer: AppForCheckMoney → iPhone → Run (embeds PlugIns companion → Available Apps).
+      Use this scheme only if Available Apps stays empty after a clean iPhone Run with
+      Build log «Watch companion OK».
    -->
    <BuildAction
       parallelizeBuildables = "YES"
@@ -26,7 +29,7 @@
          </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "NO"
+            buildForRunning = "YES"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">
