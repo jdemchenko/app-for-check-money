@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1600"
+   LastUpgradeVersion = "2600"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -20,9 +20,10 @@
                ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <!-- Always build Watch when running to iPhone so PlugIns embed is present for Available Apps. -->
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "NO"
+            buildForRunning = "YES"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">
