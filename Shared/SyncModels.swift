@@ -1,6 +1,7 @@
 import Foundation
 
-/// App Group id shared by iPhone + Watch (enable App Groups capability in Xcode Signing).
+/// Optional App Group id (enable in Xcode Signing on a paid Team). Without it,
+/// `AppGroupStore` falls back to Documents and sync relies on WatchConnectivity.
 enum CheckMoneyAppGroup {
     static let id = "group.com.jdemchenko.AppForCheckMoney"
     static let snapshotFileName = "watch-snapshot.json"

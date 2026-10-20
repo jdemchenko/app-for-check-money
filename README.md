@@ -29,16 +29,16 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 1. Clone this repo on a Mac.
 2. Open `AppForCheckMoney.xcodeproj` in Xcode.
 3. Select the **AppForCheckMoney** scheme and an iOS 18+ Simulator (or your device).
-4. Set your **Team** under Signing & Capabilities if deploying to a device (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). Enable the **App Groups** capability (`group.com.jdemchenko.AppForCheckMoney`) on iPhone, Watch, and Widgets if Xcode prompts.
+4. Set the **same Team** under Signing & Capabilities on **AppForCheckMoney**, **CheckMoneyWatch**, and **CheckMoneyWatchWidgets** (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). App Groups are optional (paid Team); leave them off on a Personal Team so Watch install succeeds.
 5. Press **Run** (⌘R).
 
 ### Apple Watch (Simulator or physical / paired)
 
-**Install to a paired Watch** (e.g. “Vanya’s Apple Watch”): scheme **AppForCheckMoney**, destination = the **iPhone** (not the Watch) → Run. The Watch app installs via Embed Watch Content. Selecting the Watch as destination for the iPhone scheme triggers Xcode’s “change Base SDK / Supported Platforms” error — that is expected; use the steps below instead.
+**Install to a paired Watch**: Clean Build Folder → scheme **AppForCheckMoney** → destination = **iPhone** (not the Watch) → Run. Embed Watch Content installs the companion. Same Team on all three targets is required. If the Watch app says “could not be installed”, delete the app from iPhone + Watch, trust the developer profile, free Watch storage, and run again (see agent-store `apple-watch.md` troubleshooting).
 
-**Run / debug on Watch**: scheme **CheckMoneyWatch**, destination = Watch Simulator or the physical Watch → Run. Set the same **Team** on Watch + Widgets targets. Launch the iPhone app once so a snapshot is pushed.
+**Run / debug on Watch**: scheme **CheckMoneyWatch** → Watch destination → Run.
 
-Optional: edit the Watch face and add the **Today spend** complication. Voice on Watch uses **keyboard dictation** (mic on text fields), not the full iPhone `SFSpeechRecognizer` pipeline.
+Optional: Watch face → **Today spend** complication. Watch voice = keyboard dictation only.
 
 ### Voice on Simulator
 
