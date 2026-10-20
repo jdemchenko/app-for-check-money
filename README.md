@@ -11,9 +11,10 @@ Native **SwiftUI** personal money tracker for iPhone and iPad — expenses and i
 - **Categories** — seeded defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords (RU/EN synonyms, АЗС/заправка/gas station, …) with **manual override**; new/edited categories **auto-suggest marker keywords** from the name (editable before save)
 - **Screens** — Home (balance + floating glass mic + recent), History, Categories; manual Add as a sheet from Home
 - **UI** — Liquid Glass–inspired materials (`.ultraThinMaterial` / specular rims / soft depth), minimal chrome, system Light/Dark
-- **Currency** — default **BYN (Br)**; Settings → BYN / RUB / USD / EUR. Voice «руб» is a currency word only (no FX); display uses Br by default
-- **App icon** — primary `AppIcon` with Default / Dark / Tinted Appearances (Home Screen → Edit → Customize); no in-app icon picker
-- **System appearance** — follows Light/Dark Mode (no forced theme); restrained neutral UI
+- **Currency** — each transaction stores its own currency; Settings has **display** (totals via approximate BYN-pivot rates) and **entry default** (new ops). Changing Settings never rewrites past amounts. Voice «руб» → entry default (BYN); dollars/euros stamp USD/EUR.
+- **Stats** — week / month / all overview + spend by category (converted to display currency)
+- **App icon** — minimal checkmark glass; Default / Dark / Tinted Home Screen Appearances; no in-app picker
+- **System appearance** — Light/Dark; restrained ADA-inspired materials
 - **Localization** — English + Russian (`en` / `ru` `.lproj`); UI language follows the device locale
 
 ## Requirements
@@ -41,6 +42,7 @@ Parse + category matcher examples (RU/EN) can be checked on any machine with Nod
 ```bash
 node scripts/voice-selftest.mjs
 node scripts/keyword-suggest-selftest.mjs
+node scripts/currency-selftest.mjs
 ```
 
 ## Project structure

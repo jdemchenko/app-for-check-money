@@ -15,6 +15,7 @@ struct HistoryView: View {
     @State private var toDate: Date?
     @State private var showFilters = false
     @State private var selected: MoneyTransaction?
+    @ObservedObject private var currencySettings = CurrencySettings.shared
 
     enum TypeFilter: String, CaseIterable, Identifiable {
         case all, expense, income
@@ -39,7 +40,7 @@ struct HistoryView: View {
             }
             if !q.isEmpty {
                 let cat = categories.first { $0.id == tx.categoryId }
-                let hay = "\(tx.note ?? "") \(cat?.displayName() ?? "") \(tx.amount)".lowercased()
+                let hay = "\(tx.note ?? "") \(cat?.displayName() ?? "") \(tx.amount) \(tx.currency.code) \(tx.currency.displaySymbol)".lowercased()
                 if !hay.contains(q) { return false }
             }
             return true
@@ -90,7 +91,8 @@ struct HistoryView: View {
                                                 } label: {
                                                     TransactionRowView(
                                                         transaction: tx,
-                                                        category: categories.first { $0.id == tx.categoryId }
+                                                        category: categories.first { $0.id == tx.categoryId },
+                                                        displayCurrency: currencySettings.displayCurrency
                                                     )
                                                     .padding(.horizontal, 10)
                                                 }
@@ -230,10 +232,16 @@ struct HistoryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     GlassPanel {
-                        TransactionRowView(
-                            transaction: tx,
-                            category: categories.first { $0.id == tx.categoryId }
-                        )
+                        VStack(alignment: .leading, spacing: 8) {
+                            TransactionRowView(
+                                transaction: tx,
+                                category: categories.first { $0.id == tx.categoryId },
+                                displayCurrency: currencySettings.displayCurrency
+                            )
+                            Text(L10n.string("field.currency") + ": " + tx.currency.code)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     if let note = tx.note, !note.isEmpty {
                         GlassPanel {

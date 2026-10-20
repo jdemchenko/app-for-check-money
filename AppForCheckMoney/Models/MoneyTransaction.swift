@@ -13,6 +13,9 @@ final class MoneyTransaction {
     var createdAt: Date
     /// "manual" | "voice"
     var sourceRaw: String
+    /// ISO-ish code stored per transaction: byn | rub | usd | eur.
+    /// Missing/empty on legacy rows → treated as BYN (never rewritten in bulk).
+    var currencyRaw: String = AppCurrency.byn.rawValue
 
     init(
         id: String = UUID().uuidString,
@@ -22,7 +25,8 @@ final class MoneyTransaction {
         note: String? = nil,
         date: Date = .now,
         createdAt: Date = .now,
-        source: EntrySource = .manual
+        source: EntrySource = .manual,
+        currency: AppCurrency = .byn
     ) {
         self.id = id
         self.amount = amount
@@ -32,6 +36,7 @@ final class MoneyTransaction {
         self.date = date
         self.createdAt = createdAt
         self.sourceRaw = source.rawValue
+        self.currencyRaw = currency.rawValue
     }
 
     var type: TransactionType {
@@ -44,8 +49,22 @@ final class MoneyTransaction {
         set { sourceRaw = newValue.rawValue }
     }
 
+    var currency: AppCurrency {
+        get { AppCurrency.parse(currencyRaw) }
+        set { currencyRaw = newValue.rawValue }
+    }
+
     var signedAmount: Double {
         type == .income ? amount : -amount
+    }
+
+    /// Amount converted into a display currency (for totals only).
+    func amountIn(_ display: AppCurrency) -> Double {
+        CurrencyConverter.convert(amount, from: currency, to: display)
+    }
+
+    func signedAmountIn(_ display: AppCurrency) -> Double {
+        type == .income ? amountIn(display) : -amountIn(display)
     }
 }
 

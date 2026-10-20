@@ -267,6 +267,14 @@ function extractNote(rawText, matched) {
   return finalizeNote(working, matched);
 }
 
+function inferCurrency(text) {
+  if (new RegExp(`${WB}(dollars?|usd|доллар(?:ов|а|ы)?|\\$)${WA}`, "i").test(text)) return "usd";
+  if (new RegExp(`${WB}(euros?|eur|евро|€)${WA}`, "i").test(text)) return "eur";
+  if (new RegExp(`${WB}(byn|br|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?)${WA}`, "i").test(text)) return "byn";
+  // «руб» → entry default (null) — never force RUB
+  return null;
+}
+
 function parse(rawText) {
   const amount = parseAmount(rawText);
   let type = inferType(rawText);
@@ -282,12 +290,14 @@ function parse(rawText) {
     matched?.id ??
     CATEGORIES.find((c) => c.kind === type || c.kind === "both")?.id;
   const note = extractNote(rawText, matched);
+  const currency = inferCurrency(rawText);
   return {
     amount,
     type,
     categoryId,
     note,
     categoryMatchedByKeyword,
+    currency,
     isAutosaveReady: Boolean(amount && amount > 0 && categoryMatchedByKeyword && categoryId),
   };
 }
@@ -310,7 +320,7 @@ const cases = [
   {
     name: "2 EN food",
     input: "20 dollars food",
-    expect: { amount: 20, categoryId: "food", note: "", autosave: true },
+    expect: { amount: 20, categoryId: "food", note: "", autosave: true, currency: "usd" },
   },
   {
     name: "3 RU АЗС / заправка → transport",
@@ -349,9 +359,9 @@ const cases = [
     expect: { amount: 80000, categoryId: "salary", note: "", autosave: true, type: "income" },
   },
   {
-    name: "7 RU beauty / косметика (руб → amount only)",
+    name: "7 RU beauty / косметика (руб → entry default)",
     input: "17 руб косметика",
-    expect: { amount: 17, categoryId: "beauty", note: "", autosave: true },
+    expect: { amount: 17, categoryId: "beauty", note: "", autosave: true, currency: null },
   },
 ];
 
@@ -387,6 +397,9 @@ for (const c of cases) {
   }
   if (c.expect.autosave !== undefined && draft.isAutosaveReady !== c.expect.autosave) {
     bugs.push(`autosave: got ${draft.isAutosaveReady} expected ${c.expect.autosave}`);
+  }
+  if (Object.prototype.hasOwnProperty.call(c.expect, "currency") && draft.currency !== c.expect.currency) {
+    bugs.push(`currency: got ${draft.currency} expected ${c.expect.currency}`);
   }
 
   if (c.overrideTo) {

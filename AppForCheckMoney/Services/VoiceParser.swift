@@ -8,6 +8,9 @@ struct VoiceDraft: Equatable {
     var rawText: String
     /// True when a category keyword actually matched (not a blind fallback).
     var categoryMatchedByKeyword: Bool
+    /// Explicit foreign currency from speech (USD/EUR/…).
+    /// `nil` when the user said «руб» / bare amount — use Settings **entry** currency (default BYN).
+    var currency: AppCurrency?
 
     /// Happy-path autosave: amount + keyword category.
     var isAutosaveReady: Bool {
@@ -30,10 +33,23 @@ enum VoiceParser {
         options: [.caseInsensitive]
     )
 
-    /// Currency *words* only — stripped from notes. «руб» never switches currency;
-    /// amounts always use the app default (BYN) / Settings selection.
+    /// Currency *words* stripped from notes.
+    /// «руб» / «рублей» → entry default (BYN), not RUB. Explicit dollar/euro/BYN set `VoiceDraft.currency`.
     private static let currencyWords = try! NSRegularExpression(
         pattern: #"(?i)"# + wb + #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"# + wa,
+        options: []
+    )
+
+    private static let explicitUSD = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb + #"(dollars?|usd|доллар(?:ов|а|ы)?|\$)"# + wa,
+        options: []
+    )
+    private static let explicitEUR = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb + #"(euros?|eur|евро|€)"# + wa,
+        options: []
+    )
+    private static let explicitBYN = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb + #"(byn|br|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?)"# + wa,
         options: []
     )
 
@@ -126,12 +142,22 @@ enum VoiceParser {
         return nil
     }
 
+    /// Detects an **explicit** foreign currency. «руб» returns `nil` → stamp entry default (BYN).
+    static func inferCurrency(from text: String) -> AppCurrency? {
+        let range = NSRange(text.startIndex..., in: text)
+        if explicitUSD.firstMatch(in: text, options: [], range: range) != nil { return .usd }
+        if explicitEUR.firstMatch(in: text, options: [], range: range) != nil { return .eur }
+        if explicitBYN.firstMatch(in: text, options: [], range: range) != nil { return .byn }
+        return nil
+    }
+
     static func parse(
         rawText: String,
         categories: [MoneyCategory]
     ) -> VoiceDraft {
         let amount = parseAmount(from: rawText)
         var type = inferType(from: rawText)
+        let currency = inferCurrency(from: rawText)
 
         var matched = CategoryMatcher.autoAssign(
             text: rawText,
@@ -180,7 +206,8 @@ enum VoiceParser {
             categoryId: categoryId,
             note: note,
             rawText: rawText,
-            categoryMatchedByKeyword: categoryMatchedByKeyword
+            categoryMatchedByKeyword: categoryMatchedByKeyword,
+            currency: currency
         )
     }
 

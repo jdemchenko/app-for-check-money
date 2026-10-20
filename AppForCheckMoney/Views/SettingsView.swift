@@ -7,45 +7,21 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    QuietSectionLabel(text: L10n.string("settings.currency"))
+                VStack(alignment: .leading, spacing: 22) {
+                    currencyBlock(
+                        title: L10n.string("settings.displayCurrency"),
+                        subtitle: L10n.string("settings.displayCurrencyHint"),
+                        selection: $currencySettings.displayCurrency
+                    )
 
-                    GlassPanel(padding: 8, corner: AppTheme.cornerMedium) {
-                        VStack(spacing: 0) {
-                            ForEach(AppCurrency.allCases) { code in
-                                Button {
-                                    currencySettings.currency = code
-                                } label: {
-                                    HStack(spacing: 12) {
-                                        Text(code.displaySymbol)
-                                            .font(.body.weight(.semibold).monospaced())
-                                            .frame(width: 36, alignment: .leading)
-                                            .foregroundStyle(.secondary)
-                                        Text(code.localizedTitle)
-                                            .font(.body)
-                                            .foregroundStyle(.primary)
-                                        Spacer(minLength: 0)
-                                        if currencySettings.currency == code {
-                                            Image(systemName: "checkmark")
-                                                .font(.body.weight(.semibold))
-                                                .foregroundStyle(.primary)
-                                        }
-                                    }
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 14)
-                                    .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
+                    currencyBlock(
+                        title: L10n.string("settings.entryCurrency"),
+                        subtitle: L10n.string("settings.entryCurrencyHint"),
+                        selection: $currencySettings.entryCurrency
+                    )
 
-                                if code != AppCurrency.allCases.last {
-                                    Divider().opacity(0.2).padding(.leading, 48)
-                                }
-                            }
-                        }
-                    }
-
-                    Text(L10n.string("settings.currencyHint"))
-                        .font(.footnote)
+                    Text(CurrencyConverter.ratesFootnote)
+                        .font(.caption2)
                         .foregroundStyle(.tertiary)
                         .padding(.horizontal, 4)
                 }
@@ -57,6 +33,53 @@ struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.string("common.close")) { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func currencyBlock(
+        title: String,
+        subtitle: String,
+        selection: Binding<AppCurrency>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: title)
+            Text(subtitle)
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+
+            GlassPanel(padding: 8, corner: AppTheme.cornerMedium) {
+                VStack(spacing: 0) {
+                    ForEach(AppCurrency.allCases) { code in
+                        Button {
+                            selection.wrappedValue = code
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(code.displaySymbol)
+                                    .font(.body.weight(.semibold).monospaced())
+                                    .frame(width: 36, alignment: .leading)
+                                    .foregroundStyle(.secondary)
+                                Text(code.localizedTitle)
+                                    .font(.body)
+                                    .foregroundStyle(.primary)
+                                Spacer(minLength: 0)
+                                if selection.wrappedValue == code {
+                                    Image(systemName: "checkmark")
+                                        .font(.body.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 14)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+
+                        if code != AppCurrency.allCases.last {
+                            Divider().opacity(0.2).padding(.leading, 48)
+                        }
+                    }
                 }
             }
         }

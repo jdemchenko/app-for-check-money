@@ -28,12 +28,18 @@ struct HomeView: View {
         return transactions.filter { $0.date >= start && $0.date <= endOfDay }
     }
 
+    private var displayCurrency: AppCurrency { currencySettings.displayCurrency }
+
     private var income: Double {
-        monthTransactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+        monthTransactions
+            .filter { $0.type == .income }
+            .reduce(0) { $0 + $1.amountIn(displayCurrency) }
     }
 
     private var expense: Double {
-        monthTransactions.filter { $0.type == .expense }.reduce(0) { $0 + $1.amount }
+        monthTransactions
+            .filter { $0.type == .expense }
+            .reduce(0) { $0 + $1.amountIn(displayCurrency) }
     }
 
     private var balance: Double { income - expense }
@@ -120,14 +126,13 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
-                    .presentationDetents([.medium])
+                    .presentationDetents([.large, .medium])
                     .presentationDragIndicator(.visible)
             }
             .alert(statusMessage ?? "", isPresented: $showStatus) {
                 Button(L10n.string("common.ok"), role: .cancel) {}
             }
-            // Re-render amounts when currency changes.
-            .id(currencySettings.currency.rawValue)
+            .id(currencySettings.displayCurrency.rawValue)
         }
     }
 
@@ -140,28 +145,32 @@ struct HomeView: View {
                     .font(.footnote.weight(.medium))
                     .foregroundStyle(.secondary)
 
-                Text(MoneyFormat.currency(balance))
+                Text(MoneyFormat.currency(balance, code: displayCurrency))
                     .font(.system(size: 42, weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
                     .minimumScaleFactor(0.55)
                     .lineLimit(1)
 
+                Text(L10n.string("home.monthIn") + " " + displayCurrency.displaySymbol)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+
                 HStack(spacing: 16) {
                     Label {
-                        Text(MoneyFormat.currency(income))
+                        Text(MoneyFormat.currency(income, code: displayCurrency))
                             .font(.subheadline.weight(.medium).monospacedDigit())
                     } icon: {
                         Image(systemName: "arrow.down.left")
                     }
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppTheme.income)
 
                     Label {
-                        Text(MoneyFormat.currency(expense))
+                        Text(MoneyFormat.currency(expense, code: displayCurrency))
                             .font(.subheadline.weight(.medium).monospacedDigit())
                     } icon: {
                         Image(systemName: "arrow.up.right")
                     }
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppTheme.expense)
                 }
                 .font(.footnote)
                 .padding(.top, 2)
@@ -276,7 +285,11 @@ struct HomeView: View {
                 GlassPanel(padding: 8, corner: AppTheme.cornerMedium) {
                     LazyVStack(spacing: 0) {
                         ForEach(recent, id: \.id) { tx in
-                            TransactionRowView(transaction: tx, category: category(for: tx))
+                            TransactionRowView(
+                                transaction: tx,
+                                category: category(for: tx),
+                                displayCurrency: displayCurrency
+                            )
                                 .padding(.horizontal, 10)
                             if tx.id != recent.last?.id {
                                 Divider().opacity(0.25).padding(.leading, 54)
@@ -317,7 +330,8 @@ struct HomeView: View {
             categoryId: categoryId,
             note: draft.note.isEmpty ? nil : draft.note,
             date: .now,
-            source: .voice
+            source: .voice,
+            currency: draft.currency ?? currencySettings.entryCurrency
         )
         modelContext.insert(tx)
         try? modelContext.save()
@@ -351,7 +365,12 @@ struct ConfirmDraftSheet: View {
                 VStack(alignment: .leading, spacing: 20) {
                     GlassPanel {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(MoneyFormat.currency(draft.amount ?? 0))
+                            Text(
+                                MoneyFormat.currency(
+                                    draft.amount ?? 0,
+                                    code: draft.currency ?? CurrencySettings.shared.entryCurrency
+                                )
+                            )
                                 .font(.system(size: 34, weight: .semibold, design: .rounded))
                             Text(draft.rawText)
                                 .font(.footnote)

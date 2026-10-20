@@ -24,7 +24,9 @@ struct AddTransactionView: View {
     @State private var autoAssigned = false
     @State private var draft: VoiceDraft?
     @State private var isHoldingMic = false
+    @State private var entryCurrency: AppCurrency = CurrencySettings.shared.entryCurrency
     @StateObject private var speech = SpeechRecognizer()
+    @ObservedObject private var currencySettings = CurrencySettings.shared
 
     private var availableCategories: [MoneyCategory] {
         CategoryMatcher.categories(for: type, in: categories)
@@ -60,6 +62,7 @@ struct AddTransactionView: View {
         }
         .onAppear {
             speech.allowsSilenceFinish = false
+            entryCurrency = currencySettings.entryCurrency
             if categoryId == nil {
                 categoryId = availableCategories.first?.id
             }
@@ -104,6 +107,9 @@ struct AddTransactionView: View {
             }
             if !parsed.note.isEmpty {
                 note = parsed.note
+            }
+            if let currency = parsed.currency {
+                entryCurrency = currency
             }
         }
     }
@@ -190,6 +196,18 @@ struct AddTransactionView: View {
                         .keyboardType(.decimalPad)
                         .font(.system(size: 34, weight: .bold, design: .rounded))
                         .glassField()
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L10n.string("field.currency"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Picker(L10n.string("field.currency"), selection: $entryCurrency) {
+                        ForEach(AppCurrency.allCases) { code in
+                            Text("\(code.displaySymbol) · \(code.code)").tag(code)
+                        }
+                    }
+                    .pickerStyle(.segmented)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -314,7 +332,8 @@ struct AddTransactionView: View {
             categoryId: categoryId,
             note: note.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
             date: date,
-            source: mode == .voice ? .voice : .manual
+            source: mode == .voice ? .voice : .manual,
+            currency: entryCurrency
         )
         modelContext.insert(tx)
         try? modelContext.save()

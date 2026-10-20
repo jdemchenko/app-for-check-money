@@ -4,18 +4,20 @@
 "tab.add" = "Add";
 "tab.categories" = "Categories";
 "tab.history" = "History";
+"tab.stats" = "Stats";
 
 "home.balance" = "Balance";
 "home.income" = "Income";
 "home.expense" = "Expenses";
 "home.recent" = "Recent";
 "home.empty" = "No transactions yet";
-"home.emptyHint" = "Add a manual or voice entry to get started.";
+"home.emptyHint" = "Hold the mic or tap + to add an entry.";
 "home.quickEntry" = "Hold to talk";
 "home.quickEntryHint" = "Press and hold, speak amount and category — release to save";
 "home.quickEntryStop" = "Release to save";
 "home.quickEntryEmpty" = "Didn’t catch that. Try again.";
 "home.quickEntryNoAmount" = "Couldn’t hear an amount. Try again or use Add.";
+"home.monthIn" = "This month ·";
 
 "add.mode" = "Mode";
 "add.manual" = "Manual";
@@ -24,16 +26,31 @@
 
 "settings.title" = "Settings";
 "settings.currency" = "Currency";
-"settings.currencyHint" = "Amounts are stored as numbers. “руб” in voice is treated as your selected currency (default Br).";
+"settings.displayCurrency" = "Display currency";
+"settings.displayCurrencyHint" = "Totals convert into this currency. Existing transactions keep their own currency.";
+"settings.entryCurrency" = "Default for new entries";
+"settings.entryCurrencyHint" = "Stamped onto new voice/manual ops. “руб” in speech uses this (not RUB).";
+"settings.ratesHint" = "Conversion uses approximate static rates (BYN pivot) for overview only — not live FX.";
 "currency.byn" = "Belarusian ruble (Br)";
 "currency.rub" = "Russian ruble (₽)";
 "currency.usd" = "US dollar ($)";
 "currency.eur" = "Euro (€)";
 "common.done" = "Done";
 
+"stats.period" = "Period";
+"stats.week" = "Week";
+"stats.month" = "Month";
+"stats.all" = "All";
+"stats.overview" = "Overview";
+"stats.byCategory" = "By category";
+"stats.empty" = "No data yet";
+"stats.emptyHint" = "Add a few expenses to see the breakdown.";
+"stats.ops" = "ops";
+
 "field.amount" = "Amount";
 "field.type" = "Type";
 "field.category" = "Category";
+"field.currency" = "Currency";
 "field.note" = "Note";
 "field.notePlaceholder" = "Optional";
 "field.date" = "Date";

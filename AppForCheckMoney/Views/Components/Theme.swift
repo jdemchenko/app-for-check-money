@@ -1,26 +1,28 @@
 import SwiftUI
 
-// MARK: - Tokens (restrained — Apple Design Awards / HIG quiet chrome)
+// MARK: - Tokens (ADA: gripping but restrained)
 
 enum AppTheme {
-    static let cornerLarge: CGFloat = 24
+    static let cornerLarge: CGFloat = 26
     static let cornerMedium: CGFloat = 18
     static let cornerSmall: CGFloat = 12
-    static let spaceSection: CGFloat = 24
+    static let spaceSection: CGFloat = 26
     static let spaceItem: CGFloat = 12
-    /// Restrained ink — avoid saturated brand washes.
-    static let accent = Color.primary
-    static let income = Color.primary
-    static let expense = Color.secondary
-    static let positive = Color.primary
-    static let negative = Color.secondary
+
+    /// Soft ink accent — readable without marketing neon.
+    static let accent = Color(hex: "2C2C2E")
+    /// Functional, low-chroma cues (not candy).
+    static let income = Color(hex: "248A3D")
+    static let expense = Color(hex: "C9342C")
+    static let positive = income
+    static let negative = expense
 
     static var glassStroke: LinearGradient {
         LinearGradient(
             colors: [
-                Color.white.opacity(0.35),
-                Color.white.opacity(0.06),
-                Color.primary.opacity(0.05),
+                Color.white.opacity(0.45),
+                Color.white.opacity(0.08),
+                Color.primary.opacity(0.06),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -40,7 +42,7 @@ extension Color {
         case 8:
             (a, r, g, b) = ((int >> 24) & 0xff, (int >> 16) & 0xff, (int >> 8) & 0xff, int & 0xff)
         default:
-            (a, r, g, b) = (255, 58, 58, 60)
+            (a, r, g, b) = (255, 44, 44, 46)
         }
         self.init(
             .sRGB,
@@ -54,21 +56,29 @@ extension Color {
 
 // MARK: - Atmosphere
 
-/// Soft neutral field — no rainbow washes.
 struct AtmosphereBackground: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         ZStack {
-            (scheme == .dark ? Color.black : Color(hex: "F2F2F7"))
+            (scheme == .dark ? Color(hex: "000000") : Color(hex: "F5F5F7"))
             RadialGradient(
                 colors: [
-                    Color.primary.opacity(scheme == .dark ? 0.08 : 0.04),
+                    Color(hex: "A8B4C4").opacity(scheme == .dark ? 0.16 : 0.22),
                     .clear,
                 ],
-                center: .topLeading,
+                center: UnitPoint(x: 0.15, y: 0.0),
+                startRadius: 10,
+                endRadius: 380
+            )
+            RadialGradient(
+                colors: [
+                    Color(hex: "D4D0C8").opacity(scheme == .dark ? 0.08 : 0.18),
+                    .clear,
+                ],
+                center: UnitPoint(x: 0.9, y: 0.25),
                 startRadius: 20,
-                endRadius: 420
+                endRadius: 320
             )
         }
         .ignoresSafeArea()
@@ -91,9 +101,9 @@ struct GlassPanel<Content: View>: View {
                     .fill(.ultraThinMaterial)
                     .overlay {
                         RoundedRectangle(cornerRadius: corner, style: .continuous)
-                            .strokeBorder(AppTheme.glassStroke, lineWidth: 0.6)
+                            .strokeBorder(AppTheme.glassStroke, lineWidth: 0.7)
                     }
-                    .shadow(color: .black.opacity(0.05), radius: 16, y: 6)
+                    .shadow(color: .black.opacity(0.06), radius: 18, y: 8)
             }
     }
 }
@@ -108,7 +118,7 @@ struct GlassFieldBackground: ViewModifier {
                     .fill(.thinMaterial)
                     .overlay {
                         RoundedRectangle(cornerRadius: AppTheme.cornerSmall, style: .continuous)
-                            .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+                            .strokeBorder(Color.primary.opacity(0.07), lineWidth: 0.5)
                     }
             }
     }
@@ -141,14 +151,17 @@ struct GlassActionButton: View {
                     .fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .foregroundStyle(isDestructive ? Color.red : Color.primary)
+            .padding(.vertical, 15)
+            .foregroundStyle(isDestructive ? AppTheme.expense : Color.primary)
             .background {
                 Capsule(style: .continuous)
                     .fill(.thinMaterial)
                     .overlay {
                         Capsule(style: .continuous)
-                            .strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.8)
+                            .strokeBorder(
+                                (isDestructive ? AppTheme.expense : Color.primary).opacity(0.18),
+                                lineWidth: 0.8
+                            )
                     }
             }
         }
@@ -162,16 +175,20 @@ struct CategoryGlyph: View {
     var size: CGFloat = 40
 
     var body: some View {
+        let tint = Color(hex: colorHex)
         ZStack {
             Circle()
                 .fill(.ultraThinMaterial)
                 .overlay {
-                    Circle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.6)
+                    Circle().fill(tint.opacity(0.14))
+                }
+                .overlay {
+                    Circle().strokeBorder(Color.white.opacity(0.28), lineWidth: 0.6)
                 }
                 .frame(width: size, height: size)
             Image(systemName: symbolName)
                 .font(.system(size: size * 0.38, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.primary.opacity(0.85))
                 .symbolRenderingMode(.hierarchical)
         }
     }

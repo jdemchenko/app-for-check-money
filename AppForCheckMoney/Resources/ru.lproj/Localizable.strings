@@ -4,18 +4,20 @@
 "tab.add" = "Добавить";
 "tab.categories" = "Категории";
 "tab.history" = "История";
+"tab.stats" = "Статистика";
 
 "home.balance" = "Баланс";
 "home.income" = "Доходы";
 "home.expense" = "Расходы";
 "home.recent" = "Недавние";
 "home.empty" = "Пока нет операций";
-"home.emptyHint" = "Добавьте запись вручную или голосом.";
+"home.emptyHint" = "Удерживайте микрофон или нажмите +, чтобы добавить.";
 "home.quickEntry" = "Удерживайте микрофон";
 "home.quickEntryHint" = "Зажмите, скажите сумму и категорию — отпустите, чтобы сохранить";
 "home.quickEntryStop" = "Отпустите, чтобы сохранить";
 "home.quickEntryEmpty" = "Не расслышала. Попробуйте ещё раз.";
 "home.quickEntryNoAmount" = "Не услышала сумму. Повторите или добавьте вручную.";
+"home.monthIn" = "Этот месяц ·";
 
 "add.mode" = "Режим";
 "add.manual" = "Вручную";
@@ -24,16 +26,31 @@
 
 "settings.title" = "Настройки";
 "settings.currency" = "Валюта";
-"settings.currencyHint" = "Суммы хранятся как числа. Слово «руб» в голосе считается выбранной валютой (по умолчанию Br).";
+"settings.displayCurrency" = "Валюта отображения";
+"settings.displayCurrencyHint" = "Итоги пересчитываются в эту валюту. Уже сохранённые операции не меняются.";
+"settings.entryCurrency" = "Валюта новых записей";
+"settings.entryCurrencyHint" = "Ставится на новые голосовые/ручные операции. «руб» в речи = эта валюта (не RUB).";
+"settings.ratesHint" = "Пересчёт по приблизительным статичным курсам (опора BYN) только для обзора — не живой FX.";
 "currency.byn" = "Белорусский рубль (Br)";
 "currency.rub" = "Российский рубль (₽)";
 "currency.usd" = "Доллар США ($)";
 "currency.eur" = "Евро (€)";
 "common.done" = "Готово";
 
+"stats.period" = "Период";
+"stats.week" = "Неделя";
+"stats.month" = "Месяц";
+"stats.all" = "Всё";
+"stats.overview" = "Обзор";
+"stats.byCategory" = "По категориям";
+"stats.empty" = "Пока нет данных";
+"stats.emptyHint" = "Добавьте несколько расходов, чтобы увидеть разбивку.";
+"stats.ops" = "оп.";
+
 "field.amount" = "Сумма";
 "field.type" = "Тип";
 "field.category" = "Категория";
+"field.currency" = "Валюта";
 "field.note" = "Заметка";
 "field.notePlaceholder" = "Необязательно";
 "field.date" = "Дата";

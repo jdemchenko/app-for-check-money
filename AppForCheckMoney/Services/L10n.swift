@@ -13,12 +13,7 @@ enum L10n {
 }
 
 enum MoneyFormat {
-    /// Formats with the user-selected app currency (default BYN → `Br`).
-    @MainActor
-    static func currency(_ value: Double) -> String {
-        currency(value, code: CurrencySettings.shared.currency)
-    }
-
+    /// Formats a **native** amount in the given currency (row display).
     static func currency(_ value: Double, code: AppCurrency) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -26,23 +21,30 @@ enum MoneyFormat {
         formatter.maximumFractionDigits = 2
         formatter.locale = Locale.current
         let number = formatter.string(from: NSNumber(value: value)) ?? "\(value)"
-        // Explicit symbols keep BYN as «Br» regardless of device locale quirks.
         switch code {
-        case .byn:
-            return "\(number) Br"
-        case .rub:
-            return "\(number) ₽"
-        case .usd:
-            return "$\(number)"
-        case .eur:
-            return "\(number) €"
+        case .byn: return "\(number) Br"
+        case .rub: return "\(number) ₽"
+        case .usd: return "$\(number)"
+        case .eur: return "\(number) €"
         }
     }
 
+    /// Totals / balance in the Settings **display** currency.
     @MainActor
-    static func signed(_ value: Double, type: TransactionType) -> String {
+    static func displayCurrency(_ value: Double) -> String {
+        currency(value, code: CurrencySettings.shared.displayCurrency)
+    }
+
+    @MainActor
+    static func signed(_ value: Double, type: TransactionType, code: AppCurrency) -> String {
         let sign = type == .income ? "+" : "−"
-        return sign + currency(value)
+        return sign + currency(value, code: code)
+    }
+
+    /// Transaction row: always show the tx’s own currency.
+    @MainActor
+    static func signed(transaction: MoneyTransaction) -> String {
+        signed(transaction.amount, type: transaction.type, code: transaction.currency)
     }
 
     static func dayLabel(_ date: Date) -> String {
@@ -53,5 +55,38 @@ enum MoneyFormat {
             return L10n.string("date.yesterday")
         }
         return date.formatted(date: .abbreviated, time: .omitted)
+    }
+}
+
+/// Period helpers for Stats / Home.
+enum StatsPeriod: String, CaseIterable, Identifiable {
+    case week
+    case month
+    case all
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .week: return L10n.string("stats.week")
+        case .month: return L10n.string("stats.month")
+        case .all: return L10n.string("stats.all")
+        }
+    }
+
+    func contains(_ date: Date, now: Date = .now, calendar: Calendar = .current) -> Bool {
+        switch self {
+        case .all:
+            return true
+        case .week:
+            guard let start = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)) else {
+                return calendar.isDate(date, equalTo: now, toGranularity: .weekOfYear)
+            }
+            return date >= start && date <= now.addingTimeInterval(86400)
+        case .month:
+            let comps = calendar.dateComponents([.year, .month], from: now)
+            guard let start = calendar.date(from: comps) else { return false }
+            return date >= start && date <= now.addingTimeInterval(86400)
+        }
     }
 }
