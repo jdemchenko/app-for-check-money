@@ -1,13 +1,21 @@
 import SwiftUI
 
-// MARK: - Tokens (ADA: gripping but restrained)
+// MARK: - Design tokens (iOS continuous corner language)
 
 enum AppTheme {
-    static let cornerLarge: CGFloat = 26
-    static let cornerMedium: CGFloat = 18
-    static let cornerSmall: CGFloat = 12
-    static let spaceSection: CGFloat = 26
+    /// Controls, chips, text fields, selectable cells — iOS continuous control feel.
+    static let radiusControl: CGFloat = 14
+    /// Cards, list containers, glass panels — system grouped-surface scale.
+    static let radiusPanel: CGFloat = 22
+
+    /// Back-compat aliases used by older call sites (all map into the two-token set).
+    static let cornerSmall: CGFloat = radiusControl
+    static let cornerMedium: CGFloat = radiusPanel
+    static let cornerLarge: CGFloat = radiusPanel
+
+    static let spaceSection: CGFloat = 24
     static let spaceItem: CGFloat = 12
+    static let touchMin: CGFloat = 44
 
     /// Soft ink accent — readable without marketing neon.
     static let accent = Color(hex: "2C2C2E")
@@ -20,13 +28,18 @@ enum AppTheme {
     static var glassStroke: LinearGradient {
         LinearGradient(
             colors: [
-                Color.white.opacity(0.45),
-                Color.white.opacity(0.08),
-                Color.primary.opacity(0.06),
+                Color.white.opacity(0.42),
+                Color.white.opacity(0.06),
+                Color.primary.opacity(0.05),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
+    }
+
+    /// Shared continuous rounded rect for any interactive / surface chrome.
+    static func continuousRect(_ radius: CGFloat = radiusControl) -> RoundedRectangle {
+        RoundedRectangle(cornerRadius: radius, style: .continuous)
     }
 }
 
@@ -61,24 +74,25 @@ struct AtmosphereBackground: View {
 
     var body: some View {
         ZStack {
-            (scheme == .dark ? Color(hex: "000000") : Color(hex: "F5F5F7"))
+            // System-adjacent canvas (light: cool gray; dark: true black) — not cream/terracotta.
+            (scheme == .dark ? Color.black : Color(hex: "F2F2F7"))
             RadialGradient(
                 colors: [
-                    Color(hex: "A8B4C4").opacity(scheme == .dark ? 0.16 : 0.22),
+                    Color(hex: "8E8E93").opacity(scheme == .dark ? 0.14 : 0.12),
                     .clear,
                 ],
-                center: UnitPoint(x: 0.15, y: 0.0),
-                startRadius: 10,
-                endRadius: 380
+                center: UnitPoint(x: 0.12, y: -0.02),
+                startRadius: 8,
+                endRadius: 360
             )
             RadialGradient(
                 colors: [
-                    Color(hex: "D4D0C8").opacity(scheme == .dark ? 0.08 : 0.18),
+                    Color(hex: "636366").opacity(scheme == .dark ? 0.10 : 0.06),
                     .clear,
                 ],
-                center: UnitPoint(x: 0.9, y: 0.25),
-                startRadius: 20,
-                endRadius: 320
+                center: UnitPoint(x: 0.92, y: 0.28),
+                startRadius: 16,
+                endRadius: 300
             )
         }
         .ignoresSafeArea()
@@ -89,7 +103,8 @@ struct AtmosphereBackground: View {
 
 struct GlassPanel<Content: View>: View {
     var padding: CGFloat = 18
-    var corner: CGFloat = AppTheme.cornerLarge
+    /// Always `radiusPanel` — callers may pass legacy corner args; ignored for uniformity.
+    var corner: CGFloat = AppTheme.radiusPanel
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -97,13 +112,13 @@ struct GlassPanel<Content: View>: View {
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                AppTheme.continuousRect(AppTheme.radiusPanel)
                     .fill(.ultraThinMaterial)
                     .overlay {
-                        RoundedRectangle(cornerRadius: corner, style: .continuous)
-                            .strokeBorder(AppTheme.glassStroke, lineWidth: 0.7)
+                        AppTheme.continuousRect(AppTheme.radiusPanel)
+                            .strokeBorder(AppTheme.glassStroke, lineWidth: 0.6)
                     }
-                    .shadow(color: .black.opacity(0.06), radius: 18, y: 8)
+                    .shadow(color: .black.opacity(0.05), radius: 16, y: 6)
             }
     }
 }
@@ -114,10 +129,10 @@ struct GlassFieldBackground: ViewModifier {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background {
-                RoundedRectangle(cornerRadius: AppTheme.cornerSmall, style: .continuous)
+                AppTheme.continuousRect(AppTheme.radiusControl)
                     .fill(.thinMaterial)
                     .overlay {
-                        RoundedRectangle(cornerRadius: AppTheme.cornerSmall, style: .continuous)
+                        AppTheme.continuousRect(AppTheme.radiusControl)
                             .strokeBorder(Color.primary.opacity(0.07), lineWidth: 0.5)
                     }
             }
@@ -132,6 +147,27 @@ extension View {
     func liquidScreen() -> some View {
         background { AtmosphereBackground() }
             .scrollContentBackground(.hidden)
+    }
+
+    /// Selectable chip / category cell chrome — always `radiusControl`.
+    func glassChip(selected: Bool) -> some View {
+        background {
+            AppTheme.continuousRect(AppTheme.radiusControl)
+                .fill(.thinMaterial)
+                .overlay {
+                    AppTheme.continuousRect(AppTheme.radiusControl)
+                        .strokeBorder(
+                            selected
+                                ? Color.primary.opacity(0.32)
+                                : Color.primary.opacity(0.08),
+                            lineWidth: selected ? 1.0 : 0.5
+                        )
+                        .overlay {
+                            AppTheme.continuousRect(AppTheme.radiusControl)
+                                .fill(selected ? Color.primary.opacity(0.06) : Color.clear)
+                        }
+                }
+        }
     }
 }
 
@@ -151,16 +187,18 @@ struct GlassActionButton: View {
                     .fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 15)
+            .frame(minHeight: AppTheme.touchMin - 8)
+            .padding(.vertical, 12)
             .foregroundStyle(isDestructive ? AppTheme.expense : Color.primary)
             .background {
-                Capsule(style: .continuous)
+                // Primary CTA uses the same continuous panel radius (not a freeform capsule mix).
+                AppTheme.continuousRect(AppTheme.radiusPanel)
                     .fill(.thinMaterial)
                     .overlay {
-                        Capsule(style: .continuous)
+                        AppTheme.continuousRect(AppTheme.radiusPanel)
                             .strokeBorder(
-                                (isDestructive ? AppTheme.expense : Color.primary).opacity(0.18),
-                                lineWidth: 0.8
+                                (isDestructive ? AppTheme.expense : Color.primary).opacity(0.16),
+                                lineWidth: 0.7
                             )
                     }
             }
@@ -177,6 +215,7 @@ struct CategoryGlyph: View {
     var body: some View {
         let tint = Color(hex: colorHex)
         ZStack {
+            // Glyph wells stay circular (symbol container), not a third radius token.
             Circle()
                 .fill(.ultraThinMaterial)
                 .overlay {

@@ -176,14 +176,15 @@ struct StatsView: View {
                             }
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
-                                    Capsule()
+                                    AppTheme.continuousRect(AppTheme.radiusControl)
                                         .fill(Color.primary.opacity(0.06))
-                                    Capsule()
+                                    AppTheme.continuousRect(AppTheme.radiusControl)
                                         .fill(Color.primary.opacity(0.28))
                                         .frame(width: max(4, geo.size.width * row.share))
                                 }
                             }
-                            .frame(height: 5)
+                            .frame(height: 6)
+                            .clipShape(AppTheme.continuousRect(AppTheme.radiusControl))
                         }
                     }
                 }

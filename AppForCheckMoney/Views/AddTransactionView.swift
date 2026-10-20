@@ -230,7 +230,7 @@ struct AddTransactionView: View {
                                 .font(.caption2.weight(.bold))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
-                                .background(.thinMaterial, in: Capsule())
+                                .background(.thinMaterial, in: AppTheme.continuousRect(AppTheme.radiusControl))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -253,19 +253,7 @@ struct AddTransactionView: View {
                                     Spacer(minLength: 0)
                                 }
                                 .padding(8)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(.thinMaterial)
-                                        .overlay {
-                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                .strokeBorder(
-                                                    categoryId == cat.id
-                                                        ? Color.primary.opacity(0.35)
-                                                        : Color.primary.opacity(0.08),
-                                                    lineWidth: categoryId == cat.id ? 1.1 : 0.5
-                                                )
-                                        }
-                                }
+                                .glassChip(selected: categoryId == cat.id)
                             }
                             .buttonStyle(.plain)
                         }
@@ -307,15 +295,9 @@ struct AddTransactionView: View {
             Text(title)
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 11)
-                .background {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(.thinMaterial)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(type == value ? Color.primary.opacity(0.08) : Color.clear)
-                        }
-                }
+                .frame(minHeight: 40)
+                .padding(.vertical, 10)
+                .glassChip(selected: type == value)
                 .foregroundStyle(type == value ? Color.primary : Color.secondary)
         }
         .buttonStyle(.plain)

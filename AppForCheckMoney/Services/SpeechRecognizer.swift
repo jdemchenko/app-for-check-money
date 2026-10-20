@@ -27,11 +27,18 @@ final class SpeechRecognizer: ObservableObject {
     private var task: SFSpeechRecognitionTask?
     private var recognizer: SFSpeechRecognizer?
     private var silenceTask: Task<Void, Never>?
+    private var releaseTailTask: Task<Void, Never>?
     private var didEmitFinished = false
     private var tapInstalled = false
+    private var sessionWarm = false
     private var interruptionObserver: NSObjectProtocol?
     private var routeObserver: NSObjectProtocol?
     private let silenceNanoseconds: UInt64 = 1_600_000_000
+    /// After finger-up: keep the recognition task alive briefly so trailing words / `isFinal` can land.
+    private let releaseTailNanoseconds: UInt64 = 450_000_000
+
+    private var lastPartial = ""
+    private var finalText: String?
 
     var isAvailable: Bool {
         let auth = SFSpeechRecognizer.authorizationStatus()
@@ -69,6 +76,8 @@ final class SpeechRecognizer: ObservableObject {
             status = .unavailable(L10n.string("voice.permissionDenied"))
         } else {
             status = .idle
+            // Pre-warm AVAudioSession so the first hold doesn’t pay full activation cost.
+            warmSessionIfNeeded()
         }
     }
 
@@ -85,17 +94,20 @@ final class SpeechRecognizer: ObservableObject {
             return
         }
 
-        // Full reset of any previous attempt before activating again.
         cancelSilenceWatch()
-        teardownEngine(deactivateSession: true)
+        cancelReleaseTail()
+        // Soft reset: drop prior tap/task but keep the warm audio session.
+        teardownEngine(deactivateSession: false)
         task?.cancel()
         task = nil
         request = nil
         transcript = ""
+        lastPartial = ""
+        finalText = nil
         didEmitFinished = false
 
         do {
-            try activateSessionForSpeech()
+            try ensureSessionActive()
         } catch {
             status = .failed(Self.friendlySessionError(error))
             return
@@ -105,15 +117,15 @@ final class SpeechRecognizer: ObservableObject {
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
         request.taskHint = .dictation
+        // Prefer server for latency on continuous dictation when available.
         if recognizer.supportsOnDeviceRecognition {
             request.requiresOnDeviceRecognition = false
         }
 
         let input = audioEngine.inputNode
-        // Format must be read after session activation; Simulator can briefly report 0 Hz.
         let format = Self.inputFormat(for: input)
         guard format.sampleRate > 0, format.channelCount > 0 else {
-            teardownEngine(deactivateSession: true)
+            teardownEngine(deactivateSession: false)
             status = .failed(L10n.string("voice.sessionFailed"))
             return
         }
@@ -127,7 +139,7 @@ final class SpeechRecognizer: ObservableObject {
         do {
             try audioEngine.start()
         } catch {
-            teardownEngine(deactivateSession: true)
+            teardownEngine(deactivateSession: false)
             status = .failed(Self.friendlySessionError(error))
             return
         }
@@ -140,53 +152,89 @@ final class SpeechRecognizer: ObservableObject {
             Task { @MainActor in
                 guard let self else { return }
                 if let result {
-                    self.transcript = result.bestTranscription.formattedString
-                    if !self.transcript.isEmpty {
-                        self.scheduleSilenceFinish()
-                    }
+                    let text = result.bestTranscription.formattedString
                     if result.isFinal {
-                        self.finishUtterance()
+                        self.finalText = text
+                        if !text.isEmpty {
+                            self.transcript = text
+                        }
+                        // Final arrived — finish without waiting out the full tail.
+                        self.emitFinishedAndCleanup()
+                    } else {
+                        self.lastPartial = text
+                        self.transcript = text
+                        if !text.isEmpty {
+                            self.scheduleSilenceFinish()
+                        }
                     }
                 }
                 if let error {
                     let ns = error as NSError
-                    // Cancellation after endAudio / stop is expected.
-                    if ns.domain == "kAFAssistantErrorDomain", ns.code == 216 || ns.code == 203 {
+                    // Cancellation / no-speech after endAudio is expected during graceful stop.
+                    if ns.domain == "kAFAssistantErrorDomain",
+                       ns.code == 216 || ns.code == 203 || ns.code == 1110 {
+                        if self.status == .listening || self.releaseTailTask != nil {
+                            self.emitFinishedAndCleanup()
+                        }
                         return
                     }
                     if self.status == .listening {
                         self.status = .failed(error.localizedDescription)
                     }
                     self.cancelSilenceWatch()
-                    self.teardownEngine(deactivateSession: true)
+                    self.cancelReleaseTail()
+                    self.teardownEngine(deactivateSession: false)
                 }
             }
         }
     }
 
-    /// User tapped stop — end and emit whatever we have.
+    /// Hold-to-talk finger-up: stop capturing audio, wait briefly for trailing partials / `isFinal`, then emit.
     func stop() {
-        finishUtterance()
+        beginGracefulStop()
     }
 
     func clearTranscript() {
         transcript = ""
+        lastPartial = ""
+        finalText = nil
     }
 
     // MARK: - Session
 
+    private func warmSessionIfNeeded() {
+        guard !sessionWarm else { return }
+        do {
+            try activateSessionForSpeech(forceDeactivateFirst: false)
+            sessionWarm = true
+        } catch {
+            // Non-fatal — `start()` will retry.
+            sessionWarm = false
+        }
+    }
+
+    private func ensureSessionActive() throws {
+        if sessionWarm {
+            // Cheap re-assert; avoid setActive(false) round-trip on every press.
+            do {
+                try AVAudioSession.sharedInstance().setActive(true)
+                return
+            } catch {
+                sessionWarm = false
+            }
+        }
+        try activateSessionForSpeech(forceDeactivateFirst: false)
+        sessionWarm = true
+    }
+
     /// Configure + activate AVAudioSession for SFSpeechRecognizer input.
-    /// Previous category/options (e.g. `.record` + `.duckOthers`) commonly throw
-    /// “Session activation failed” on device and Simulator.
-    private func activateSessionForSpeech() throws {
+    private func activateSessionForSpeech(forceDeactivateFirst: Bool) throws {
         let session = AVAudioSession.sharedInstance()
 
-        // Always release a prior activation before switching category.
-        try? session.setActive(false, options: [.notifyOthersOnDeactivation])
+        if forceDeactivateFirst {
+            try? session.setActive(false, options: [.notifyOthersOnDeactivation])
+        }
 
-        // Avoid `.record` + `.duckOthers` (incompatible → “Session activation failed”).
-        // Avoid Bluetooth HFP options here — they often fail activation on Simulator
-        // when no HFP route exists. Device mics work with playAndRecord + defaultToSpeaker.
         do {
             try session.setCategory(
                 .playAndRecord,
@@ -198,15 +246,15 @@ final class SpeechRecognizer: ObservableObject {
         }
 
         try? session.setPreferredSampleRate(44_100)
-        try? session.setPreferredIOBufferDuration(0.01)
+        try? session.setPreferredIOBufferDuration(0.005)
 
         do {
-            try session.setActive(true, options: [.notifyOthersOnDeactivation])
+            try session.setActive(true)
         } catch {
-            // One retry after forced deactivate — handles sticky sessions.
             try? session.setActive(false, options: [.notifyOthersOnDeactivation])
             try session.setCategory(.record, mode: .default, options: [])
-            try session.setActive(true, options: [.notifyOthersOnDeactivation])
+            try session.setActive(true)
+            sessionWarm = true
         }
     }
 
@@ -215,7 +263,6 @@ final class SpeechRecognizer: ObservableObject {
         if hardware.sampleRate > 0, hardware.channelCount > 0 {
             return hardware
         }
-        // Simulator / cold start fallback
         return AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: 44_100,
@@ -226,11 +273,10 @@ final class SpeechRecognizer: ObservableObject {
 
     private static func friendlySessionError(_ error: Error) -> String {
         let ns = error as NSError
-        // AVAudioSessionErrorCodeCannotStartPlaying / SessionActivationFailed often surface as this string.
         let text = ns.localizedDescription.lowercased()
         if text.contains("session activation failed")
             || text.contains("activating")
-            || ns.code == 560_557_684 /* ' !act' SessionActivationFailed */
+            || ns.code == 560_557_684
             || ns.domain == NSOSStatusErrorDomain {
             return L10n.string("voice.sessionFailed")
         }
@@ -246,7 +292,7 @@ final class SpeechRecognizer: ObservableObject {
             try? await Task.sleep(nanoseconds: silenceNanoseconds)
             guard !Task.isCancelled else { return }
             guard status == .listening else { return }
-            finishUtterance()
+            beginGracefulStop()
         }
     }
 
@@ -255,18 +301,68 @@ final class SpeechRecognizer: ObservableObject {
         silenceTask = nil
     }
 
-    private func finishUtterance() {
+    private func cancelReleaseTail() {
+        releaseTailTask?.cancel()
+        releaseTailTask = nil
+    }
+
+    /// End mic input but leave the recognition task alive for a short flush window.
+    private func beginGracefulStop() {
         cancelSilenceWatch()
+        guard !didEmitFinished else { return }
+
+        // Already in the tail window — don’t restart it.
+        if releaseTailTask != nil {
+            return
+        }
+
         request?.endAudio()
-        teardownEngine(deactivateSession: true)
+
+        if let engine = audioEngine {
+            if tapInstalled {
+                engine.inputNode.removeTap(onBus: 0)
+                tapInstalled = false
+            }
+            if engine.isRunning {
+                engine.stop()
+            }
+        }
+        // Keep `task` + `request` until emit — Apple delivers final/partial after endAudio.
+
+        releaseTailTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: releaseTailNanoseconds)
+            guard !Task.isCancelled else { return }
+            emitFinishedAndCleanup()
+        }
+    }
+
+    private func emitFinishedAndCleanup() {
+        cancelSilenceWatch()
+        cancelReleaseTail()
+
+        let preferred: String = {
+            if let finalText, !finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return finalText
+            }
+            if !lastPartial.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return lastPartial
+            }
+            return transcript
+        }()
+        let text = preferred.trimmingCharacters(in: .whitespacesAndNewlines)
+        transcript = text
+
         task?.cancel()
         task = nil
         request = nil
+        teardownEngine(deactivateSession: false)
 
-        let text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
-        if status == .listening {
+        if case .failed = status {
+            // keep failed UI state
+        } else {
             status = .idle
         }
+
         guard !didEmitFinished else { return }
         didEmitFinished = true
         onUtteranceFinished?(text)
@@ -287,6 +383,7 @@ final class SpeechRecognizer: ObservableObject {
         if deactivateSession {
             try? AVAudioSession.sharedInstance()
                 .setActive(false, options: [.notifyOthersOnDeactivation])
+            sessionWarm = false
         }
     }
 
@@ -307,11 +404,11 @@ final class SpeechRecognizer: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                // If we lose the input route mid-listen, stop cleanly so the next tap can retry.
                 guard let self, self.isListening else { return }
                 let inputs = AVAudioSession.sharedInstance().currentRoute.inputs
                 if inputs.isEmpty {
                     self.status = .failed(L10n.string("voice.sessionFailed"))
+                    self.cancelReleaseTail()
                     self.teardownEngine(deactivateSession: true)
                 }
             }
@@ -327,13 +424,13 @@ final class SpeechRecognizer: ObservableObject {
 
         switch type {
         case .began:
-            if isListening {
+            if isListening || releaseTailTask != nil {
                 cancelSilenceWatch()
+                cancelReleaseTail()
                 teardownEngine(deactivateSession: true)
                 status = .idle
             }
         case .ended:
-            // Leave idle — user taps mic again to resume (avoids surprise re-listen).
             break
         @unknown default:
             break

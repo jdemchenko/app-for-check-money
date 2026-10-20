@@ -213,6 +213,8 @@ struct HomeView: View {
                     .foregroundStyle(.primary)
                     .contentTransition(.symbolEffect(.replace))
             }
+            .frame(minWidth: AppTheme.touchMin, minHeight: AppTheme.touchMin)
+            .contentShape(Circle())
             .gesture(holdToTalkGesture)
             .disabled({
                 if case .unavailable = speech.status { return true }
@@ -255,7 +257,7 @@ struct HomeView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background {
-                        Capsule(style: .continuous)
+                        AppTheme.continuousRect(AppTheme.radiusControl)
                             .fill(.thinMaterial)
                     }
             }
@@ -450,19 +452,7 @@ struct ConfirmDraftSheet: View {
                                     Spacer(minLength: 0)
                                 }
                                 .padding(10)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(.thinMaterial)
-                                        .overlay {
-                                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                                .strokeBorder(
-                                                    categoryId == cat.id
-                                                        ? Color.primary.opacity(0.35)
-                                                        : Color.primary.opacity(0.08),
-                                                    lineWidth: categoryId == cat.id ? 1.1 : 0.5
-                                                )
-                                        }
-                                }
+                                .glassChip(selected: categoryId == cat.id)
                             }
                             .buttonStyle(.plain)
                         }

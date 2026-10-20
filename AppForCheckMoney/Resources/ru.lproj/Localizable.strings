@@ -32,6 +32,10 @@
 "settings.entryCurrency" = "Валюта новых записей";
 "settings.entryCurrencyHint" = "Ставится на новые голосовые/ручные операции. «руб» в речи = эта валюта (не RUB).";
 "settings.ratesHint" = "Пересчёт по приблизительным статичным курсам (опора BYN) только для обзора — не живой FX.";
+"settings.ratesTitle" = "Курсы валют";
+"settings.ratesRefresh" = "Обновить курсы";
+"settings.ratesLive" = "Источник: myfin.by (НБРБ). Обновлено %@ · только итоги — сохранённые суммы не меняются.";
+"settings.ratesStaticFallback" = "Источник: myfin.by недоступен — запасные курсы. Только итоги; сохранённые суммы не меняются.";
 "currency.byn" = "Белорусский рубль (Br)";
 "currency.rub" = "Российский рубль (₽)";
 "currency.usd" = "Доллар США ($)";

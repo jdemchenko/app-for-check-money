@@ -32,6 +32,10 @@
 "settings.entryCurrency" = "Default for new entries";
 "settings.entryCurrencyHint" = "Stamped onto new voice/manual ops. “руб” in speech uses this (not RUB).";
 "settings.ratesHint" = "Conversion uses approximate static rates (BYN pivot) for overview only — not live FX.";
+"settings.ratesTitle" = "Exchange rates";
+"settings.ratesRefresh" = "Refresh rates";
+"settings.ratesLive" = "Source: myfin.by (НБРБ). Updated %@ · totals only — saved amounts stay as entered.";
+"settings.ratesStaticFallback" = "Source: myfin.by unavailable — using built-in fallback. Totals only; saved amounts stay as entered.";
 "currency.byn" = "Belarusian ruble (Br)";
 "currency.rub" = "Russian ruble (₽)";
 "currency.usd" = "US dollar ($)";

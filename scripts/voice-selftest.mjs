@@ -36,14 +36,26 @@ const HUNDREDS = {
   пятьсот: 500, шестьсот: 600, семьсот: 700, восемьсот: 800,
   девятьсот: 900, hundred: 100,
 };
+const THOUSAND_WORDS = new Set([
+  "тысяча", "тысячи", "тысяч", "тыща", "тыщи", "тыс",
+  "thousand", "thousands",
+]);
+
 const SPELLED_TOKENS = new Set([
   ...Object.keys(ONES),
   ...Object.keys(TENS),
   ...Object.keys(HUNDREDS),
-  "тысяча", "тысячи", "тысяч", "thousand", "thousands",
+  ...THOUSAND_WORDS,
   "миллион", "миллиона", "миллионов", "million",
   "итого", "total",
 ]);
+
+const CURRENCY_TOKEN = "(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)";
+const AMOUNT_NUMBER = "(\\d+(?:\\s+\\d{3})*(?:[.,]\\d{1,2})?)";
+const COMMODITY_CURRENCY = new RegExp(
+  `${WB}(?:покупк[ауие]|купил[аи]?|bought|buying|purchase[sd]?|buy)\\s+${CURRENCY_TOKEN}${WA}`,
+  "i"
+);
 
 const CATEGORIES = [
   {
@@ -224,7 +236,7 @@ const NOTE_SUPPRESS = new Set(
     "подарок", "подарки", "gift", "gifts",
     "доход", "income", "перевод", "transfer", "возврат", "refund",
     "рублей", "рубль", "рубля", "ruble", "rubles", "byn", "br",
-    "dollar", "dollars", "usd", "eur", "euro", "копеек", "копейки", "копейка",
+    "копеек", "копейки", "копейка",
     "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
     "закинул", "закинула", "пополнил", "купил", "купила", "добавь", "кажется",
     "сегодня", "это", "будет", "свой", "свою",
@@ -284,37 +296,44 @@ function parseSpelled(text) {
   let i = 0;
   while (i < tokens.length) {
     let value = 0;
-    let thousands = 0;
+    let chunk = 0;
     let consumed = 0;
     let j = i;
     let sawNumber = false;
     while (j < tokens.length) {
       const t = tokens[j];
-      if (t === "тысяча" || t === "тысячи" || t === "тысяч" || t === "thousand") {
-        const base = thousands === 0 ? 1 : thousands;
+      if (THOUSAND_WORDS.has(t)) {
+        const base = chunk === 0 ? 1 : chunk;
         value += base * 1000;
-        thousands = 0;
+        chunk = 0;
         sawNumber = true;
         consumed += 1;
         j += 1;
         continue;
       }
+      // Hybrid: «тыща 200» / «две тысячи 50»
+      if (/^\d+$/.test(t) && sawNumber) {
+        chunk += Number.parseInt(t, 10);
+        consumed += 1;
+        j += 1;
+        continue;
+      }
       if (HUNDREDS[t] != null) {
-        thousands += HUNDREDS[t];
+        chunk += HUNDREDS[t];
         sawNumber = true;
         consumed += 1;
         j += 1;
         continue;
       }
       if (TENS[t] != null) {
-        thousands += TENS[t];
+        chunk += TENS[t];
         sawNumber = true;
         consumed += 1;
         j += 1;
         continue;
       }
       if (ONES[t] != null) {
-        thousands += ONES[t];
+        chunk += ONES[t];
         sawNumber = true;
         consumed += 1;
         j += 1;
@@ -328,7 +347,7 @@ function parseSpelled(text) {
       break;
     }
     if (sawNumber) {
-      value += thousands;
+      value += chunk;
       if (value > 0) best = Math.max(best ?? 0, value);
       i += Math.max(consumed, 1);
     } else {
@@ -404,9 +423,13 @@ function stripSpelled(text) {
 }
 
 function stripAmountsAndCurrency(text) {
-  let working = text.replace(/\d[\d\s.,]*/g, " ");
+  let working = text;
+  // Strip only amount-unit pairs; keep commodity «долларов» in notes.
+  working = working.replace(new RegExp(`${AMOUNT_NUMBER}\\s*${CURRENCY_TOKEN}`, "gi"), " ");
+  working = working.replace(new RegExp(`${CURRENCY_TOKEN}\\s*${AMOUNT_NUMBER}`, "gi"), " ");
+  working = working.replace(/\d[\d\s.,]*/g, " ");
   working = working.replace(
-    new RegExp(`${WB}(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)${WA}`, "gi"),
+    new RegExp(`${WB}(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|₽)${WA}`, "gi"),
     " "
   );
   working = stripSpelled(working);
@@ -490,11 +513,45 @@ function extractNote(rawText, matched) {
   return finalizeNote(working, matched);
 }
 
+function resolveCurrencyToken(raw) {
+  const t = normalize(raw).replace(/\$/g, "usd").replace(/€/g, "eur").replace(/₽/g, "rub");
+  if (t.includes("dollar") || t === "usd" || t.startsWith("доллар")) return "usd";
+  if (t.includes("euro") || t === "eur" || t.startsWith("евро")) return "eur";
+  if (t === "byn" || t === "br" || t.includes("бел")) return "byn";
+  // «руб» → entry default
+  return null;
+}
+
+function looksLikeCurrencyToken(s) {
+  const t = String(s).trim();
+  if (!t) return false;
+  return !/^\d/.test(t);
+}
+
+/** Amount-attached currency wins over trailing commodity words. */
 function inferCurrency(text) {
-  if (new RegExp(`${WB}(dollars?|usd|доллар(?:ов|а|ы)?|\\$)${WA}`, "i").test(text)) return "usd";
-  if (new RegExp(`${WB}(euros?|eur|евро|€)${WA}`, "i").test(text)) return "eur";
-  if (new RegExp(`${WB}(byn|br|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?)${WA}`, "i").test(text)) return "byn";
-  // «руб» → entry default (null) — never force RUB
+  const patterns = [
+    new RegExp(`${AMOUNT_NUMBER}\\s*${CURRENCY_TOKEN}`, "gi"),
+    new RegExp(`${CURRENCY_TOKEN}\\s*${AMOUNT_NUMBER}`, "gi"),
+  ];
+  let best = null;
+  for (const re of patterns) {
+    for (const m of text.matchAll(re)) {
+      const g1 = m[1] ?? "";
+      const g2 = m[2] ?? "";
+      const token = looksLikeCurrencyToken(g1) ? g1 : g2;
+      if (!best || m.index < best.index) best = { index: m.index, token };
+    }
+  }
+  if (best) {
+    return resolveCurrencyToken(best.token);
+  }
+
+  // No unit on amount: ignore «покупка долларов» commodity phrases.
+  let working = text.replace(COMMODITY_CURRENCY, " ");
+  if (new RegExp(`${WB}(dollars?|usd|доллар(?:ов|а|ы)?|\\$)${WA}`, "i").test(working)) return "usd";
+  if (new RegExp(`${WB}(euros?|eur|евро|€)${WA}`, "i").test(working)) return "eur";
+  if (new RegExp(`${WB}(byn|br|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?)${WA}`, "i").test(working)) return "byn";
   return null;
 }
 
@@ -606,6 +663,38 @@ const cases = [
     input: "купил картошки гарнир огурцов итого 7 рублей 40 копеек",
     expect: { amount: 7.4, categoryId: "food", note: "картошки гарнир огурцов", autosave: true },
   },
+  // Amount-attached currency wins over commodity «долларов»
+  {
+    name: "fx руб amount wins over покупка долларов",
+    input: "900 рублей, покупка долларов",
+    expect: { amount: 900, currency: null, note: "покупка долларов", autosave: false },
+  },
+  {
+    name: "fx руб + купил доллары",
+    input: "500 рублей купил доллары",
+    expect: { amount: 500, currency: null },
+  },
+  {
+    name: "fx dollars still stamps when unit on amount",
+    input: "20 dollars food",
+    expect: { amount: 20, currency: "usd", categoryId: "food" },
+  },
+  // Hybrid speech thousands + digits
+  {
+    name: "hybrid тыща 200 → 1200",
+    input: "тыща 200 руб подарки деньги ульяне",
+    expect: { amount: 1200, categoryId: "gifts", currency: null, noteIncludes: "ульяне" },
+  },
+  {
+    name: "hybrid тысяча 200",
+    input: "тысяча 200 рублей",
+    expect: { amount: 1200, currency: null },
+  },
+  {
+    name: "hybrid две тысячи 50",
+    input: "две тысячи 50 рублей",
+    expect: { amount: 2050, currency: null },
+  },
 ];
 
 let failed = 0;
@@ -630,10 +719,13 @@ for (const c of cases) {
   if (c.expect.note !== undefined && normalize(draft.note) !== normalize(c.expect.note)) {
     bugs.push(`note: got «${draft.note}» expected «${c.expect.note}»`);
   }
-  for (const filler of ["рублей", "dollars", "развлечения", "точка"]) {
+  if (c.expect.noteIncludes && !normalize(draft.note).includes(normalize(c.expect.noteIncludes))) {
+    bugs.push(`noteIncludes: «${draft.note}» missing «${c.expect.noteIncludes}»`);
+  }
+  for (const filler of ["рублей", "развлечения", "точка"]) {
     if (
       normalize(draft.note).includes(normalize(filler)) &&
-      normalize(c.expect.note ?? "") !== normalize(filler)
+      !normalize(c.expect.note ?? "").includes(normalize(filler))
     ) {
       bugs.push(`note contains filler «${filler}»`);
     }

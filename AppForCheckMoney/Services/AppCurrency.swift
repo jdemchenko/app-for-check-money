@@ -47,31 +47,24 @@ enum AppCurrency: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-/// Approximate conversion for **display totals only**.
+/// Conversion for **display totals only**.
 /// Stored transaction amounts are never rewritten when the user changes Settings.
 ///
-/// Approach: static mid-market-style rates with **BYN as the pivot**.
-/// Not live FX — good enough for multi-currency overviews; refresh rates in app updates.
+/// Live rates from myfin.by (НБРБ board) via `ExchangeRateStore`, with static BYN-pivot fallback.
 enum CurrencyConverter {
-    /// BYN per 1 unit of currency (approximate).
-    private static let bynPerUnit: [AppCurrency: Double] = [
-        .byn: 1.0,
-        .usd: 3.25,
-        .eur: 3.55,
-        .rub: 0.036,
-    ]
-
     static func convert(_ amount: Double, from: AppCurrency, to: AppCurrency) -> Double {
         guard from != to else { return amount }
-        let inByn = amount * (bynPerUnit[from] ?? 1)
-        let rateTo = bynPerUnit[to] ?? 1
+        let rates = ExchangeRateStore.currentRates()
+        let inByn = amount * (rates[from] ?? ExchangeRateStore.staticBynPerUnit[from] ?? 1)
+        let rateTo = rates[to] ?? ExchangeRateStore.staticBynPerUnit[to] ?? 1
         guard rateTo > 0 else { return amount }
         return (inByn / rateTo * 100).rounded() / 100
     }
 
-    /// Short footnote for Settings / Stats.
+    /// Short footnote for Settings / Stats (includes myfin.by + last updated when live).
+    @MainActor
     static var ratesFootnote: String {
-        L10n.string("settings.ratesHint")
+        ExchangeRateStore.shared.ratesFootnote
     }
 }
 

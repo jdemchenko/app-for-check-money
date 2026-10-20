@@ -1,6 +1,7 @@
 import Foundation
 
-/// Parses numeric and spelled Russian/English amounts, including «X рублей Y копеек».
+/// Parses numeric and spelled Russian/English amounts, including «X рублей Y копеек»
+/// and hybrid speech forms like «тыща 200» → 1200.
 enum AmountWords {
     private static let ones: [String: Int] = [
         "ноль": 0, "один": 1, "одна": 1, "два": 2, "две": 2, "три": 3, "четыре": 4,
@@ -28,13 +29,19 @@ enum AmountWords {
         "hundred": 100,
     ]
 
+    /// «тысяча» and speech shortenings («тыща», «тыс»).
+    private static let thousandWords: Set<String> = [
+        "тысяча", "тысячи", "тысяч", "тыща", "тыщи", "тыс",
+        "thousand", "thousands",
+    ]
+
     /// All tokens that can appear inside a spelled amount (for note stripping).
     static var spelledTokens: Set<String> {
         var set = Set(ones.keys)
         set.formUnion(tens.keys)
         set.formUnion(hundreds.keys)
+        set.formUnion(thousandWords)
         set.formUnion([
-            "тысяча", "тысячи", "тысяч", "thousand", "thousands",
             "миллион", "миллиона", "миллионов", "million",
             "итого", "total",
         ])
@@ -51,7 +58,7 @@ enum AmountWords {
             return withKopeks
         }
 
-        // Spelled before bare digits so «тысяча…» isn’t skipped when digits appear elsewhere.
+        // Spelled / hybrid («тыща 200» → 1200) before bare digits so we don't keep only 200.
         if let spelled = parseSpelled(normalized) {
             return Double(spelled)
         }
@@ -128,8 +135,8 @@ enum AmountWords {
         return nil
     }
 
+    /// Spelled amounts + hybrid «тыща 200» / «две тысячи 50».
     private static func parseSpelled(_ text: String) -> Int? {
-        // Prefer a window that looks like a number phrase.
         let tokens = text
             .replacingOccurrences(of: "-", with: " ")
             .split(separator: " ")
@@ -139,44 +146,58 @@ enum AmountWords {
         var i = 0
         while i < tokens.count {
             var value = 0
-            var thousands = 0
+            var chunk = 0
             var consumed = 0
             var j = i
             var sawNumber = false
+            var sawThousand = false
 
             while j < tokens.count {
                 let t = tokens[j]
-                if t == "тысяча" || t == "тысячи" || t == "тысяч" || t == "thousand" {
-                    let base = thousands == 0 ? 1 : thousands
+
+                if thousandWords.contains(t) {
+                    let base = chunk == 0 ? 1 : chunk
                     value += base * 1000
-                    thousands = 0
+                    chunk = 0
                     sawNumber = true
+                    sawThousand = true
                     consumed += 1
                     j += 1
                     continue
                 }
+
+                // Digits after (or inside) a number phrase: «тыща 200», «две тысячи 50»
+                if let digit = Int(t), t.unicodeScalars.allSatisfy({ CharacterSet.decimalDigits.contains($0) }) {
+                    if sawNumber {
+                        chunk += digit
+                        consumed += 1
+                        j += 1
+                        continue
+                    }
+                    break
+                }
+
                 if let h = hundreds[t] {
-                    thousands += h
+                    chunk += h
                     sawNumber = true
                     consumed += 1
                     j += 1
                     continue
                 }
                 if let ten = tens[t] {
-                    thousands += ten
+                    chunk += ten
                     sawNumber = true
                     consumed += 1
                     j += 1
                     continue
                 }
                 if let one = ones[t] {
-                    thousands += one
+                    chunk += one
                     sawNumber = true
                     consumed += 1
                     j += 1
                     continue
                 }
-                // Skip glue words inside a number phrase
                 if ["и", "and"].contains(t), sawNumber {
                     consumed += 1
                     j += 1
@@ -186,9 +207,12 @@ enum AmountWords {
             }
 
             if sawNumber {
-                value += thousands
+                value += chunk
+                // Prefer hybrid thousand+digits (or any spelled) over a later bare digit alone.
                 if value > 0 {
-                    best = max(best ?? 0, value)
+                    if sawThousand || best == nil || value > (best ?? 0) {
+                        best = max(best ?? 0, value)
+                    }
                 }
                 i += max(consumed, 1)
             } else {

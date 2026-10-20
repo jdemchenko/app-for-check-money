@@ -33,23 +33,26 @@ enum VoiceParser {
         options: [.caseInsensitive]
     )
 
-    /// Currency *words* stripped from notes.
-    /// «руб» / «рублей» → entry default (BYN), not RUB. Explicit dollar/euro/BYN set `VoiceDraft.currency`.
+    /// Any currency *token* (amount unit or commodity mention).
+    private static let currencyTokenPattern =
+        #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"#
+
+    /// Currency words stripped from notes only when they were the **amount unit**.
     private static let currencyWords = try! NSRegularExpression(
-        pattern: #"(?i)"# + wb + #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"# + wa,
+        pattern: #"(?i)"# + wb + currencyTokenPattern + wa,
         options: []
     )
 
-    private static let explicitUSD = try! NSRegularExpression(
-        pattern: #"(?i)"# + wb + #"(dollars?|usd|доллар(?:ов|а|ы)?|\$)"# + wa,
-        options: []
-    )
-    private static let explicitEUR = try! NSRegularExpression(
-        pattern: #"(?i)"# + wb + #"(euros?|eur|евро|€)"# + wa,
-        options: []
-    )
-    private static let explicitBYN = try! NSRegularExpression(
-        pattern: #"(?i)"# + wb + #"(byn|br|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?)"# + wa,
+    /// Amount digit/decimal, optionally glued thousands with spaces.
+    private static let amountNumberPattern = #"(\d+(?:\s+\d{3})*(?:[.,]\d{1,2})?)"#
+
+    /// «покупка долларов», «купил доллары», «bought dollars» — commodity, not tx currency.
+    private static let commodityCurrency = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:покупк[ауие]|купил[аи]?|bought|buying|purchase[sd]?|buy)"#
+            + #"\s+"#
+            + currencyTokenPattern
+            + wa,
         options: []
     )
 
@@ -102,15 +105,16 @@ enum VoiceParser {
         "фриланс", "freelance",
         "подарок", "подарки", "gift", "gifts",
         "доход", "income", "перевод", "transfer", "возврат", "refund",
+        // Amount-unit руб only — keep «долларов» / «dollars» when they are what was bought.
         "рублей", "рубль", "рубля", "ruble", "rubles", "byn", "br",
-        "dollar", "dollars", "usd", "eur", "euro", "копеек", "копейки", "копейка",
+        "копеек", "копейки", "копейка",
         "косметика", "cosmetics", "красота", "beauty",
         "категория", "category",
         "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
         "закинул", "закинула", "пополнил", "купил", "купила", "добавь", "кажется",
         "сегодня", "это", "будет", "свой", "свою",
         "got", "received", "spent", "paid", "bought",
-        // NOTE: keep «аренда квартиры», «проезд», «телефон» OUT — those are descriptions
+        // NOTE: keep «аренда квартиры», «проезд», «телефон», «долларов» OUT — descriptions
     ].map { TextNormalizer.normalize($0) })
 
     static func parseAmount(from text: String) -> Double? {
@@ -152,12 +156,131 @@ enum VoiceParser {
         return nil
     }
 
-    /// Detects an **explicit** foreign currency. «руб» returns `nil` → stamp entry default (BYN).
+    /// Currency for the **amount unit** wins.
+    /// «900 рублей, покупка долларов» → `nil` (entry default BYN), not USD from trailing «долларов».
+    /// «руб» / «рублей» near the amount → `nil` (never market RUB unless Settings entry is RUB).
     static func inferCurrency(from text: String) -> AppCurrency? {
+        if let attached = currencyAttachedToAmount(in: text) {
+            return attached.appCurrency
+        }
+        return looseForeignCurrency(in: text)
+    }
+
+    /// `nil` app currency means entry default; `found` distinguishes «руб» (resolved) from no unit.
+    private struct AmountCurrencyResolve {
+        /// `nil` = entry default (руб); non-nil = stamp USD/EUR/BYN.
+        let appCurrency: AppCurrency?
+    }
+
+    /// Currency token glued to the numeric amount (before or after).
+    private static func currencyAttachedToAmount(in text: String) -> AmountCurrencyResolve? {
+        let patterns = [
+            #"(?i)"# + amountNumberPattern + #"\s*"# + currencyTokenPattern,
+            #"(?i)"# + currencyTokenPattern + #"\s*"# + amountNumberPattern,
+        ]
+        let nsRange = NSRange(text.startIndex..., in: text)
+        var best: (location: Int, token: String)?
+        for pattern in patterns {
+            guard let re = try? NSRegularExpression(pattern: pattern, options: []) else { continue }
+            for match in re.matches(in: text, options: [], range: nsRange) {
+                // Token is group 2 in amount→currency, group 1 in currency→amount.
+                let tokenRange: NSRange
+                if match.numberOfRanges >= 3 {
+                    // Both patterns have 2 captures; detect which group is the currency token.
+                    let g1 = Range(match.range(at: 1), in: text).map { String(text[$0]) } ?? ""
+                    let g2 = Range(match.range(at: 2), in: text).map { String(text[$0]) } ?? ""
+                    let token: String
+                    if looksLikeCurrencyToken(g1) {
+                        token = g1
+                        tokenRange = match.range(at: 1)
+                    } else {
+                        token = g2
+                        tokenRange = match.range(at: 2)
+                    }
+                    _ = tokenRange
+                    let loc = match.range.location
+                    if best == nil || loc < best!.location {
+                        best = (loc, token)
+                    }
+                }
+            }
+        }
+        // Spelled amount + unit: «тысяча … рублей» (no digits).
+        if best == nil, let spelledToken = currencyAfterSpelledAmount(in: text) {
+            return resolveCurrencyToken(spelledToken)
+        }
+        guard let token = best?.token else { return nil }
+        return resolveCurrencyToken(token)
+    }
+
+    private static func currencyAfterSpelledAmount(in text: String) -> String? {
+        // If AmountWords finds a spelled amount, take the first currency token after number-words start.
+        guard AmountWords.parse(from: text) != nil else { return nil }
+        // Prefer «… рублей/dollars» when digits are absent near the unit.
+        let hasDigitAmount = text.range(of: #"\d"#, options: .regularExpression) != nil
+        if hasDigitAmount { return nil }
+        let re = try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + currencyTokenPattern + wa,
+            options: []
+        )
         let range = NSRange(text.startIndex..., in: text)
-        if explicitUSD.firstMatch(in: text, options: [], range: range) != nil { return .usd }
-        if explicitEUR.firstMatch(in: text, options: [], range: range) != nil { return .eur }
-        if explicitBYN.firstMatch(in: text, options: [], range: range) != nil { return .byn }
+        guard let match = re.firstMatch(in: text, options: [], range: range),
+              let swift = Range(match.range, in: text)
+        else { return nil }
+        return String(text[swift])
+    }
+
+    private static func looksLikeCurrencyToken(_ s: String) -> Bool {
+        let t = s.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if t.isEmpty { return false }
+        if t.range(of: #"^\d"#, options: .regularExpression) != nil { return false }
+        return true
+    }
+
+    private static func resolveCurrencyToken(_ raw: String) -> AmountCurrencyResolve {
+        let t = TextNormalizer.normalize(raw)
+            .replacingOccurrences(of: "$", with: "usd")
+            .replacingOccurrences(of: "€", with: "eur")
+            .replacingOccurrences(of: "₽", with: "rub")
+        if t.contains("dollar") || t == "usd" || t.hasPrefix("доллар") {
+            return AmountCurrencyResolve(appCurrency: .usd)
+        }
+        if t.contains("euro") || t == "eur" || t.hasPrefix("евро") {
+            return AmountCurrencyResolve(appCurrency: .eur)
+        }
+        if t == "byn" || t == "br" || t.contains("бел") {
+            return AmountCurrencyResolve(appCurrency: .byn)
+        }
+        // «руб» / «рублей» / ruble → entry default (BYN), not market RUB
+        return AmountCurrencyResolve(appCurrency: nil)
+    }
+
+    /// Foreign currency mentioned when the amount had **no** unit — ignore commodity phrases.
+    private static func looseForeignCurrency(in text: String) -> AppCurrency? {
+        var working = text
+        let full = NSRange(working.startIndex..., in: working)
+        working = commodityCurrency.stringByReplacingMatches(
+            in: working,
+            options: [],
+            range: full,
+            withTemplate: " "
+        )
+        let range = NSRange(working.startIndex..., in: working)
+        let usd = try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(dollars?|usd|доллар(?:ов|а|ы)?|\$)"# + wa,
+            options: []
+        )
+        let eur = try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(euros?|eur|евро|€)"# + wa,
+            options: []
+        )
+        let byn = try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(byn|br|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?)"# + wa,
+            options: []
+        )
+        if usd.firstMatch(in: working, options: [], range: range) != nil { return .usd }
+        if eur.firstMatch(in: working, options: [], range: range) != nil { return .eur }
+        if byn.firstMatch(in: working, options: [], range: range) != nil { return .byn }
         return nil
     }
 
@@ -324,12 +447,27 @@ enum VoiceParser {
     }
 
     private static func stripAmountsAndCurrency(_ text: String) -> String {
-        var working = text.replacingOccurrences(
+        var working = text
+        // Strip only the currency token attached to the amount (keep «долларов» in notes).
+        let unitPatterns = [
+            #"(?i)"# + amountNumberPattern + #"\s*"# + currencyTokenPattern,
+            #"(?i)"# + currencyTokenPattern + #"\s*"# + amountNumberPattern,
+        ]
+        for pattern in unitPatterns {
+            working = working.replacingOccurrences(of: pattern, with: " ", options: .regularExpression)
+        }
+        // Remaining bare digits (amount without a surviving unit token)
+        working = working.replacingOccurrences(
             of: #"\d[\d\s.,]*"#,
             with: " ",
             options: .regularExpression
         )
-        working = currencyWords.stringByReplacingMatches(
+        // Always drop lone «руб» leftovers; leave dollar/euro commodity words for the note.
+        let rubOnly = try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|₽)"# + wa,
+            options: []
+        )
+        working = rubOnly.stringByReplacingMatches(
             in: working,
             options: [],
             range: NSRange(working.startIndex..., in: working),
@@ -412,20 +550,34 @@ extension VoiceParser {
     static func debugSelfCheck(categories: [MoneyCategory]) -> [String] {
         var failures: [String] = []
 
-        func check(_ label: String, _ raw: String, amount: Double, categoryId: String, note: String) {
+        func check(
+            _ label: String,
+            _ raw: String,
+            amount: Double,
+            categoryId: String? = nil,
+            note: String? = nil,
+            currency: AppCurrency? = nil,
+            expectNilCurrency: Bool = false
+        ) {
             let d = parse(rawText: raw, categories: categories)
             if d.amount != amount {
                 failures.append("\(label) amount: got \(String(describing: d.amount)) expected \(amount)")
             }
-            if d.categoryId != categoryId {
+            if let categoryId, d.categoryId != categoryId {
                 failures.append("\(label) category: got \(String(describing: d.categoryId)) expected \(categoryId)")
             }
-            if TextNormalizer.normalize(d.note) != TextNormalizer.normalize(note) {
+            if let note, TextNormalizer.normalize(d.note) != TextNormalizer.normalize(note) {
                 failures.append("\(label) note: got «\(d.note)» expected «\(note)»")
             }
-            let banned = ["рублей", "dollars", "развлечения", "точка"]
+            if expectNilCurrency, d.currency != nil {
+                failures.append("\(label) currency: got \(String(describing: d.currency)) expected nil")
+            }
+            if let currency, d.currency != currency {
+                failures.append("\(label) currency: got \(String(describing: d.currency)) expected \(currency)")
+            }
+            let banned = ["рублей", "развлечения", "точка"]
             for b in banned where TextNormalizer.normalize(d.note).contains(TextNormalizer.normalize(b))
-                && TextNormalizer.normalize(note) != TextNormalizer.normalize(b) {
+                && !(note.map { TextNormalizer.normalize($0).contains(TextNormalizer.normalize(b)) } ?? false) {
                 failures.append("\(label) note contains filler «\(b)»")
             }
         }
@@ -475,6 +627,21 @@ extension VoiceParser {
             "ds-kopeks",
             "купил картошки гарнир огурцов итого 7 рублей 40 копеек",
             amount: 7.4, categoryId: "food", note: "картошки гарнир огурцов"
+        )
+        check(
+            "fx-rub-wins",
+            "900 рублей, покупка долларов",
+            amount: 900, note: "покупка долларов", expectNilCurrency: true
+        )
+        check(
+            "hybrid-tyscha",
+            "тыща 200 руб подарки деньги ульяне",
+            amount: 1200, categoryId: "gifts", expectNilCurrency: true
+        )
+        check(
+            "hybrid-two-thousand",
+            "две тысячи 50 рублей",
+            amount: 2050, expectNilCurrency: true
         )
 
         return failures

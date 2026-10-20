@@ -26,6 +26,9 @@ struct RootTabView: View {
                 }
         }
         .tint(Color.primary)
+        .task {
+            ExchangeRateStore.shared.refreshIfNeeded()
+        }
     }
 }
 
