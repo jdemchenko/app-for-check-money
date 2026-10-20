@@ -35,8 +35,8 @@
 		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
 		A1000000000000000000001D /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
 		A1000000000000000000001E /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
-		/* Do NOT CodeSignOnCopy the Watch .app — that can invalidate the companion and hide it from Available Apps. */
-		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		/* Embed Watch companion into PlugIns/ with CodeSignOnCopy (required for device install / Available Apps). */
+		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A20000000000000000000001 /* CheckMoneyWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* CheckMoneyWatchApp.swift */; };
 		A20000000000000000000002 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WatchStore.swift */; };
 		A20000000000000000000003 /* WatchRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* WatchRootView.swift */; };
