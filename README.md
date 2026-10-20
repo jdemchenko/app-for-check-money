@@ -32,15 +32,14 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 4. Set the **same Team** under Signing & Capabilities on **AppForCheckMoney**, **CheckMoneyWatch**, and **CheckMoneyWatchWidgets** (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). Do **not** add App Groups.
 5. Press **Run** (⌘R).
 
-### Apple Watch (Simulator or physical / paired)
+### Apple Watch (companion — same product)
 
-**Product:** iPhone↔Watch связка — Watch hold-to-dictate, sync via WCSession.  
-**Two schemes** (one LaunchAction can’t switch products safely):
+**Одно приложение с компаньоном на часах.** Не отдельный Watch‑продукт.
 
-1. **AppForCheckMoney → iPhone** — embeds companion under `PlugIns/` (Build log: `Watch companion OK`). Then Available Apps / auto-install.
-2. **CheckMoneyWatch → Watch** — reliable first install if Available Apps is empty.
+**Только так:** scheme **AppForCheckMoney** → **iPhone** → **Run**.  
+Build log must show `Watch companion OK → …/PlugIns/CheckMoneyWatch.app`. Then Watch → Available Apps → CheckMoney (or auto-install). Hold-to-dictate syncs to iPhone via WCSession.
 
-`WCErrorCodeWatchAppNotInstalled` on the phone means the companion is not on the Watch yet — run step 2. Full guide: agent-store `docs/apple-watch.md`.
+`CheckMoneyWatch` scheme = debug fallback only (Apple requires a companion target; it is not a second app). Full guide: agent-store `docs/apple-watch.md`.
 
 ### Voice on Simulator
 
