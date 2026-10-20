@@ -87,7 +87,7 @@ final class WatchSpeechRecognizer: ObservableObject {
     }
 
     private static func activeInterfaceController() -> WKInterfaceController? {
-        let ext = WKExtension.shared()
-        return ext.visibleInterfaceController ?? ext.rootInterfaceController
+        let app = WKApplication.shared()
+        return app.visibleInterfaceController ?? app.rootInterfaceController
     }
 }
