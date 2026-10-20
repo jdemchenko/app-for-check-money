@@ -20,9 +20,9 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 ## Requirements
 
-- macOS with **Xcode 16+** (iOS 18 / watchOS 10+ SDKs)
-- iOS **18.0+** Simulator or device; watchOS **10.0+** for the companion
-- Apple Developer team (for device runs / signing / App Groups). Simulator works with automatic signing and an empty team in many setups; real phone↔watch App Group sync needs a Team.
+- macOS with **Xcode 26+** recommended for watchOS 26 devices (iOS 18 / watchOS 11+ SDKs)
+- iOS **18.0+** Simulator or device; watchOS **11.0+** companion (runs on watchOS **26.6**)
+- Same Signing **Team** on iPhone + Watch targets. App Groups not required. Simulator works with automatic signing.
 
 ## Open & run
 
@@ -34,11 +34,9 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 ### Apple Watch (Simulator or physical / paired)
 
-**Install to a paired Watch**: Clean Build Folder → scheme **AppForCheckMoney** → destination = **iPhone** (not the Watch) → Run. Embed Watch Content installs the companion. Same Team on all three targets is required. If the Watch app says “could not be installed”, delete the app from iPhone + Watch, trust the developer profile, free Watch storage, and run again (see agent-store `apple-watch.md` troubleshooting).
+**Install to a paired Watch (watchOS 26.6)**: Xcode **26+**, same Team on iPhone + Watch, Clean Build Folder → scheme **AppForCheckMoney** → destination = **iPhone** → Run. The Watch app is embedded under **`PlugIns/`** (required by Xcode 26; the old `Watch/` path breaks install). Complications/widgets are deferred. If install still fails, delete from iPhone+Watch, check Console `appconduitd` / `ACXError`, and see agent-store `apple-watch.md`.
 
-**Run / debug on Watch**: scheme **CheckMoneyWatch** → Watch destination → Run.
-
-Optional: Watch face → **Today spend** complication. Watch voice = keyboard dictation only.
+**Run / debug on Watch**: scheme **CheckMoneyWatch** → Watch destination → Run. Watch voice = keyboard dictation only.
 
 ### Voice on Simulator
 

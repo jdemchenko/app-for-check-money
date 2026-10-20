@@ -35,7 +35,7 @@
 		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
 		A1000000000000000000001D /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
 		A1000000000000000000001E /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* AppGroupStore.swift */; };
-		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A20000000000000000000001 /* CheckMoneyWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* CheckMoneyWatchApp.swift */; };
 		A20000000000000000000002 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WatchStore.swift */; };
 		A20000000000000000000003 /* WatchRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* WatchRootView.swift */; };
@@ -45,7 +45,6 @@
 		A20000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000007 /* Assets.xcassets */; };
 		A20000000000000000000008 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
 		A20000000000000000000009 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* AppGroupStore.swift */; };
-		A2000000000000000000000A /* CheckMoneyWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C10000000000000000000003 /* CheckMoneyWatchWidgets.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A30000000000000000000001 /* CheckMoneyWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000001 /* CheckMoneyWatchWidgets.swift */; };
 		A30000000000000000000002 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
 		A30000000000000000000003 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* AppGroupStore.swift */; };
@@ -60,36 +59,19 @@
 			remoteGlobalIDString = F10000000000000000000002;
 			remoteInfo = CheckMoneyWatch;
 		};
-		P10000000000000000000002 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F10000000000000000000010 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F10000000000000000000003;
-			remoteInfo = CheckMoneyWatchWidgets;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		/* Xcode 26+: watchOS companion must live in PlugIns/ (spec 13), not Watch/ (spec 16). */
 		D20000000000000000000001 /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D20000000000000000000002 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				A2000000000000000000000A /* CheckMoneyWatchWidgets.appex in Embed Foundation Extensions */,
+				A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */,
 			);
-			name = "Embed Foundation Extensions";
+			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -330,12 +312,10 @@
 				D10000000000000000000012 /* Sources */,
 				D10000000000000000000002 /* Frameworks */,
 				D10000000000000000000013 /* Resources */,
-				D20000000000000000000002 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				P20000000000000000000002 /* PBXTargetDependency */,
 			);
 			name = CheckMoneyWatch;
 			productName = CheckMoneyWatch;
@@ -537,7 +517,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Debug;
 		};
@@ -556,7 +536,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};
@@ -568,7 +548,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -601,7 +581,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -633,7 +613,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -654,7 +634,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Debug;
 		};
@@ -665,7 +645,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -686,7 +666,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};
@@ -697,7 +677,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -716,7 +696,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Debug;
 		};
@@ -727,7 +707,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -746,7 +726,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};

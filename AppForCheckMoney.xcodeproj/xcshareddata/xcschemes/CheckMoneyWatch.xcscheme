@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1600"
+   LastUpgradeVersion = "2600"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -17,20 +17,6 @@
                BlueprintIdentifier = "F10000000000000000000002"
                BuildableName = "CheckMoneyWatch.app"
                BlueprintName = "CheckMoneyWatch"
-               ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F10000000000000000000003"
-               BuildableName = "CheckMoneyWatchWidgets.appex"
-               BlueprintName = "CheckMoneyWatchWidgets"
                ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

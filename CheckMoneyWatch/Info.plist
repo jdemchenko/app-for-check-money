@@ -20,6 +20,8 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>MinimumOSVersion</key>
+	<string>$(WATCHOS_DEPLOYMENT_TARGET)</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>4</integer>
@@ -33,6 +35,8 @@
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.jdemchenko.AppForCheckMoney</string>
 	<key>WKRunsIndependentlyOfCompanionApp</key>
+	<false/>
+	<key>WKWatchOnly</key>
 	<false/>
 </dict>
 </plist>
