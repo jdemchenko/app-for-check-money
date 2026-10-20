@@ -34,12 +34,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 ### Apple Watch (Simulator or physical / paired)
 
-**Watch (do not mix scheme + destination):**  
-- **AppForCheckMoney** → destination **iPhone only** (companion embeds under `PlugIns/`).  
-- **CheckMoneyWatch** → destination **Vanya’s Apple Watch**.  
-- **Never** AppForCheckMoney + Watch destination — that triggers “platform doesn’t match AppForCheckMoney.app”.  
-
-Clean → AppForCheckMoney → iPhone → Run (log: `Watch companion OK`). Or CheckMoneyWatch → Watch → Run. Docs: agent-store `apple-watch.md`.
+**Watch (combined scheme AppForCheckMoney):** builds iPhone + Watch. Destination **iPhone** → phone app (Watch embeds under `PlugIns/`). Destination **Vanya’s Apple Watch** → launches **CheckMoneyWatch** via RemoteRunnable (does not run the iPhone `.app` on watchOS). Same Team + Developer Mode. Docs: agent-store `apple-watch.md`.
 
 ### Voice on Simulator
 

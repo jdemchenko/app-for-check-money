@@ -2,6 +2,12 @@
 <Scheme
    LastUpgradeVersion = "2600"
    version = "1.7">
+   <!--
+      Combined iPhone + Watch scheme (Xcode companion pattern):
+      - Destination iPhone  → launches host AppForCheckMoney (MacroExpansion / platform match)
+      - Destination Watch   → launches CheckMoneyWatch via RemoteRunnable (never runs iPhone .app on watchOS)
+      Both targets build for Running so either destination is valid.
+   -->
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
@@ -20,12 +26,9 @@
                ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <!-- Watch is embed-only for this scheme. buildForRunning=NO so choosing a Watch
-              destination does not try to launch AppForCheckMoney.app on watchOS.
-              Target dependency + Embed Watch Content still builds/embeds the companion. -->
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "NO"
+            buildForRunning = "YES"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">
@@ -45,6 +48,15 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "F10000000000000000000001"
+            BuildableName = "AppForCheckMoney.app"
+            BlueprintName = "AppForCheckMoney"
+            ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -56,8 +68,21 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <!-- Watch destinations: debug Watch app through watchOS (Carousel). -->
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/CheckMoneyWatch">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "F10000000000000000000002"
+            BuildableName = "CheckMoneyWatch.app"
+            BlueprintName = "CheckMoneyWatch"
+            ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
+         </BuildableReference>
+      </RemoteRunnable>
+      <!-- iPhone destinations: host app is installed/expanded as the companion. -->
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F10000000000000000000001"
@@ -65,7 +90,7 @@
             BlueprintName = "AppForCheckMoney"
             ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -89,6 +114,7 @@
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
-      revealArchiveInOrganizer = "YES">
+      revealArchiveInOrganizer = "YES"
+      customArchiveName = "AppForCheckMoney">
    </ArchiveAction>
 </Scheme>
