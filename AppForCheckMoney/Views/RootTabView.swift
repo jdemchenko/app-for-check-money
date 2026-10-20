@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+/// Three tabs only — Add is a sheet from Home to cut chrome.
 struct RootTabView: View {
     var body: some View {
         TabView {
@@ -9,22 +10,17 @@ struct RootTabView: View {
                     Label(L10n.string("tab.home"), systemImage: "house.fill")
                 }
 
-            AddTransactionView()
+            HistoryView()
                 .tabItem {
-                    Label(L10n.string("tab.add"), systemImage: "plus.circle.fill")
+                    Label(L10n.string("tab.history"), systemImage: "list.bullet")
                 }
 
             CategoriesView()
                 .tabItem {
                     Label(L10n.string("tab.categories"), systemImage: "folder.fill")
                 }
-
-            HistoryView()
-                .tabItem {
-                    Label(L10n.string("tab.history"), systemImage: "list.bullet")
-                }
         }
-        .tint(Color(hex: "0A84FF"))
+        .tint(AppTheme.accent)
     }
 }
 

@@ -73,27 +73,44 @@ struct HistoryView: View {
                         systemImage: "magnifyingglass",
                         description: Text(L10n.string("history.emptyHint"))
                     )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List {
-                        ForEach(grouped, id: \.day) { group in
-                            Section(MoneyFormat.dayLabel(group.day)) {
-                                ForEach(group.items, id: \.id) { tx in
-                                    Button {
-                                        selected = tx
-                                    } label: {
-                                        TransactionRowView(
-                                            transaction: tx,
-                                            category: categories.first { $0.id == tx.categoryId }
-                                        )
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 22, pinnedViews: []) {
+                            ForEach(grouped, id: \.day) { group in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    QuietSectionLabel(text: MoneyFormat.dayLabel(group.day))
+                                        .padding(.horizontal, 4)
+
+                                    GlassPanel(padding: 6, corner: AppTheme.cornerMedium) {
+                                        LazyVStack(spacing: 0) {
+                                            ForEach(group.items, id: \.id) { tx in
+                                                Button {
+                                                    selected = tx
+                                                } label: {
+                                                    TransactionRowView(
+                                                        transaction: tx,
+                                                        category: categories.first { $0.id == tx.categoryId }
+                                                    )
+                                                    .padding(.horizontal, 10)
+                                                }
+                                                .buttonStyle(.plain)
+
+                                                if tx.id != group.items.last?.id {
+                                                    Divider().opacity(0.25).padding(.leading, 54)
+                                                }
+                                            }
+                                        }
                                     }
-                                    .buttonStyle(.plain)
                                 }
                             }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
                     }
-                    .listStyle(.insetGrouped)
                 }
             }
+            .liquidScreen()
             .navigationTitle(L10n.string("tab.history"))
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $query, prompt: L10n.string("history.search"))
@@ -109,63 +126,89 @@ struct HistoryView: View {
             }
             .sheet(isPresented: $showFilters) {
                 filtersSheet
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
             .sheet(item: $selected) { tx in
                 transactionDetail(tx)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
 
     private var filtersSheet: some View {
         NavigationStack {
-            Form {
-                Section(L10n.string("field.type")) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    QuietSectionLabel(text: L10n.string("field.type"))
                     Picker(L10n.string("field.type"), selection: $typeFilter) {
                         Text(L10n.string("filter.all")).tag(TypeFilter.all)
                         Text(L10n.string("type.expense")).tag(TypeFilter.expense)
                         Text(L10n.string("type.income")).tag(TypeFilter.income)
                     }
                     .pickerStyle(.segmented)
-                }
-                Section(L10n.string("field.category")) {
-                    Picker(L10n.string("field.category"), selection: $categoryFilter) {
-                        Text(L10n.string("filter.all")).tag("all")
-                        ForEach(categories, id: \.id) { cat in
-                            Text(cat.displayName()).tag(cat.id)
+
+                    GlassPanel {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(L10n.string("field.category"))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Picker(L10n.string("field.category"), selection: $categoryFilter) {
+                                Text(L10n.string("filter.all")).tag("all")
+                                ForEach(categories, id: \.id) { cat in
+                                    Text(cat.displayName()).tag(cat.id)
+                                }
+                            }
+                            .labelsHidden()
                         }
                     }
-                }
-                Section(L10n.string("history.dateRange")) {
-                    DatePicker(
-                        L10n.string("history.from"),
-                        selection: Binding(
-                            get: { fromDate ?? Date.now },
-                            set: { fromDate = $0 }
-                        ),
-                        displayedComponents: .date
-                    )
-                    Toggle(isOn: Binding(
-                        get: { fromDate != nil },
-                        set: { fromDate = $0 ? (fromDate ?? Date.now) : nil }
-                    )) {
-                        Text(L10n.string("history.useFrom"))
+
+                    GlassPanel {
+                        VStack(alignment: .leading, spacing: 12) {
+                            QuietSectionLabel(text: L10n.string("history.dateRange"))
+                            Toggle(isOn: Binding(
+                                get: { fromDate != nil },
+                                set: { fromDate = $0 ? (fromDate ?? Date.now) : nil }
+                            )) {
+                                Text(L10n.string("history.useFrom"))
+                            }
+                            if fromDate != nil {
+                                DatePicker(
+                                    L10n.string("history.from"),
+                                    selection: Binding(
+                                        get: { fromDate ?? Date.now },
+                                        set: { fromDate = $0 }
+                                    ),
+                                    displayedComponents: .date
+                                )
+                            }
+                            Toggle(isOn: Binding(
+                                get: { toDate != nil },
+                                set: { toDate = $0 ? (toDate ?? Date.now) : nil }
+                            )) {
+                                Text(L10n.string("history.useTo"))
+                            }
+                            if toDate != nil {
+                                DatePicker(
+                                    L10n.string("history.to"),
+                                    selection: Binding(
+                                        get: { toDate ?? Date.now },
+                                        set: { toDate = $0 }
+                                    ),
+                                    displayedComponents: .date
+                                )
+                            }
+                        }
                     }
-                    DatePicker(
-                        L10n.string("history.to"),
-                        selection: Binding(
-                            get: { toDate ?? Date.now },
-                            set: { toDate = $0 }
-                        ),
-                        displayedComponents: .date
-                    )
-                    Toggle(isOn: Binding(
-                        get: { toDate != nil },
-                        set: { toDate = $0 ? (toDate ?? Date.now) : nil }
-                    )) {
-                        Text(L10n.string("history.useTo"))
+
+                    GlassActionButton(title: L10n.string("common.confirm")) {
+                        showFilters = false
                     }
                 }
+                .padding(20)
             }
+            .liquidScreen()
             .navigationTitle(L10n.string("history.filters"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -178,38 +221,44 @@ struct HistoryView: View {
                         query = ""
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.string("common.confirm")) { showFilters = false }
-                }
             }
         }
-        .presentationDetents([.medium, .large])
     }
 
     private func transactionDetail(_ tx: MoneyTransaction) -> some View {
         NavigationStack {
-            List {
-                Section {
-                    TransactionRowView(
-                        transaction: tx,
-                        category: categories.first { $0.id == tx.categoryId }
-                    )
-                }
-                if let note = tx.note, !note.isEmpty {
-                    Section(L10n.string("field.note")) {
-                        Text(note)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    GlassPanel {
+                        TransactionRowView(
+                            transaction: tx,
+                            category: categories.first { $0.id == tx.categoryId }
+                        )
                     }
-                }
-                Section {
-                    Button(role: .destructive) {
+                    if let note = tx.note, !note.isEmpty {
+                        GlassPanel {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(L10n.string("field.note"))
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                Text(note)
+                                    .font(.body)
+                            }
+                        }
+                    }
+                    GlassActionButton(
+                        title: L10n.string("common.delete"),
+                        systemImage: "trash",
+                        isDestructive: true
+                    ) {
                         modelContext.delete(tx)
                         try? modelContext.save()
                         selected = nil
-                    } label: {
-                        Label(L10n.string("common.delete"), systemImage: "trash")
                     }
                 }
+                .padding(20)
             }
+            .liquidScreen()
             .navigationTitle(L10n.string("history.detail"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -218,7 +267,6 @@ struct HistoryView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
     }
 }
 

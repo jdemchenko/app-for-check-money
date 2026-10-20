@@ -9,7 +9,8 @@ Native **SwiftUI** personal money tracker for iPhone and iPad — expenses and i
 - **Manual entry** — amount, expense/income, category, optional note, date
 - **Voice entry** — `SFSpeechRecognizer` + microphone; Home **quick entry** autosaves on a confident parse (amount + category). Low-confidence cases get a one-tap confirm with manual category override. Full Add → Voice flow remains for manual editing.
 - **Categories** — seeded defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords (RU/EN synonyms, АЗС/заправка/gas station, …) with **manual override**
-- **Screens** — Home (month balance + recent + quick mic), Add (manual / voice), Categories, History (search + filters)
+- **Screens** — Home (balance + floating glass mic + recent), History, Categories; manual Add as a sheet from Home
+- **UI** — Liquid Glass–inspired materials (`.ultraThinMaterial` / specular rims / soft depth), minimal chrome, system Light/Dark
 - **System appearance** — follows Light/Dark Mode (no forced theme)
 - **Localization** — English + Russian (`en` / `ru` `.lproj`); UI language follows the device locale
 

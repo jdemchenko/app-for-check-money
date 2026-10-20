@@ -5,10 +5,11 @@ struct TransactionRowView: View {
     let category: MoneyCategory?
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             CategoryGlyph(
                 symbolName: category?.symbolName ?? "circle.fill",
-                colorHex: category?.colorHex ?? "8E8E93"
+                colorHex: category?.colorHex ?? "8E8E93",
+                size: 36
             )
 
             VStack(alignment: .leading, spacing: 2) {
@@ -16,33 +17,28 @@ struct TransactionRowView: View {
                     .font(.body.weight(.medium))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
-                Text(transaction.note?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
-                     ?? MoneyFormat.dayLabel(transaction.date))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                Text(
+                    transaction.note?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+                        ?? MoneyFormat.dayLabel(transaction.date)
+                )
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
             }
 
             Spacer(minLength: 8)
 
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(MoneyFormat.signed(transaction.amount, type: transaction.type))
-                    .font(.body.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(transaction.type == .income ? Color(hex: "34C759") : .primary)
-                if transaction.note?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty != nil {
-                    Text(MoneyFormat.dayLabel(transaction.date))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-            }
+            Text(MoneyFormat.signed(transaction.amount, type: transaction.type))
+                .font(.body.weight(.semibold).monospacedDigit())
+                .foregroundStyle(
+                    transaction.type == .income ? AppTheme.income : .primary
+                )
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
         .accessibilityElement(children: .combine)
     }
 }
 
 private extension String {
-    var nilIfEmpty: String? {
-        isEmpty ? nil : self
-    }
+    var nilIfEmpty: String? { isEmpty ? nil : self }
 }
