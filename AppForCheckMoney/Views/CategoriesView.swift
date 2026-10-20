@@ -219,9 +219,7 @@ struct CategoryEditorSheet: View {
                                     .glassField()
                                 TextField(L10n.string("categories.symbol"), text: $symbolName)
                                     .glassField()
-                                    .onChange(of: symbolName) { _, _ in
-                                        symbolLocked = true
-                                    }
+                                    .onSubmit { symbolLocked = true }
                             }
                             CategoryGlyph(symbolName: symbolName, colorHex: colorHex, size: 56)
                                 .frame(maxWidth: .infinity)
