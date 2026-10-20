@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var statusMessage: String?
     @State private var showStatus = false
     @State private var showManualAdd = false
+    @State private var showIconSettings = false
 
     private var monthTransactions: [MoneyTransaction] {
         let cal = Calendar.current
@@ -60,13 +61,21 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showManualAdd = true
+                    Menu {
+                        Button {
+                            showManualAdd = true
+                        } label: {
+                            Label(L10n.string("tab.add"), systemImage: "plus")
+                        }
+                        Button {
+                            showIconSettings = true
+                        } label: {
+                            Label(L10n.string("settings.icon.title"), systemImage: "app.badge")
+                        }
                     } label: {
-                        Image(systemName: "plus")
-                            .font(.body.weight(.semibold))
+                        Image(systemName: "ellipsis.circle")
                     }
-                    .accessibilityLabel(L10n.string("tab.add"))
+                    .accessibilityLabel(L10n.string("common.menu"))
                 }
             }
             .onAppear {
@@ -104,6 +113,11 @@ struct HomeView: View {
                 }
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showIconSettings) {
+                AppIconSettingsView()
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
             }
             .alert(statusMessage ?? "", isPresented: $showStatus) {
                 Button(L10n.string("common.ok"), role: .cancel) {}

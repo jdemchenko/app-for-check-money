@@ -6,6 +6,9 @@ struct AppForCheckMoneyApp: App {
     var body: some Scene {
         WindowGroup {
             RootTabView()
+                .onAppear {
+                    AppIconSettings.syncFromStorage()
+                }
         }
         .modelContainer(for: [MoneyTransaction.self, MoneyCategory.self]) { result in
             switch result {
