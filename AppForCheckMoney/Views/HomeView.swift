@@ -243,7 +243,9 @@ struct HomeView: View {
             .scaleEffect(isHoldingMic || speech.isListening ? 1.06 : 1.0)
             .animation(.spring(response: 0.28, dampingFraction: 0.72), value: isHoldingMic)
             .animation(.spring(response: 0.28, dampingFraction: 0.72), value: speech.isListening)
-            .sensoryFeedback(.impact(flexibility: .medium, intensity: 0.8), trigger: isHoldingMic)
+            // Use weight-based impact (iOS 17+). Avoid `.impact(flexibility:)` /
+            // `SensoryFeedback.Flexibility` — those require a newer SDK than iOS 18.
+            .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: isHoldingMic)
             .frame(minWidth: AppTheme.touchMin, minHeight: AppTheme.touchMin)
             .contentShape(Circle())
             .gesture(holdToTalkGesture)
