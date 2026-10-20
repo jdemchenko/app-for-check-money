@@ -45,6 +45,7 @@
 "voice.clear" = "Clear";
 "voice.unsupported" = "Voice input isn’t available on this device. Use manual entry.";
 "voice.permissionDenied" = "Microphone or speech permission is off. Enable them in Settings, or use manual entry.";
+"voice.sessionFailed" = "Couldn’t start the microphone session. Tap the mic to try again. On Simulator, check System Settings → Sound and that an input device is available.";
 
 "categories.defaults" = "Defaults";
 "categories.custom" = "Custom";

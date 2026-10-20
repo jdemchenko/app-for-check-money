@@ -25,6 +25,9 @@ final class SpeechRecognizer: ObservableObject {
     private var recognizer: SFSpeechRecognizer?
     private var silenceTask: Task<Void, Never>?
     private var didEmitFinished = false
+    private var tapInstalled = false
+    private var interruptionObserver: NSObjectProtocol?
+    private var routeObserver: NSObjectProtocol?
     private let silenceNanoseconds: UInt64 = 1_600_000_000
 
     var isAvailable: Bool {
@@ -45,6 +48,7 @@ final class SpeechRecognizer: ObservableObject {
         if recognizer == nil {
             status = .unavailable(L10n.string("voice.unsupported"))
         }
+        observeSessionEvents()
     }
 
     func prepare() async {
@@ -71,43 +75,57 @@ final class SpeechRecognizer: ObservableObject {
             return
         }
         guard isAuthorized else {
-            Task { await prepare(); if isAuthorized { start() } }
+            Task {
+                await prepare()
+                if isAuthorized { start() }
+            }
             return
         }
 
+        // Full reset of any previous attempt before activating again.
         cancelSilenceWatch()
-        stopEngineOnly()
+        teardownEngine(deactivateSession: true)
         task?.cancel()
         task = nil
         request = nil
         transcript = ""
         didEmitFinished = false
 
+        do {
+            try activateSessionForSpeech()
+        } catch {
+            status = .failed(Self.friendlySessionError(error))
+            return
+        }
+
         let audioEngine = AVAudioEngine()
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
         request.taskHint = .dictation
-
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.record, mode: .measurement, options: .duckOthers)
-            try session.setActive(true, options: .notifyOthersOnDeactivation)
-        } catch {
-            status = .failed(error.localizedDescription)
-            return
+        if recognizer.supportsOnDeviceRecognition {
+            request.requiresOnDeviceRecognition = false
         }
 
         let input = audioEngine.inputNode
-        let format = input.outputFormat(forBus: 0)
+        // Format must be read after session activation; Simulator can briefly report 0 Hz.
+        let format = Self.inputFormat(for: input)
+        guard format.sampleRate > 0, format.channelCount > 0 else {
+            teardownEngine(deactivateSession: true)
+            status = .failed(L10n.string("voice.sessionFailed"))
+            return
+        }
+
         input.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
             request.append(buffer)
         }
+        tapInstalled = true
 
         audioEngine.prepare()
         do {
             try audioEngine.start()
         } catch {
-            status = .failed(error.localizedDescription)
+            teardownEngine(deactivateSession: true)
+            status = .failed(Self.friendlySessionError(error))
             return
         }
 
@@ -129,14 +147,15 @@ final class SpeechRecognizer: ObservableObject {
                 }
                 if let error {
                     let ns = error as NSError
-                    if ns.domain == "kAFAssistantErrorDomain", ns.code == 216 {
+                    // Cancellation after endAudio / stop is expected.
+                    if ns.domain == "kAFAssistantErrorDomain", ns.code == 216 || ns.code == 203 {
                         return
                     }
                     if self.status == .listening {
                         self.status = .failed(error.localizedDescription)
                     }
                     self.cancelSilenceWatch()
-                    self.stopEngineOnly()
+                    self.teardownEngine(deactivateSession: true)
                 }
             }
         }
@@ -150,6 +169,72 @@ final class SpeechRecognizer: ObservableObject {
     func clearTranscript() {
         transcript = ""
     }
+
+    // MARK: - Session
+
+    /// Configure + activate AVAudioSession for SFSpeechRecognizer input.
+    /// Previous category/options (e.g. `.record` + `.duckOthers`) commonly throw
+    /// “Session activation failed” on device and Simulator.
+    private func activateSessionForSpeech() throws {
+        let session = AVAudioSession.sharedInstance()
+
+        // Always release a prior activation before switching category.
+        try? session.setActive(false, options: [.notifyOthersOnDeactivation])
+
+        // Avoid `.record` + `.duckOthers` (incompatible → “Session activation failed”).
+        // Avoid Bluetooth HFP options here — they often fail activation on Simulator
+        // when no HFP route exists. Device mics work with playAndRecord + defaultToSpeaker.
+        do {
+            try session.setCategory(
+                .playAndRecord,
+                mode: .measurement,
+                options: [.duckOthers, .defaultToSpeaker]
+            )
+        } catch {
+            try session.setCategory(.record, mode: .measurement, options: [])
+        }
+
+        try? session.setPreferredSampleRate(44_100)
+        try? session.setPreferredIOBufferDuration(0.01)
+
+        do {
+            try session.setActive(true, options: [.notifyOthersOnDeactivation])
+        } catch {
+            // One retry after forced deactivate — handles sticky sessions.
+            try? session.setActive(false, options: [.notifyOthersOnDeactivation])
+            try session.setCategory(.record, mode: .default, options: [])
+            try session.setActive(true, options: [.notifyOthersOnDeactivation])
+        }
+    }
+
+    private static func inputFormat(for input: AVAudioInputNode) -> AVAudioFormat {
+        let hardware = input.outputFormat(forBus: 0)
+        if hardware.sampleRate > 0, hardware.channelCount > 0 {
+            return hardware
+        }
+        // Simulator / cold start fallback
+        return AVAudioFormat(
+            commonFormat: .pcmFormatFloat32,
+            sampleRate: 44_100,
+            channels: 1,
+            interleaved: false
+        ) ?? hardware
+    }
+
+    private static func friendlySessionError(_ error: Error) -> String {
+        let ns = error as NSError
+        // AVAudioSessionErrorCodeCannotStartPlaying / SessionActivationFailed often surface as this string.
+        let text = ns.localizedDescription.lowercased()
+        if text.contains("session activation failed")
+            || text.contains("activating")
+            || ns.code == 560_557_684 /* ' !act' SessionActivationFailed */
+            || ns.domain == NSOSStatusErrorDomain {
+            return L10n.string("voice.sessionFailed")
+        }
+        return ns.localizedDescription
+    }
+
+    // MARK: - Lifecycle helpers
 
     private func scheduleSilenceFinish() {
         cancelSilenceWatch()
@@ -169,7 +254,7 @@ final class SpeechRecognizer: ObservableObject {
     private func finishUtterance() {
         cancelSilenceWatch()
         request?.endAudio()
-        stopEngineOnly()
+        teardownEngine(deactivateSession: true)
         task?.cancel()
         task = nil
         request = nil
@@ -183,11 +268,72 @@ final class SpeechRecognizer: ObservableObject {
         onUtteranceFinished?(text)
     }
 
-    private func stopEngineOnly() {
-        audioEngine?.stop()
-        audioEngine?.inputNode.removeTap(onBus: 0)
+    private func teardownEngine(deactivateSession: Bool) {
+        if let engine = audioEngine {
+            if tapInstalled {
+                engine.inputNode.removeTap(onBus: 0)
+                tapInstalled = false
+            }
+            if engine.isRunning {
+                engine.stop()
+            }
+        }
         audioEngine = nil
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+
+        if deactivateSession {
+            try? AVAudioSession.sharedInstance()
+                .setActive(false, options: [.notifyOthersOnDeactivation])
+        }
+    }
+
+    private func observeSessionEvents() {
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                self?.handleInterruption(notification)
+            }
+        }
+
+        routeObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                // If we lose the input route mid-listen, stop cleanly so the next tap can retry.
+                guard let self, self.isListening else { return }
+                let inputs = AVAudioSession.sharedInstance().currentRoute.inputs
+                if inputs.isEmpty {
+                    self.status = .failed(L10n.string("voice.sessionFailed"))
+                    self.teardownEngine(deactivateSession: true)
+                }
+            }
+        }
+    }
+
+    private func handleInterruption(_ notification: Notification) {
+        guard
+            let info = notification.userInfo,
+            let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let type = AVAudioSession.InterruptionType(rawValue: typeValue)
+        else { return }
+
+        switch type {
+        case .began:
+            if isListening {
+                cancelSilenceWatch()
+                teardownEngine(deactivateSession: true)
+                status = .idle
+            }
+        case .ended:
+            // Leave idle — user taps mic again to resume (avoids surprise re-listen).
+            break
+        @unknown default:
+            break
+        }
     }
 
     private func requestSpeechAuth() async -> Bool {
