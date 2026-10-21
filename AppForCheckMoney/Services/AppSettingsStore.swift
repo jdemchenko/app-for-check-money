@@ -44,22 +44,33 @@ final class AppSettingsStore: ObservableObject {
 
     private init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        budgetEnabled = defaults.bool(forKey: Key.budgetEnabled)
-        let stored = defaults.double(forKey: Key.budgetAmount)
-        budgetAmount = stored > 0 ? stored : 1000
-        budgetCurrency = AppCurrency.parse(defaults.string(forKey: Key.budgetCurrency))
-        lockEnabled = defaults.bool(forKey: Key.lockEnabled)
+
+        let enabled = defaults.bool(forKey: Key.budgetEnabled)
+        let storedAmount = defaults.double(forKey: Key.budgetAmount)
+        let amount = storedAmount > 0 ? storedAmount : 1000
+        let currency = AppCurrency.parse(defaults.string(forKey: Key.budgetCurrency))
+        let lock = defaults.bool(forKey: Key.lockEnabled)
+        let preferCloud = defaults.bool(forKey: Key.iCloudPrefer)
+
+        let done: Bool
         if defaults.object(forKey: Key.onboardingDone) != nil {
-            onboardingDone = defaults.bool(forKey: Key.onboardingDone)
+            done = defaults.bool(forKey: Key.onboardingDone)
         } else {
             // Upgrade path: users who already picked currencies skip the new one-screen intro.
             let returningUser = defaults.object(forKey: "app.currency.display") != nil
                 || defaults.object(forKey: "app.currency.entry") != nil
                 || defaults.object(forKey: "app.currency.code") != nil
-            onboardingDone = returningUser
-            defaults.set(onboardingDone, forKey: Key.onboardingDone)
+            done = returningUser
+            defaults.set(done, forKey: Key.onboardingDone)
         }
-        preferiCloudSync = defaults.bool(forKey: Key.iCloudPrefer)
+
+        // Assign all stored properties only after locals are ready (Swift init ordering).
+        budgetEnabled = enabled
+        budgetAmount = amount
+        budgetCurrency = currency
+        lockEnabled = lock
+        preferiCloudSync = preferCloud
+        onboardingDone = done
     }
 }
 

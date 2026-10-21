@@ -1,6 +1,6 @@
 # CheckMoney (AppForCheckMoney)
 
-Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** — expenses and income with manual entry, voice drafts, and keyword auto-categorization. Data stays on-device via **SwiftData** (phone). Watch is a **paired companion**: hold-to-dictate → shared NLP → WatchConnectivity sync. Optional **App Group** for the iPhone home-screen widget; no backend / auth. **iCloud/CloudKit** needs a paid Apple Developer team (Personal Team stays local).
+Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** — expenses and income with manual entry, voice drafts, and keyword auto-categorization. Data stays on-device via **SwiftData** (phone). Watch is a **paired companion**: hold-to-dictate → shared NLP → WatchConnectivity sync. No App Groups entitlement by default (Personal Team–safe); widget soft-fails shared suite. No backend / auth. **iCloud/CloudKit** needs a paid Apple Developer team (Personal Team stays local).
 
 > This repository is an **independent** iOS app. It is not related to Fitil.
 
@@ -14,7 +14,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 - **Recurring** — weekly/monthly rules (rent, telecom, salary) auto-post when due
 - **App lock** — Face ID / Touch ID / device passcode gate
 - **Onboarding** — one screen (hold-to-talk + BYN default)
-- **iPhone widget** — today spend / month balance (App Group snapshot; may stay stale if App Groups fail on Personal Team)
+- **iPhone widget** — today spend / month balance (no App Groups entitlement on Personal Team; soft suite — may show placeholder until a paid team enables sharing)
 - **iCloud** — best-effort toggle; **CloudKit requires paid team** — Personal Team stays local-only (honest note in Settings)
 - **UI** — Liquid Glass–inspired materials (`.ultraThinMaterial` / specular rims / soft depth), minimal chrome, system Light/Dark
 - **Currency** — each transaction stores its own currency; Settings has **display** (totals via approximate BYN-pivot rates) and **entry default** (new ops). Changing Settings never rewrites past amounts. Voice «руб» → entry default (BYN); dollars/euros stamp USD/EUR.
@@ -28,14 +28,14 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 - macOS with **Xcode 26+** recommended for watchOS 26 devices (iOS 18 / watchOS 11+ SDKs)
 - iOS **18.0+** Simulator or device; watchOS **11.0+** companion (runs on watchOS **26.6**)
-- Same Signing **Team** on iPhone + Watch + **CheckMoneyPhoneWidgets** targets. Enable App Group `group.com.jdemchenko.AppForCheckMoney` if Xcode prompts (widget snapshot). Simulator works with automatic signing.
+- Same Signing **Team** on iPhone + Watch + **CheckMoneyPhoneWidgets** targets. Do **not** add App Groups on Personal Team (entitlements stay empty). Simulator works with automatic signing.
 
 ## Open & run
 
 1. Clone this repo on a Mac.
 2. Open `AppForCheckMoney.xcodeproj` in Xcode.
 3. Select the **AppForCheckMoney** scheme and an iOS 18+ Simulator (or your device).
-4. Set the **same Team** under Signing & Capabilities on **AppForCheckMoney**, **CheckMoneyWatch**, **CheckMoneyWatchWidgets**, and **CheckMoneyPhoneWidgets** (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). Confirm App Group `group.com.jdemchenko.AppForCheckMoney` on the phone app + phone widgets if prompted.
+4. Set the **same Team** under Signing & Capabilities on **AppForCheckMoney**, **CheckMoneyWatch**, **CheckMoneyWatchWidgets**, and **CheckMoneyPhoneWidgets** (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). Leave App Groups off on Personal Team.
 5. Press **Run** (⌘R).
 
 ### Apple Watch (companion — same product)
@@ -75,7 +75,7 @@ AppForCheckMoney/                   # iPhone / iPad app (SwiftData)
 Shared/                             # SyncModels, LocalSyncStore, SharedVoiceParser (iOS + Watch)
 CheckMoneyWatch/                    # watchOS companion UI
 CheckMoneyWatchWidgets/             # Today spend complication
-CheckMoneyPhoneWidgets/             # iPhone home-screen widget (App Group)
+CheckMoneyPhoneWidgets/             # iPhone home-screen widget (soft App Group / Personal Team–safe)
 ```
 
 ## Privacy (Info.plist)

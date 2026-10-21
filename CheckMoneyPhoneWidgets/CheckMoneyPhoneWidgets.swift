@@ -1,40 +1,49 @@
 import WidgetKit
 import SwiftUI
 
-private enum WidgetBridge {
+/// Shared payload shape (file-level so `CheckMoneyEntry` can reference it).
+struct WidgetSnapshotPayload: Codable {
+    var updatedAt: Date
+    var todayExpense: Double
+    var monthBalance: Double
+    var monthExpense: Double
+    var currencySymbol: String
+    var budgetEnabled: Bool
+    var budgetAmount: Double
+    var budgetSpent: Double
+
+    static var placeholder: WidgetSnapshotPayload {
+        .init(
+            updatedAt: .now,
+            todayExpense: 0,
+            monthBalance: 0,
+            monthExpense: 0,
+            currencySymbol: "Br",
+            budgetEnabled: false,
+            budgetAmount: 0,
+            budgetSpent: 0
+        )
+    }
+}
+
+/// Loads snapshot without requiring App Groups (Personal Team soft-fail).
+enum WidgetBridge {
     static let appGroupID = "group.com.jdemchenko.AppForCheckMoney"
     static let key = "widget.snapshot.v1"
 
-    struct Snapshot: Codable {
-        var updatedAt: Date
-        var todayExpense: Double
-        var monthBalance: Double
-        var monthExpense: Double
-        var currencySymbol: String
-        var budgetEnabled: Bool
-        var budgetAmount: Double
-        var budgetSpent: Double
-
-        static var placeholder: Snapshot {
-            .init(
-                updatedAt: .now,
-                todayExpense: 0,
-                monthBalance: 0,
-                monthExpense: 0,
-                currencySymbol: "Br",
-                budgetEnabled: false,
-                budgetAmount: 0,
-                budgetSpent: 0
-            )
+    static func load() -> WidgetSnapshotPayload {
+        if let data = groupData() ?? UserDefaults.standard.data(forKey: key),
+           let snap = try? JSONDecoder().decode(WidgetSnapshotPayload.self, from: data) {
+            return snap
         }
+        return .placeholder
     }
 
-    static func load() -> Snapshot {
-        let suite = UserDefaults(suiteName: appGroupID) ?? .standard
-        guard let data = suite.data(forKey: key),
-              let snap = try? JSONDecoder().decode(Snapshot.self, from: data)
-        else { return .placeholder }
-        return snap
+    private static func groupData() -> Data? {
+        guard FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: appGroupID
+        ) != nil else { return nil }
+        return UserDefaults(suiteName: appGroupID)?.data(forKey: key)
     }
 }
 
@@ -56,7 +65,7 @@ struct CheckMoneyProvider: TimelineProvider {
 
 struct CheckMoneyEntry: TimelineEntry {
     let date: Date
-    let snapshot: WidgetBridge.Snapshot
+    let snapshot: WidgetSnapshotPayload
 }
 
 struct CheckMoneyWidgetView: View {

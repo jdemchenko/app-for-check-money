@@ -2,7 +2,8 @@ import Foundation
 import WidgetKit
 
 /// Snapshot for the iPhone home-screen widget.
-/// Uses App Group when available; falls back to standard defaults (widget may stay stale on Personal Team).
+/// Soft-fails App Groups (Personal Team has no application-groups entitlement).
+/// Writes standard defaults always; also writes the suite when a group container exists.
 enum WidgetSnapshotStore {
     static let appGroupID = "group.com.jdemchenko.AppForCheckMoney"
     private static let key = "widget.snapshot.v1"
@@ -18,19 +19,27 @@ enum WidgetSnapshotStore {
         var budgetSpent: Double
     }
 
-    private static var suite: UserDefaults {
-        UserDefaults(suiteName: appGroupID) ?? .standard
+    /// App Group suite only when the container is available (paid team / capability on).
+    private static var groupSuite: UserDefaults? {
+        guard FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: appGroupID
+        ) != nil else { return nil }
+        return UserDefaults(suiteName: appGroupID)
     }
 
     static func save(_ snapshot: Snapshot) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        suite.set(data, forKey: key)
+        UserDefaults.standard.set(data, forKey: key)
+        groupSuite?.set(data, forKey: key)
         WidgetCenter.shared.reloadAllTimelines()
     }
 
     static func load() -> Snapshot? {
-        guard let data = suite.data(forKey: key) else { return nil }
-        return try? JSONDecoder().decode(Snapshot.self, from: data)
+        if let data = groupSuite?.data(forKey: key)
+            ?? UserDefaults.standard.data(forKey: key) {
+            return try? JSONDecoder().decode(Snapshot.self, from: data)
+        }
+        return nil
     }
 
     @MainActor
