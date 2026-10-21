@@ -260,12 +260,11 @@ private struct GlassChipBackground: ViewModifier {
             }
     }
 
-    @ViewBuilder
-    private var chipFill: some ShapeStyle {
+    private var chipFill: AnyShapeStyle {
         if scheme == .dark {
-            .thinMaterial
+            AnyShapeStyle(.thinMaterial)
         } else {
-            Color.white.opacity(selected ? 1 : 0.88)
+            AnyShapeStyle(Color.white.opacity(selected ? 1 : 0.88))
         }
     }
 }
