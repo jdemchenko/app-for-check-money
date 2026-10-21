@@ -155,7 +155,7 @@ struct AddTransactionView: View {
                                 Circle().fill(Color.primary.opacity(speech.isListening ? 0.12 : 0.06))
                             }
                             .overlay {
-                                Circle().strokeBorder(AppTheme.glassStroke, lineWidth: 1)
+                                Circle().strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
                             }
                         Image(systemName: speech.isListening ? "waveform" : "mic.fill")
                             .font(.system(size: 28, weight: .medium))

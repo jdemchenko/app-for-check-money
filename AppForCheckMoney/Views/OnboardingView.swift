@@ -62,7 +62,7 @@ struct OnboardingView: View {
                     .fill(.ultraThinMaterial)
                     .overlay {
                         RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                            .strokeBorder(AppTheme.glassStroke, lineWidth: 1)
+                            .strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
                     }
             }
             .padding(24)

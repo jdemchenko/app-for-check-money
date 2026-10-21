@@ -60,7 +60,7 @@ struct QuietConfirmPanel: View {
                 .fill(.ultraThinMaterial)
                 .overlay {
                     AppTheme.continuousRect(AppTheme.cornerLarge)
-                        .strokeBorder(AppTheme.glassStroke, lineWidth: 1)
+                        .strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
                 }
         }
         .padding(.horizontal, 28)
