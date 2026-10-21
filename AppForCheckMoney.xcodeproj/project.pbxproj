@@ -35,8 +35,7 @@
 		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
 		A1000000000000000000001D /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
 		A1000000000000000000001E /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
-		/* Embed Watch companion into PlugIns/ with CodeSignOnCopy (required for device install / Available Apps).
-		   No platformFilter — matches Available-Apps-good 2feee4b; wrong filter can skip embed on device. */
+		/* Embed Watch companion into PlugIns/ with CodeSignOnCopy (no platformFilter; matches 2feee4b Available Apps). */
 		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A20000000000000000000001 /* CheckMoneyWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* CheckMoneyWatchApp.swift */; };
 		A20000000000000000000002 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WatchStore.swift */; };
@@ -612,7 +611,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -645,7 +644,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -677,7 +676,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -713,7 +712,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -749,7 +748,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -779,7 +778,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
