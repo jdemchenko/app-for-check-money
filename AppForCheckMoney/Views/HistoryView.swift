@@ -108,11 +108,7 @@ struct HistoryView: View {
                                         )
                                     }
                                     .buttonStyle(.plain)
-                                    .listRowBackground(
-                                        AppTheme.continuousRect(AppTheme.radiusControl)
-                                            .fill(.ultraThinMaterial)
-                                            .padding(.vertical, 2)
-                                    )
+                                    .listRowBackground(ListRowGlassBackground())
                                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                         Button {
                                             pendingDelete = tx
@@ -245,11 +241,10 @@ struct HistoryView: View {
             if daySpend > 0 {
                 Text("−" + MoneyFormat.currency(daySpend, code: currencySettings.displayCurrency))
                     .font(.caption.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(.secondary)
             }
         }
         .font(.subheadline.weight(.semibold))
-        .foregroundStyle(.secondary)
+        .themeSecondary()
         .textCase(nil)
     }
 

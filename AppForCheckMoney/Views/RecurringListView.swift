@@ -21,11 +21,7 @@ struct RecurringListView: View {
                     List {
                         ForEach(rules, id: \.id) { rule in
                             recurringRow(rule)
-                                .listRowBackground(
-                                    AppTheme.continuousRect(AppTheme.radiusControl)
-                                        .fill(.ultraThinMaterial)
-                                        .padding(.vertical, 2)
-                                )
+                                .listRowBackground(ListRowGlassBackground())
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
                                         modelContext.delete(rule)

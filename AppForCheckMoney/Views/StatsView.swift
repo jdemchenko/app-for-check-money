@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct StatsView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \MoneyTransaction.date, order: .reverse)
     private var transactions: [MoneyTransaction]
     @Query(sort: \MoneyCategory.sortOrder)
@@ -58,7 +59,7 @@ struct StatsView: View {
 
                     Text(CurrencyConverter.ratesFootnote)
                         .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                        .themeTertiary()
                         .padding(.horizontal, 4)
                 }
                 .padding(.horizontal, 20)
@@ -76,7 +77,7 @@ struct StatsView: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text(L10n.string("stats.overview"))
                     .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .themeSecondary()
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(MoneyFormat.currency(snapshot.balance, code: snapshot.displayCurrency))
@@ -87,21 +88,21 @@ struct StatsView: View {
                     Spacer(minLength: 0)
                     Text("\(snapshot.transactionCount) \(L10n.string("stats.ops"))")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.tertiary)
+                        .themeTertiary()
                 }
 
                 HStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(L10n.string("home.income"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .themeSecondary()
                         Text(MoneyFormat.currency(snapshot.income, code: snapshot.displayCurrency))
                             .font(.subheadline.weight(.semibold).monospacedDigit())
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text(L10n.string("home.expense"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .themeSecondary()
                         Text(MoneyFormat.currency(snapshot.expense, code: snapshot.displayCurrency))
                             .font(.subheadline.weight(.semibold).monospacedDigit())
                     }
@@ -145,9 +146,9 @@ struct StatsView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 AppTheme.continuousRect(AppTheme.radiusControl)
-                                    .fill(Color.primary.opacity(0.06))
+                                    .fill(AppTheme.trackFill(colorScheme))
                                 AppTheme.continuousRect(AppTheme.radiusControl)
-                                    .fill(Color.primary.opacity(0.32))
+                                    .fill(AppTheme.trackValue(colorScheme))
                                     .frame(width: max(8, geo.size.width * 0.72))
                             }
                         }
@@ -163,7 +164,7 @@ struct StatsView: View {
                         ForEach(days) { day in
                             VStack(spacing: 4) {
                                 RoundedRectangle(cornerRadius: 3, style: .continuous)
-                                    .fill(Color.primary.opacity(0.35))
+                                    .fill(AppTheme.trackValue(colorScheme, emphasized: true))
                                     .frame(
                                         width: days.count <= 4 ? 22 : nil,
                                         height: max(4, CGFloat(day.expense / maxExpense) * 88)
@@ -174,7 +175,7 @@ struct StatsView: View {
                                     )
                                 Text(day.day.formatted(.dateTime.day()))
                                     .font(.system(size: 9).monospacedDigit())
-                                    .foregroundStyle(.tertiary)
+                                    .themeTertiary()
                             }
                             .frame(maxWidth: days.count <= 4 ? 28 : .infinity)
                         }
@@ -193,7 +194,7 @@ struct StatsView: View {
             HStack {
                 Text(L10n.string("stats.avgCheck"))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .themeSecondary()
                 Spacer(minLength: 8)
                 Text(MoneyFormat.currency(snapshot.averageCheck, code: snapshot.displayCurrency))
                     .font(.subheadline.weight(.semibold).monospacedDigit())
@@ -259,9 +260,9 @@ struct StatsView: View {
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
                                     AppTheme.continuousRect(AppTheme.radiusControl)
-                                        .fill(Color.primary.opacity(0.06))
+                                        .fill(AppTheme.trackFill(colorScheme))
                                     AppTheme.continuousRect(AppTheme.radiusControl)
-                                        .fill(Color.primary.opacity(0.28))
+                                        .fill(AppTheme.trackValue(colorScheme))
                                         .frame(width: max(4, geo.size.width * row.share))
                                 }
                             }

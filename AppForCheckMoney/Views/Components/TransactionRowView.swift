@@ -21,7 +21,7 @@ struct TransactionRowView: View {
                     .lineLimit(1)
                 Text(subtitle)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .themeSecondary()
                     .lineLimit(1)
             }
 
@@ -40,7 +40,7 @@ struct TransactionRowView: View {
                         code: displayCurrency
                     ))
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.tertiary)
+                    .themeTertiary()
                 }
             }
         }

@@ -5,6 +5,7 @@ struct HomeView: View {
     @Binding var selectedTab: AppTab
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \MoneyTransaction.createdAt, order: .reverse)
     private var transactions: [MoneyTransaction]
     @Query(sort: \MoneyCategory.sortOrder)
@@ -167,7 +168,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(L10n.string("home.balance"))
                     .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .themeSecondary()
 
                 Text(MoneyFormat.currency(balance, code: displayCurrency))
                     .font(.system(size: 42, weight: .semibold, design: .rounded))
@@ -178,7 +179,7 @@ struct HomeView: View {
 
                 Text(L10n.string("home.monthIn") + " " + displayCurrency.displaySymbol)
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .themeTertiary()
 
                 HStack(spacing: 16) {
                     Label {
@@ -202,11 +203,11 @@ struct HomeView: View {
 
                 // Quiet “today” strip — Spendee/Money Lover glance without extra cards.
                 if todayExpense > 0 {
-                    Divider().opacity(0.2).padding(.vertical, 2)
+                    Divider().opacity(colorScheme == .dark ? 0.22 : 0.14).padding(.vertical, 2)
                     HStack {
                         Text(L10n.string("home.today"))
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(.secondary)
+                            .themeSecondary()
                         Spacer(minLength: 8)
                         Text("−" + MoneyFormat.currency(todayExpense, code: displayCurrency))
                             .font(.caption.weight(.semibold).monospacedDigit())
@@ -219,12 +220,12 @@ struct HomeView: View {
                     let spent = monthBudgetSpent
                     let limit = settings.budgetAmount
                     let progress = min(1, max(0, spent / limit))
-                    Divider().opacity(0.2).padding(.vertical, 2)
+                    Divider().opacity(colorScheme == .dark ? 0.22 : 0.14).padding(.vertical, 2)
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text(L10n.string("budget.title"))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .themeSecondary()
                             Spacer(minLength: 8)
                             Text(
                                 MoneyFormat.currency(spent, code: settings.budgetCurrency)
@@ -232,14 +233,16 @@ struct HomeView: View {
                                     + MoneyFormat.currency(limit, code: settings.budgetCurrency)
                             )
                             .font(.caption.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(progress >= 1 ? AppTheme.expense : .secondary)
+                            .foregroundStyle(
+                                progress >= 1 ? AppTheme.expense : AppTheme.labelSecondary(colorScheme)
+                            )
                         }
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 AppTheme.continuousRect(AppTheme.radiusControl)
-                                    .fill(Color.primary.opacity(0.06))
+                                    .fill(AppTheme.trackFill(colorScheme))
                                 AppTheme.continuousRect(AppTheme.radiusControl)
-                                    .fill(Color.primary.opacity(progress >= 1 ? 0.45 : 0.28))
+                                    .fill(AppTheme.trackValue(colorScheme, emphasized: progress >= 1))
                                     .frame(width: max(4, geo.size.width * progress))
                             }
                         }

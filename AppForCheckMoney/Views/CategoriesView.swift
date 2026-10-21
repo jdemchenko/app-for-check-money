@@ -135,11 +135,7 @@ struct CategoriesView: View {
             categoryRow(cat)
         }
         .buttonStyle(.plain)
-        .listRowBackground(
-            AppTheme.continuousRect(AppTheme.radiusControl)
-                .fill(.ultraThinMaterial)
-                .padding(.vertical, 2)
-        )
+        .listRowBackground(ListRowGlassBackground())
         .contextMenu {
             if canDelete {
                 Button(role: .destructive) {

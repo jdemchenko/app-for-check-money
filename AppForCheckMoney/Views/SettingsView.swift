@@ -62,7 +62,7 @@ struct SettingsView: View {
             QuietSectionLabel(text: L10n.string("budget.title"))
             Text(L10n.string("budget.hint"))
                 .font(.footnote)
-                .foregroundStyle(.tertiary)
+                .themeTertiary()
 
             GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -96,7 +96,7 @@ struct SettingsView: View {
             QuietSectionLabel(text: L10n.string("lock.title"))
             Text(L10n.string("lock.hint"))
                 .font(.footnote)
-                .foregroundStyle(.tertiary)
+                .themeTertiary()
 
             GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
                 Toggle(AppLockService.biometryLabel, isOn: $settings.lockEnabled)
@@ -116,12 +116,11 @@ struct SettingsView: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .themeTertiary()
                 }
                 .padding(14)
                 .background {
-                    AppTheme.continuousRect(AppTheme.cornerMedium)
-                        .fill(.ultraThinMaterial)
+                    SettingsRowSurface()
                 }
             }
             .buttonStyle(.plain)
@@ -133,7 +132,7 @@ struct SettingsView: View {
             QuietSectionLabel(text: L10n.string("icloud.title"))
             Text(DataStore.iCloudStatusMessage)
                 .font(.footnote)
-                .foregroundStyle(.tertiary)
+                .themeTertiary()
 
             GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
                 Toggle(L10n.string("icloud.prefer"), isOn: $settings.preferiCloudSync)
@@ -141,7 +140,7 @@ struct SettingsView: View {
 
             Text(L10n.string("icloud.restartNote"))
                 .font(.caption2)
-                .foregroundStyle(.tertiary)
+                .themeTertiary()
         }
     }
 
@@ -177,7 +176,7 @@ struct SettingsView: View {
 
                     Text(rates.ratesFootnote)
                         .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                        .themeTertiary()
                 }
             }
         }
@@ -198,7 +197,7 @@ struct SettingsView: View {
             QuietSectionLabel(text: title)
             Text(subtitle)
                 .font(.footnote)
-                .foregroundStyle(.tertiary)
+                .themeTertiary()
 
             GlassPanel(padding: 8, corner: AppTheme.cornerMedium) {
                 VStack(spacing: 0) {
@@ -234,5 +233,24 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+}
+
+private struct SettingsRowSurface: View {
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        AppTheme.continuousRect(AppTheme.cornerMedium)
+            .fill(
+                scheme == .dark
+                    ? AnyShapeStyle(.ultraThinMaterial)
+                    : AnyShapeStyle(Color.white.opacity(0.94))
+            )
+            .overlay {
+                if scheme != .dark {
+                    AppTheme.continuousRect(AppTheme.cornerMedium)
+                        .strokeBorder(AppTheme.hairline(scheme), lineWidth: 0.6)
+                }
+            }
     }
 }
