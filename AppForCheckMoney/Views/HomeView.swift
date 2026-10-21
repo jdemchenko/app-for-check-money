@@ -547,24 +547,8 @@ struct ConfirmDraftSheet: View {
                     }
                 }
                 .padding(20)
-                .padding(.bottom, 8)
             }
             .liquidScreen()
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                VStack(spacing: 0) {
-                    Divider().opacity(0.15)
-                    GlassActionButton(title: L10n.string("common.save")) {
-                        guard canSave else { return }
-                        onSave(categoryId)
-                    }
-                    .disabled(!canSave)
-                    .opacity(canSave ? 1 : 0.45)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                    .padding(.bottom, 16)
-                }
-                .background(.ultraThinMaterial)
-            }
             .navigationTitle(L10n.string("common.confirm"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

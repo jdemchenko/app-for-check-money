@@ -49,25 +49,9 @@ struct AddTransactionView: View {
                 formBlock
             }
             .padding(20)
-            .padding(.bottom, 8)
+            .padding(.bottom, 24)
         }
         .liquidScreen()
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 0) {
-                Divider().opacity(0.15)
-                GlassActionButton(
-                    title: mode == .voice
-                        ? L10n.string("common.confirm")
-                        : L10n.string("common.save")
-                ) {
-                    save()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
-                .padding(.bottom, 16)
-            }
-            .background(.ultraThinMaterial)
-        }
         .navigationTitle(L10n.string("tab.add"))
         .navigationBarTitleDisplayMode(embeddedInSheet ? .inline : .large)
         .toolbar {

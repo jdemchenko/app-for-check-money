@@ -20,7 +20,7 @@ enum WidgetSnapshotStore {
     static func publish(
         transactions: [MoneyTransaction],
         displayCurrency: AppCurrency,
-        settings: AppSettingsStore = .shared
+        settings: AppSettingsStore
     ) {
         let cal = Calendar.current
         let now = Date.now

@@ -15,7 +15,7 @@ final class ExchangeRateStore: ObservableObject {
     private static let endpoint = URL(string: "https://api.myfin.by/currency/nbrb")!
 
     /// Built-in fallback when network + disk cache are unavailable.
-    static let staticBynPerUnit: [AppCurrency: Double] = [
+    nonisolated static let staticBynPerUnit: [AppCurrency: Double] = [
         .byn: 1.0,
         .usd: 3.25,
         .eur: 3.55,
