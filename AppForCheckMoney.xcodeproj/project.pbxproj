@@ -621,7 +621,7 @@
 				A10000000000000000000017 /* SettingsView.swift in Sources */,
 				A1000000000000000000000E /* Theme.swift in Sources */,
 				A1000000000000000000000F /* TransactionRowView.swift in Sources */,
-				A10000000000000000000023 /* QuietConfirmPanel.swift in Sources */,
+				A1000000000000000000002A /* QuietConfirmPanel.swift in Sources */,
 				A10000000000000000000020 /* TextNormalizer.swift in Sources */,
 				A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */,
 				A10000000000000000000022 /* SharedVoiceParser.swift in Sources */,
