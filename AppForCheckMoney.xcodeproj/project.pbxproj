@@ -35,8 +35,9 @@
 		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
 		A1000000000000000000001D /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
 		A1000000000000000000001E /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
-		/* Embed Watch companion into PlugIns/ with CodeSignOnCopy (required for device install / Available Apps). */
-		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		/* Embed Watch companion into PlugIns/ with CodeSignOnCopy (required for device install / Available Apps).
+		   platformFilter=ios: only embed when building the iPhone host (Xcode 26 Available Apps path). */
+		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A20000000000000000000001 /* CheckMoneyWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* CheckMoneyWatchApp.swift */; };
 		A20000000000000000000002 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WatchStore.swift */; };
 		A20000000000000000000003 /* WatchRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* WatchRootView.swift */; };
@@ -60,8 +61,6 @@
 		A2000000000000000000000E /* WatchDictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000004 /* WatchDictateView.swift */; };
 		A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000005 /* WatchSpeechRecognizer.swift */; };
 
-		A20000000000000000000010 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* Speech.framework */; };
-		A20000000000000000000011 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* AVFoundation.framework */; };
 		A10000000000000000000023 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* Speech.framework */; };
 		A10000000000000000000024 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
@@ -144,7 +143,6 @@
 		B40000000000000000000003 /* SharedVoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedVoiceParser.swift; sourceTree = "<group>"; };
 		B40000000000000000000004 /* WatchDictateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDictateView.swift; sourceTree = "<group>"; };
 		B40000000000000000000005 /* WatchSpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSpeechRecognizer.swift; sourceTree = "<group>"; };
-		B50000000000000000000003 /* WatchKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchKit.framework; path = System/Library/Frameworks/WatchKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -318,7 +316,6 @@
 			children = (
 				B50000000000000000000001 /* Speech.framework */,
 				B50000000000000000000002 /* AVFoundation.framework */,
-				B50000000000000000000003 /* WatchKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -471,7 +468,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nAPP=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nWATCH=\"${APP}/PlugIns/CheckMoneyWatch.app\"\nPLIST=\"$WATCH/Info.plist\"\nif [ ! -d \"$WATCH\" ]; then\n  echo \"error: Watch companion missing at $WATCH\"\n  echo \"error: Available Apps stays empty until PlugIns/CheckMoneyWatch.app is embedded.\"\n  echo \"error: Use scheme AppForCheckMoney → iPhone → Run (one product + companion).\"\n  ls -la \"${APP}\" || true\n  ls -la \"${APP}/PlugIns\" 2>/dev/null || true\n  exit 1\nfi\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Watch Info.plist missing at $PLIST\"\n  exit 1\nfi\nCOMPANION=$(/usr/libexec/PlistBuddy -c 'Print :WKCompanionAppBundleIdentifier' \"$PLIST\" 2>/dev/null || true)\nINDEP=$(/usr/libexec/PlistBuddy -c 'Print :WKRunsIndependentlyOfCompanionApp' \"$PLIST\" 2>/dev/null || true)\nif [ \"$COMPANION\" != \"com.jdemchenko.AppForCheckMoney\" ]; then\n  echo \"error: WKCompanionAppBundleIdentifier must be com.jdemchenko.AppForCheckMoney (got: $COMPANION)\"\n  exit 1\nfi\nif [ \"$INDEP\" = \"true\" ]; then\n  echo \"error: WKRunsIndependentlyOfCompanionApp must be false (companion, not standalone)\"\n  exit 1\nfi\nFAMILY=$(/usr/libexec/PlistBuddy -c 'Print :UIDeviceFamily:0' \"$PLIST\" 2>/dev/null || true)\nif [ \"$FAMILY\" != \"4\" ]; then\n  echo \"error: embedded Watch Info.plist UIDeviceFamily[0] must be 4 (got: '$FAMILY') — Available Apps needs watch family\"\n  exit 1\nfi\necho \"note: Watch companion OK → $WATCH\"\necho \"note: companion of $COMPANION · independent=$INDEP · UIDeviceFamily=$FAMILY · Available Apps after iPhone Run\"\n/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' \"$PLIST\" 2>/dev/null || true\n";
+			shellScript = "set -e\nAPP=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nWATCH=\"${APP}/PlugIns/CheckMoneyWatch.app\"\nPLIST=\"$WATCH/Info.plist\"\nif [ ! -d \"$WATCH\" ]; then\n  echo \"error: Watch companion missing at $WATCH\"\n  echo \"error: Available Apps stays empty until PlugIns/CheckMoneyWatch.app is embedded.\"\n  echo \"error: Use scheme AppForCheckMoney → iPhone → Run (one product + companion).\"\n  ls -la \"${APP}\" || true\n  ls -la \"${APP}/PlugIns\" 2>/dev/null || true\n  exit 1\nfi\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Watch Info.plist missing at $PLIST\"\n  exit 1\nfi\nCOMPANION=$(/usr/libexec/PlistBuddy -c 'Print :WKCompanionAppBundleIdentifier' \"$PLIST\" 2>/dev/null || true)\nINDEP=$(/usr/libexec/PlistBuddy -c 'Print :WKRunsIndependentlyOfCompanionApp' \"$PLIST\" 2>/dev/null || true)\nif [ \"$COMPANION\" != \"com.jdemchenko.AppForCheckMoney\" ]; then\n  echo \"error: WKCompanionAppBundleIdentifier must be com.jdemchenko.AppForCheckMoney (got: $COMPANION)\"\n  exit 1\nfi\nif [ \"$INDEP\" = \"true\" ]; then\n  echo \"error: WKRunsIndependentlyOfCompanionApp must be false (companion, not standalone)\"\n  exit 1\nfi\nFAMILY=$(/usr/libexec/PlistBuddy -c 'Print :UIDeviceFamily:0' \"$PLIST\" 2>/dev/null || true)\nif [ \"$FAMILY\" != \"4\" ]; then\n  echo \"error: embedded Watch Info.plist UIDeviceFamily[0] must be 4 (got: '$FAMILY') — Available Apps needs watch family\"\n  exit 1\nfi\nEXE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \"$PLIST\" 2>/dev/null || echo CheckMoneyWatch)\nEXE=\"$WATCH/$EXE_NAME\"\nif [ ! -f \"$EXE\" ]; then\n  echo \"error: Watch executable missing at $EXE — Available Apps will stay empty\"\n  ls -la \"$WATCH\" || true\n  exit 1\nfi\n# Nested re-sign after CodeSignOnCopy so iPhone-install PlugIns is accepted by watchOS Available Apps.\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  ENT=\"${SRCROOT}/CheckMoneyWatch/CheckMoneyWatch.entitlements\"\n  if [ -f \"$ENT\" ]; then\n    /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --entitlements \"$ENT\" --timestamp=none \"$WATCH\"\n  else\n    /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --timestamp=none \"$WATCH\"\n  fi\nfi\nif ! /usr/bin/codesign --verify --deep --strict \"$WATCH\" 2>/dev/null; then\n  echo \"error: embedded Watch companion failed codesign --verify — Available Apps will reject it\"\n  /usr/bin/codesign --verify --deep --strict \"$WATCH\" || true\n  exit 1\nfi\nTEAM=$(/usr/bin/codesign -dvv \"$WATCH\" 2>&1 | sed -n 's/^TeamIdentifier=//p' | head -1)\necho \"note: Watch companion OK → $WATCH\"\necho \"note: companion of $COMPANION · independent=$INDEP · UIDeviceFamily=$FAMILY · Team=$TEAM · Available Apps after iPhone Run\"\n/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' \"$PLIST\" 2>/dev/null || true\n/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \"$PLIST\" 2>/dev/null || true\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -548,6 +545,7 @@
 /* Begin PBXTargetDependency section */
 		P20000000000000000000001 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = F10000000000000000000002 /* CheckMoneyWatch */;
 			targetProxy = P10000000000000000000001 /* PBXContainerItemProxy */;
 		};
@@ -615,7 +613,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -648,7 +646,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -680,7 +678,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -693,6 +691,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				ARCHS = "$(ARCHS_STANDARD)";
 				MARKETING_VERSION = 1.0;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp;
@@ -715,7 +714,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -728,6 +727,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				ARCHS = "$(ARCHS_STANDARD)";
 				MARKETING_VERSION = 1.0;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp;
@@ -750,7 +750,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -780,7 +780,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;

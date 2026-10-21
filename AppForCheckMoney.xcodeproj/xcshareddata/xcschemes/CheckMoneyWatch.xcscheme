@@ -3,11 +3,11 @@
    LastUpgradeVersion = "2600"
    version = "1.7">
    <!--
-      DEBUG FALLBACK ONLY — not the normal user path.
-      Product is still the same CheckMoney companion (not a second App Store app).
-      Prefer: AppForCheckMoney → iPhone → Run (embeds PlugIns companion → Available Apps).
-      Use this scheme only if Available Apps stays empty after a clean iPhone Run with
-      Build log «Watch companion OK».
+      EMERGENCY DEBUG ONLY — not the product install path.
+      Ivan / product rule: companion installs ONLY via iPhone Watch → Available Apps
+      after AppForCheckMoney → iPhone → Run (PlugIns embed). Never treat this scheme as
+      a separate Watch App Store install. Use only if Available Apps stays empty after
+      delete Watch+iPhone apps, Clean, iPhone Run, Build «Watch companion OK».
    -->
    <BuildAction
       parallelizeBuildables = "YES"
