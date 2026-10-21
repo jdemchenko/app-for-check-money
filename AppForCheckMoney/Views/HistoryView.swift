@@ -21,6 +21,7 @@ struct HistoryView: View {
     @State private var exportURL: URL?
     @State private var showShare = false
     @State private var exportError: String?
+    @State private var pendingDelete: MoneyTransaction?
     @ObservedObject private var currencySettings = CurrencySettings.shared
 
     enum TypeFilter: String, CaseIterable, Identifiable {
@@ -112,14 +113,13 @@ struct HistoryView: View {
                                             .fill(.ultraThinMaterial)
                                             .padding(.vertical, 2)
                                     )
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button(role: .destructive) {
-                                            modelContext.delete(tx)
-                                            try? modelContext.save()
-                                            PhoneWatchSync.shared.pushSnapshot()
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                        Button {
+                                            pendingDelete = tx
                                         } label: {
                                             Label(L10n.string("common.delete"), systemImage: "trash")
                                         }
+                                        .tint(AppTheme.expense)
                                     }
                                 }
                             } header: {
@@ -184,7 +184,36 @@ struct HistoryView: View {
             } message: {
                 Text(exportError ?? "")
             }
+            .overlay {
+                if pendingDelete != nil {
+                    ZStack {
+                        Color.black.opacity(0.28)
+                            .ignoresSafeArea()
+                            .onTapGesture { pendingDelete = nil }
+                        QuietConfirmPanel(
+                            title: L10n.string("history.deleteConfirm"),
+                            message: L10n.string("history.deleteHint"),
+                            confirmTitle: L10n.string("common.delete"),
+                            confirmDestructive: true,
+                            onConfirm: { confirmPendingDelete() },
+                            onCancel: { pendingDelete = nil }
+                        )
+                    }
+                    .transition(.opacity)
+                    .zIndex(10)
+                }
+            }
+            .animation(.easeOut(duration: 0.2), value: pendingDelete?.id)
         }
+    }
+
+    private func confirmPendingDelete() {
+        guard let tx = pendingDelete else { return }
+        modelContext.delete(tx)
+        try? modelContext.save()
+        PhoneWatchSync.shared.pushSnapshot()
+        if selected?.id == tx.id { selected = nil }
+        pendingDelete = nil
     }
 
     private func exportCSV() {
@@ -363,10 +392,9 @@ struct HistoryView: View {
                         systemImage: "trash",
                         isDestructive: true
                     ) {
-                        modelContext.delete(tx)
-                        try? modelContext.save()
-                        PhoneWatchSync.shared.pushSnapshot()
+                        // Dismiss detail first so the quiet glass confirm isn’t buried under the sheet.
                         selected = nil
+                        pendingDelete = tx
                     }
                 }
                 .padding(20)

@@ -1,6 +1,6 @@
 # CheckMoney (AppForCheckMoney)
 
-Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** — expenses and income with manual entry, voice drafts, and keyword auto-categorization. Data stays on-device via **SwiftData** (phone). Watch is a **paired companion**: hold-to-dictate → shared NLP → WatchConnectivity sync. No App Groups entitlement by default (Personal Team–safe); widget soft-fails shared suite. No backend / auth. **iCloud/CloudKit** needs a paid Apple Developer team (Personal Team stays local).
+Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** — expenses and income with manual entry, voice drafts, and keyword auto-categorization. Data stays on-device via **SwiftData** (phone). Watch is a **paired companion**: hold-to-dictate → shared NLP → WatchConnectivity sync. No App Groups entitlement (Personal Team–safe). Widget snapshot uses **Keychain Sharing** (`keychain-access-groups`) so today/balance can update without a paid App Group. No backend / auth. **iCloud/CloudKit** needs a paid Apple Developer team (Personal Team stays local).
 
 > This repository is an **independent** iOS app. It is not related to Fitil.
 
@@ -14,7 +14,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 - **Recurring** — weekly/monthly rules (rent, telecom, salary) auto-post when due
 - **App lock** — Face ID / Touch ID / device passcode gate
 - **Onboarding** — one screen (hold-to-talk + BYN default)
-- **iPhone widget** — today spend / month balance (no App Groups entitlement on Personal Team; soft suite — may show placeholder until a paid team enables sharing)
+- **iPhone widget** — today spend / month balance via Keychain Sharing (no App Groups; Personal Team–safe)
 - **iCloud** — best-effort toggle; **CloudKit requires paid team** — Personal Team stays local-only (honest note in Settings)
 - **UI** — Liquid Glass–inspired materials (`.ultraThinMaterial` / specular rims / soft depth), minimal chrome, system Light/Dark
 - **Currency** — each transaction stores its own currency; Settings has **display** (totals via approximate BYN-pivot rates) and **entry default** (new ops). Changing Settings never rewrites past amounts. Voice «руб» → entry default (BYN); dollars/euros stamp USD/EUR.
@@ -75,7 +75,7 @@ AppForCheckMoney/                   # iPhone / iPad app (SwiftData)
 Shared/                             # SyncModels, LocalSyncStore, SharedVoiceParser (iOS + Watch)
 CheckMoneyWatch/                    # watchOS companion UI
 CheckMoneyWatchWidgets/             # Today spend complication
-CheckMoneyPhoneWidgets/             # iPhone home-screen widget (soft App Group / Personal Team–safe)
+CheckMoneyPhoneWidgets/             # iPhone home-screen widget (Keychain Sharing snapshot)
 ```
 
 ## Privacy (Info.plist)

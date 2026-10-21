@@ -35,7 +35,7 @@ struct OnboardingView: View {
                 QuietSectionLabel(text: L10n.string("settings.entryCurrency"))
                 Picker(L10n.string("settings.entryCurrency"), selection: $currencySettings.entryCurrency) {
                     ForEach(AppCurrency.allCases) { code in
-                        Text(code.localizedTitle).tag(code)
+                        Text(code.code).tag(code)
                     }
                 }
                 .pickerStyle(.segmented)

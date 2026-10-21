@@ -113,6 +113,10 @@
 "history.useFrom" = "Фильтр с даты";
 "history.useTo" = "Фильтр по дату";
 "history.detail" = "Операция";
+"history.deleteConfirm" = "Удалить эту операцию?";
+"history.deleteHint" = "Отменить будет нельзя.";
+"history.deleteConfirm" = "Удалить эту операцию?";
+"history.deleteHint" = "Отменить будет нельзя.";
 
 "filter.all" = "Все";
 

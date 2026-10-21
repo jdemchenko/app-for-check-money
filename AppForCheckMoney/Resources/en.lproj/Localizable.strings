@@ -113,6 +113,10 @@
 "history.useFrom" = "Filter from date";
 "history.useTo" = "Filter to date";
 "history.detail" = "Transaction";
+"history.deleteConfirm" = "Delete this transaction?";
+"history.deleteHint" = "This can’t be undone.";
+"history.deleteConfirm" = "Delete this transaction?";
+"history.deleteHint" = "This can’t be undone.";
 
 "filter.all" = "All";
 

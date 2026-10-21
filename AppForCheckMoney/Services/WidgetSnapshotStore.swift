@@ -1,45 +1,19 @@
 import Foundation
 import WidgetKit
 
-/// Snapshot for the iPhone home-screen widget.
-/// Soft-fails App Groups (Personal Team has no application-groups entitlement).
-/// Writes standard defaults always; also writes the suite when a group container exists.
+/// Publishes Home / balance snapshot for the iPhone widget.
+/// Uses Keychain Sharing (Personal Team–safe) — not App Groups.
 enum WidgetSnapshotStore {
-    static let appGroupID = "group.com.jdemchenko.AppForCheckMoney"
-    private static let key = "widget.snapshot.v1"
-
-    struct Snapshot: Codable, Hashable {
-        var updatedAt: Date
-        var todayExpense: Double
-        var monthBalance: Double
-        var monthExpense: Double
-        var currencySymbol: String
-        var budgetEnabled: Bool
-        var budgetAmount: Double
-        var budgetSpent: Double
-    }
-
-    /// App Group suite only when the container is available (paid team / capability on).
-    private static var groupSuite: UserDefaults? {
-        guard FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: appGroupID
-        ) != nil else { return nil }
-        return UserDefaults(suiteName: appGroupID)
-    }
+    typealias Snapshot = SharedWidgetSnapshot
 
     static func save(_ snapshot: Snapshot) {
-        guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        UserDefaults.standard.set(data, forKey: key)
-        groupSuite?.set(data, forKey: key)
+        SharedWidgetSnapshotStore.save(snapshot)
         WidgetCenter.shared.reloadAllTimelines()
+        WidgetCenter.shared.reloadTimelines(ofKind: "CheckMoneyPhoneWidgets")
     }
 
     static func load() -> Snapshot? {
-        if let data = groupSuite?.data(forKey: key)
-            ?? UserDefaults.standard.data(forKey: key) {
-            return try? JSONDecoder().decode(Snapshot.self, from: data)
-        }
-        return nil
+        SharedWidgetSnapshotStore.load()
     }
 
     @MainActor

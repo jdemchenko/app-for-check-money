@@ -138,7 +138,7 @@ struct HomeView: View {
                     onCancel: { pendingDraft = nil },
                     onSave: { id in save(box.draft, categoryId: id) }
                 )
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showManualAdd) {
@@ -493,6 +493,8 @@ struct ConfirmDraftSheet: View {
         CategoryMatcher.categories(for: draft.type ?? .expense, in: categories)
     }
 
+    private var canSave: Bool { !categoryId.isEmpty }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -543,20 +545,39 @@ struct ConfirmDraftSheet: View {
                             .buttonStyle(.plain)
                         }
                     }
-
-                    GlassActionButton(title: L10n.string("common.save")) {
-                        guard !categoryId.isEmpty else { return }
-                        onSave(categoryId)
-                    }
                 }
                 .padding(20)
+                .padding(.bottom, 8)
             }
             .liquidScreen()
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                VStack(spacing: 0) {
+                    Divider().opacity(0.15)
+                    GlassActionButton(title: L10n.string("common.save")) {
+                        guard canSave else { return }
+                        onSave(categoryId)
+                    }
+                    .disabled(!canSave)
+                    .opacity(canSave ? 1 : 0.45)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                    .padding(.bottom, 16)
+                }
+                .background(.ultraThinMaterial)
+            }
             .navigationTitle(L10n.string("common.confirm"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.string("common.cancel"), action: onCancel)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.string("common.save")) {
+                        guard canSave else { return }
+                        onSave(categoryId)
+                    }
+                    .disabled(!canSave)
+                    .fontWeight(.semibold)
                 }
             }
         }

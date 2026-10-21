@@ -132,6 +132,32 @@ struct StatsView: View {
                     Text(L10n.string("stats.dailyEmpty"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                } else if days.count == 1, let only = days.first {
+                    // Single day — compact row, not one stretched fat bar.
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(only.day.formatted(date: .abbreviated, time: .omitted))
+                                .font(.subheadline.weight(.medium))
+                            Spacer(minLength: 8)
+                            Text(MoneyFormat.currency(only.expense, code: snapshot.displayCurrency))
+                                .font(.subheadline.weight(.semibold).monospacedDigit())
+                        }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                AppTheme.continuousRect(AppTheme.radiusControl)
+                                    .fill(Color.primary.opacity(0.06))
+                                AppTheme.continuousRect(AppTheme.radiusControl)
+                                    .fill(Color.primary.opacity(0.32))
+                                    .frame(width: max(8, geo.size.width * 0.72))
+                            }
+                        }
+                        .frame(height: 8)
+                        .clipShape(AppTheme.continuousRect(AppTheme.radiusControl))
+                        .accessibilityLabel(only.day.formatted(date: .abbreviated, time: .omitted))
+                        .accessibilityValue(
+                            MoneyFormat.currency(only.expense, code: snapshot.displayCurrency)
+                        )
+                    }
                 } else {
                     HStack(alignment: .bottom, spacing: 4) {
                         ForEach(days) { day in
@@ -139,6 +165,7 @@ struct StatsView: View {
                                 RoundedRectangle(cornerRadius: 3, style: .continuous)
                                     .fill(Color.primary.opacity(0.35))
                                     .frame(
+                                        width: days.count <= 4 ? 22 : nil,
                                         height: max(4, CGFloat(day.expense / maxExpense) * 88)
                                     )
                                     .accessibilityLabel(day.day.formatted(date: .abbreviated, time: .omitted))
@@ -149,7 +176,10 @@ struct StatsView: View {
                                     .font(.system(size: 9).monospacedDigit())
                                     .foregroundStyle(.tertiary)
                             }
-                            .frame(maxWidth: .infinity)
+                            .frame(maxWidth: days.count <= 4 ? 28 : .infinity)
+                        }
+                        if days.count <= 4 {
+                            Spacer(minLength: 0)
                         }
                     }
                     .frame(height: 110, alignment: .bottom)

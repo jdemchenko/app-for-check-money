@@ -49,9 +49,25 @@ struct AddTransactionView: View {
                 formBlock
             }
             .padding(20)
-            .padding(.bottom, 24)
+            .padding(.bottom, 8)
         }
         .liquidScreen()
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                Divider().opacity(0.15)
+                GlassActionButton(
+                    title: mode == .voice
+                        ? L10n.string("common.confirm")
+                        : L10n.string("common.save")
+                ) {
+                    save()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 16)
+            }
+            .background(.ultraThinMaterial)
+        }
         .navigationTitle(L10n.string("tab.add"))
         .navigationBarTitleDisplayMode(embeddedInSheet ? .inline : .large)
         .toolbar {
@@ -59,6 +75,16 @@ struct AddTransactionView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.string("common.cancel")) { dismiss() }
                 }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button(
+                    mode == .voice
+                        ? L10n.string("common.confirm")
+                        : L10n.string("common.save")
+                ) {
+                    save()
+                }
+                .fontWeight(.semibold)
             }
         }
         .onAppear {
@@ -288,14 +314,6 @@ struct AddTransactionView: View {
                     displayedComponents: .date
                 )
                 .datePickerStyle(.compact)
-
-                GlassActionButton(
-                    title: mode == .voice
-                        ? L10n.string("common.confirm")
-                        : L10n.string("common.save")
-                ) {
-                    save()
-                }
             }
         }
     }
