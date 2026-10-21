@@ -18,6 +18,9 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- Must match app: TeamID.com.jdemchenko.AppForCheckMoney -->
+	<key>CheckMoneyKeychainAccessGroup</key>
+	<string>$(AppIdentifierPrefix)com.jdemchenko.AppForCheckMoney</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>
