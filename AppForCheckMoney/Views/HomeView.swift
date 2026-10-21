@@ -275,7 +275,7 @@ struct HomeView: View {
                     }
                     .overlay {
                         Circle()
-                            .strokeBorder(AppTheme.glassStroke, lineWidth: 1)
+                            .strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
                     }
                     .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
 

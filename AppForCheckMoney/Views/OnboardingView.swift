@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingView: View {
     var onFinish: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var currencySettings = CurrencySettings.shared
 
     var body: some View {

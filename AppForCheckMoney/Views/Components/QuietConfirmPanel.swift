@@ -9,6 +9,8 @@ struct QuietConfirmPanel: View {
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(title)

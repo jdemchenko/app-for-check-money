@@ -3,6 +3,7 @@ import SwiftUI
 struct AppLockGate: View {
     var onUnlocked: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var busy = false
     @State private var failed = false
 

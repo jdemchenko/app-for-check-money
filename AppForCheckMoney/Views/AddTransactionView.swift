@@ -13,6 +13,7 @@ struct AddTransactionView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \MoneyCategory.sortOrder) private var categories: [MoneyCategory]
 
     @State private var mode: Mode = .manual
