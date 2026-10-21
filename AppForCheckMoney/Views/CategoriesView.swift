@@ -7,31 +7,51 @@ struct CategoriesView: View {
 
     @State private var editor: EditorState?
     @State private var showRestoreConfirm = false
+    @State private var pendingDelete: MoneyCategory?
+    @State private var pendingDeleteCount = 0
+    /// Set from the editor; confirmed after the sheet dismisses.
+    @State private var deleteAfterDismiss: MoneyCategory?
 
     private var defaults: [MoneyCategory] { categories.filter(\.isDefault) }
     private var custom: [MoneyCategory] { categories.filter { !$0.isDefault } }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.spaceSection) {
-                    if !defaults.isEmpty {
-                        categorySection(
-                            title: L10n.string("categories.defaults"),
-                            items: defaults,
-                            canDelete: false
-                        )
+            List {
+                if !defaults.isEmpty {
+                    Section {
+                        ForEach(defaults, id: \.id) { cat in
+                            categoryButton(cat, canDelete: false)
+                        }
+                    } header: {
+                        Text(L10n.string("categories.defaults"))
                     }
-                    categorySection(
-                        title: L10n.string("categories.custom"),
-                        items: custom,
-                        canDelete: true,
-                        emptyText: L10n.string("categories.customEmpty")
-                    )
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
+
+                Section {
+                    if custom.isEmpty {
+                        Text(L10n.string("categories.customEmpty"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .listRowBackground(Color.clear)
+                    } else {
+                        ForEach(custom, id: \.id) { cat in
+                            categoryButton(cat, canDelete: true)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        requestDelete(cat)
+                                    } label: {
+                                        Label(L10n.string("common.delete"), systemImage: "trash")
+                                    }
+                                }
+                        }
+                    }
+                } header: {
+                    Text(L10n.string("categories.custom"))
+                }
             }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
             .liquidScreen()
             .navigationTitle(L10n.string("tab.categories"))
             .navigationBarTitleDisplayMode(.large)
@@ -53,10 +73,21 @@ struct CategoriesView: View {
                     }
                 }
             }
-            .sheet(item: $editor) { state in
-                CategoryEditorSheet(state: state)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
+            .sheet(item: $editor, onDismiss: {
+                if let cat = deleteAfterDismiss {
+                    deleteAfterDismiss = nil
+                    requestDelete(cat)
+                }
+            }) { state in
+                CategoryEditorSheet(
+                    state: state,
+                    onRequestDelete: { cat in
+                        deleteAfterDismiss = cat
+                        editor = nil
+                    }
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
             }
             .confirmationDialog(
                 L10n.string("categories.restore"),
@@ -65,57 +96,56 @@ struct CategoriesView: View {
             ) {
                 Button(L10n.string("categories.restore"), role: .destructive) {
                     SeedData.restoreDefaults(in: modelContext)
+                    PhoneWatchSync.shared.pushSnapshot()
                 }
                 Button(L10n.string("common.cancel"), role: .cancel) {}
+            }
+            .confirmationDialog(
+                pendingDelete.map { String(format: L10n.string("categories.deleteConfirm"), $0.displayName()) }
+                    ?? L10n.string("categories.delete"),
+                isPresented: Binding(
+                    get: { pendingDelete != nil },
+                    set: { if !$0 { pendingDelete = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                Button(L10n.string("categories.delete"), role: .destructive) {
+                    confirmPendingDelete()
+                }
+                Button(L10n.string("common.cancel"), role: .cancel) {
+                    pendingDelete = nil
+                }
+            } message: {
+                Text(deleteMessage)
             }
         }
     }
 
-    @ViewBuilder
-    private func categorySection(
-        title: String,
-        items: [MoneyCategory],
-        canDelete: Bool,
-        emptyText: String? = nil
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            QuietSectionLabel(text: title)
+    private var deleteMessage: String {
+        if pendingDeleteCount > 0 {
+            return String(format: L10n.string("categories.deleteReassignCount"), pendingDeleteCount)
+        }
+        return L10n.string("categories.deleteReassign")
+    }
 
-            GlassPanel(padding: 6, corner: AppTheme.cornerMedium) {
-                if items.isEmpty, let emptyText {
-                    Text(emptyText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(14)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    LazyVStack(spacing: 0) {
-                        ForEach(items, id: \.id) { cat in
-                            Button {
-                                editor = .edit(cat)
-                            } label: {
-                                categoryRow(cat)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 8)
-                            }
-                            .buttonStyle(.plain)
-                            .contextMenu {
-                                if canDelete {
-                                    Button(role: .destructive) {
-                                        modelContext.delete(cat)
-                                        try? modelContext.save()
-                                        PhoneWatchSync.shared.pushSnapshot()
-                                    } label: {
-                                        Label(L10n.string("common.delete"), systemImage: "trash")
-                                    }
-                                }
-                            }
-
-                            if cat.id != items.last?.id {
-                                Divider().opacity(0.25).padding(.leading, 54)
-                            }
-                        }
-                    }
+    private func categoryButton(_ cat: MoneyCategory, canDelete: Bool) -> some View {
+        Button {
+            editor = .edit(cat)
+        } label: {
+            categoryRow(cat)
+        }
+        .buttonStyle(.plain)
+        .listRowBackground(
+            AppTheme.continuousRect(AppTheme.radiusControl)
+                .fill(.ultraThinMaterial)
+                .padding(.vertical, 2)
+        )
+        .contextMenu {
+            if canDelete {
+                Button(role: .destructive) {
+                    requestDelete(cat)
+                } label: {
+                    Label(L10n.string("common.delete"), systemImage: "trash")
                 }
             }
         }
@@ -138,6 +168,19 @@ struct CategoriesView: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.tertiary)
         }
+    }
+
+    private func requestDelete(_ cat: MoneyCategory) {
+        guard !cat.isDefault else { return }
+        pendingDeleteCount = SeedData.transactionCount(forCategoryId: cat.id, in: modelContext)
+        pendingDelete = cat
+    }
+
+    private func confirmPendingDelete() {
+        guard let cat = pendingDelete else { return }
+        pendingDelete = nil
+        _ = SeedData.deleteUserCategory(cat, in: modelContext)
+        PhoneWatchSync.shared.pushSnapshot()
     }
 }
 
@@ -162,6 +205,7 @@ struct CategoryEditorSheet: View {
     @Environment(\.modelContext) private var modelContext
 
     let state: EditorState
+    var onRequestDelete: ((MoneyCategory) -> Void)?
 
     @State private var nameRu = ""
     @State private var nameEn = ""
@@ -175,6 +219,11 @@ struct CategoryEditorSheet: View {
     @State private var lastAutoKeywords = ""
     @State private var suggestTask: Task<Void, Never>?
     @State private var symbolLocked = false
+
+    private var editingCustom: MoneyCategory? {
+        if case .edit(let cat) = state, !cat.isDefault { return cat }
+        return nil
+    }
 
     private var keywordsAreAutoSynced: Bool {
         let trimmed = keywordsText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -272,6 +321,19 @@ struct CategoryEditorSheet: View {
                     .opacity(
                         nameRu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.45 : 1
                     )
+
+                    if let cat = editingCustom {
+                        Button(role: .destructive) {
+                            onRequestDelete?(cat)
+                        } label: {
+                            Text(L10n.string("categories.delete"))
+                                .font(.body.weight(.medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.red.opacity(0.9))
+                    }
                 }
                 .padding(20)
             }

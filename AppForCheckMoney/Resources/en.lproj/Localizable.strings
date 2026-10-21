@@ -89,6 +89,10 @@
 "categories.customEmpty" = "No custom categories yet.";
 "categories.add" = "New category";
 "categories.restore" = "Restore defaults";
+"categories.delete" = "Delete category";
+"categories.deleteConfirm" = "Delete “%@”?";
+"categories.deleteReassign" = "Its transactions move to Other (or Other income). Built-in categories can’t be deleted.";
+"categories.deleteReassignCount" = "%d transactions will move to Other (or Other income). Built-in categories can’t be deleted.";
 "categories.nameRu" = "Name (RU)";
 "categories.nameEn" = "Name (EN)";
 "categories.keywords" = "Keywords";

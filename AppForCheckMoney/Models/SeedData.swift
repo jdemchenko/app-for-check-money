@@ -2,6 +2,41 @@ import Foundation
 import SwiftData
 
 enum SeedData {
+    /// Fallback when a user-created category is deleted (expense txs).
+    static let otherExpenseId = "other-expense"
+    /// Fallback when a user-created category is deleted (income txs).
+    static let otherIncomeId = "other-income"
+
+    /// Deletes a **user-created** category (`isDefault == false`).
+    /// Built-in seed categories are rejected (returns `nil`).
+    /// Transactions that used the category are reassigned to «Другое» / Other
+    /// (`other-expense`) or «Прочий доход» / Other income (`other-income`) by type.
+    /// - Returns: number of transactions reassigned, or `nil` if delete was refused.
+    @discardableResult
+    static func deleteUserCategory(_ category: MoneyCategory, in context: ModelContext) -> Int? {
+        guard !category.isDefault else { return nil }
+        ensureDefaults(in: context)
+
+        let catId = category.id
+        let descriptor = FetchDescriptor<MoneyTransaction>(
+            predicate: #Predicate<MoneyTransaction> { $0.categoryId == catId }
+        )
+        let txs = (try? context.fetch(descriptor)) ?? []
+        for tx in txs {
+            tx.categoryId = tx.type == .income ? otherIncomeId : otherExpenseId
+        }
+        context.delete(category)
+        try? context.save()
+        return txs.count
+    }
+
+    static func transactionCount(forCategoryId categoryId: String, in context: ModelContext) -> Int {
+        let descriptor = FetchDescriptor<MoneyTransaction>(
+            predicate: #Predicate<MoneyTransaction> { $0.categoryId == categoryId }
+        )
+        return (try? context.fetch(descriptor))?.count ?? 0
+    }
+
     static func ensureDefaults(in context: ModelContext) {
         let descriptor = FetchDescriptor<MoneyCategory>()
         let existing = (try? context.fetch(descriptor)) ?? []

@@ -89,6 +89,10 @@
 "categories.customEmpty" = "Своих категорий пока нет.";
 "categories.add" = "Новая категория";
 "categories.restore" = "Восстановить базовые";
+"categories.delete" = "Удалить категорию";
+"categories.deleteConfirm" = "Удалить «%@»?";
+"categories.deleteReassign" = "Операции перейдут в «Другое» (или «Прочий доход»). Базовые категории удалить нельзя.";
+"categories.deleteReassignCount" = "%d операций перейдут в «Другое» (или «Прочий доход»). Базовые категории удалить нельзя.";
 "categories.nameRu" = "Название (RU)";
 "categories.nameEn" = "Название (EN)";
 "categories.keywords" = "Ключевые слова";
