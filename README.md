@@ -41,6 +41,8 @@ Build log must show `Watch companion OK → …/PlugIns/CheckMoneyWatch.app`. Th
 
 Watch-only Run installs an **orphan** companion: iPhone Watch app will remove it. Always delete Watch-only CheckMoney + the iPhone app, Clean, then iPhone Run so Available Apps is the only path.
 
+Build log must include `app-id=…watchkitapp` (not empty entitlements). After Run: trust the Personal Team developer on iPhone (Settings → General → VPN & Device Management); enable Developer Mode on Watch if prompted. Personal Team is not a hard block — packaging must stay PlugIns + CodeSignOnCopy (never nested `codesign --force`).
+
 `CheckMoneyWatch` scheme = emergency debug only (same companion binary — not a second App Store / Watch Store app). Full guide: agent-store `docs/apple-watch.md`.
 
 ### Voice on Simulator
