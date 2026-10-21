@@ -37,11 +37,11 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 **Одно приложение с компаньоном на часах.** Не отдельный Watch‑продукт.
 
 **Только так:** scheme **AppForCheckMoney** → **iPhone** → **Run**.  
-Build log must show `Watch companion OK → …/PlugIns/CheckMoneyWatch.app` (and `codesign` Team). Then iPhone **Watch** app → **Available Apps** → **CheckMoney** (or auto-install). Tap mic → dictate → syncs to iPhone via WCSession.
+Build log must show `Watch companion OK → …/PlugIns/CheckMoneyWatch.app`. Then iPhone **Watch** app → **Available Apps** → **CheckMoney** (or auto-install). Tap mic → dictate → syncs to iPhone via WCSession.
 
-If CheckMoney was installed earlier via Watch scheme / direct Watch Run: **delete it on the Watch**, delete the iPhone app, Clean Build Folder, then iPhone Run again so Available Apps is the only install path.
+Watch-only Run installs an **orphan** companion: iPhone Watch app will remove it. Always delete Watch-only CheckMoney + the iPhone app, Clean, then iPhone Run so Available Apps is the only path.
 
-`CheckMoneyWatch` scheme = emergency debug only (same companion binary — not a second App Store app). Full guide: agent-store `docs/apple-watch.md`.
+`CheckMoneyWatch` scheme = emergency debug only (same companion binary — not a second App Store / Watch Store app). Full guide: agent-store `docs/apple-watch.md`.
 
 ### Voice on Simulator
 
