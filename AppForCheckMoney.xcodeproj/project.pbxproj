@@ -30,7 +30,7 @@
 		A1000000000000000000000D /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000D /* HistoryView.swift */; };
 		A1000000000000000000000E /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* Theme.swift */; };
 		A1000000000000000000000F /* TransactionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* TransactionRowView.swift */; };
-		A10000000000000000000023 /* QuietConfirmPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* QuietConfirmPanel.swift */; };
+		A1000000000000000000002A /* QuietConfirmPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* QuietConfirmPanel.swift */; };
 		A10000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* Assets.xcassets */; };
 		A10000000000000000000011 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Localizable.strings */; };
 		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
@@ -746,7 +746,7 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -780,7 +780,7 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -812,7 +812,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -848,7 +848,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -884,7 +884,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -914,7 +914,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -945,7 +945,7 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -976,7 +976,7 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
