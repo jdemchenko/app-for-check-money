@@ -60,6 +60,7 @@
 		A2000000000000000000000D /* AmountWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* AmountWords.swift */; };
 		A2000000000000000000000E /* WatchDictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000004 /* WatchDictateView.swift */; };
 		A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000005 /* WatchSpeechRecognizer.swift */; };
+		A20000000000000000000012 /* CheckMoneyWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C10000000000000000000003 /* CheckMoneyWatchWidgets.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 
 		A10000000000000000000023 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* Speech.framework */; };
 		A10000000000000000000024 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* AVFoundation.framework */; };
@@ -72,6 +73,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = F10000000000000000000002;
 			remoteInfo = CheckMoneyWatch;
+		};
+		P10000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F10000000000000000000010 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F10000000000000000000003;
+			remoteInfo = CheckMoneyWatchWidgets;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -86,6 +94,17 @@
 				A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D20000000000000000000002 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A20000000000000000000012 /* CheckMoneyWatchWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -350,10 +369,12 @@
 				D10000000000000000000012 /* Sources */,
 				D10000000000000000000002 /* Frameworks */,
 				D10000000000000000000013 /* Resources */,
+				D20000000000000000000002 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				P20000000000000000000002 /* PBXTargetDependency */,
 			);
 			name = CheckMoneyWatch;
 			productName = CheckMoneyWatch;
@@ -468,7 +489,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nAPP=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nWATCH=\"${APP}/PlugIns/CheckMoneyWatch.app\"\nPLIST=\"$WATCH/Info.plist\"\nif [ ! -d \"$WATCH\" ]; then\n  echo \"error: Watch companion missing at $WATCH\"\n  echo \"error: Available Apps stays empty until PlugIns/CheckMoneyWatch.app is embedded.\"\n  echo \"error: Use scheme AppForCheckMoney → iPhone → Run (one product + companion).\"\n  ls -la \"${APP}\" || true\n  ls -la \"${APP}/PlugIns\" 2>/dev/null || true\n  exit 1\nfi\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Watch Info.plist missing at $PLIST\"\n  exit 1\nfi\nCOMPANION=$(/usr/libexec/PlistBuddy -c 'Print :WKCompanionAppBundleIdentifier' \"$PLIST\" 2>/dev/null || true)\nINDEP=$(/usr/libexec/PlistBuddy -c 'Print :WKRunsIndependentlyOfCompanionApp' \"$PLIST\" 2>/dev/null || true)\nif [ \"$COMPANION\" != \"com.jdemchenko.AppForCheckMoney\" ]; then\n  echo \"error: WKCompanionAppBundleIdentifier must be com.jdemchenko.AppForCheckMoney (got: $COMPANION)\"\n  exit 1\nfi\nif [ \"$INDEP\" = \"true\" ]; then\n  echo \"error: WKRunsIndependentlyOfCompanionApp must be false (companion, not standalone)\"\n  exit 1\nfi\nFAMILY=$(/usr/libexec/PlistBuddy -c 'Print :UIDeviceFamily:0' \"$PLIST\" 2>/dev/null || true)\nif [ \"$FAMILY\" != \"4\" ]; then\n  echo \"error: embedded Watch Info.plist UIDeviceFamily[0] must be 4 (got: '$FAMILY') — Available Apps needs watch family\"\n  exit 1\nfi\nEXE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \"$PLIST\" 2>/dev/null || echo CheckMoneyWatch)\nEXE=\"$WATCH/$EXE_NAME\"\nif [ ! -f \"$EXE\" ]; then\n  echo \"error: Watch executable missing at $EXE — Available Apps will stay empty\"\n  ls -la \"$WATCH\" || true\n  exit 1\nfi\n# Nested re-sign after CodeSignOnCopy so iPhone-install PlugIns is accepted by watchOS Available Apps.\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  ENT=\"${SRCROOT}/CheckMoneyWatch/CheckMoneyWatch.entitlements\"\n  if [ -f \"$ENT\" ]; then\n    /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --entitlements \"$ENT\" --timestamp=none \"$WATCH\"\n  else\n    /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --timestamp=none \"$WATCH\"\n  fi\nfi\nif ! /usr/bin/codesign --verify --deep --strict \"$WATCH\" 2>/dev/null; then\n  echo \"error: embedded Watch companion failed codesign --verify — Available Apps will reject it\"\n  /usr/bin/codesign --verify --deep --strict \"$WATCH\" || true\n  exit 1\nfi\nTEAM=$(/usr/bin/codesign -dvv \"$WATCH\" 2>&1 | sed -n 's/^TeamIdentifier=//p' | head -1)\necho \"note: Watch companion OK → $WATCH\"\necho \"note: companion of $COMPANION · independent=$INDEP · UIDeviceFamily=$FAMILY · Team=$TEAM · Available Apps after iPhone Run\"\n/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' \"$PLIST\" 2>/dev/null || true\n/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \"$PLIST\" 2>/dev/null || true\n";
+			shellScript = "set -e\nAPP=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nWATCH=\"${APP}/PlugIns/CheckMoneyWatch.app\"\nPLIST=\"$WATCH/Info.plist\"\nif [ ! -d \"$WATCH\" ]; then\n  echo \"error: Watch companion missing at $WATCH\"\n  echo \"error: Available Apps stays empty until PlugIns/CheckMoneyWatch.app is embedded.\"\n  echo \"error: Use scheme AppForCheckMoney → iPhone → Run (one product + companion).\"\n  ls -la \"${APP}\" || true\n  ls -la \"${APP}/PlugIns\" 2>/dev/null || true\n  exit 1\nfi\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Watch Info.plist missing at $PLIST\"\n  exit 1\nfi\nCOMPANION=$(/usr/libexec/PlistBuddy -c 'Print :WKCompanionAppBundleIdentifier' \"$PLIST\" 2>/dev/null || true)\nINDEP=$(/usr/libexec/PlistBuddy -c 'Print :WKRunsIndependentlyOfCompanionApp' \"$PLIST\" 2>/dev/null || true)\nif [ \"$COMPANION\" != \"com.jdemchenko.AppForCheckMoney\" ]; then\n  echo \"error: WKCompanionAppBundleIdentifier must be com.jdemchenko.AppForCheckMoney (got: $COMPANION)\"\n  exit 1\nfi\nif [ \"$INDEP\" = \"true\" ]; then\n  echo \"error: WKRunsIndependentlyOfCompanionApp must be false (companion, not standalone)\"\n  exit 1\nfi\nFAMILY=$(/usr/libexec/PlistBuddy -c 'Print :UIDeviceFamily:0' \"$PLIST\" 2>/dev/null || true)\nif [ \"$FAMILY\" != \"4\" ]; then\n  echo \"error: embedded Watch Info.plist UIDeviceFamily[0] must be 4 (got: '$FAMILY') — Available Apps needs watch family\"\n  exit 1\nfi\nWIDGET=\"$WATCH/PlugIns/CheckMoneyWatchWidgets.appex\"\nif [ ! -d \"$WIDGET\" ]; then\n  echo \"error: Watch complication/extension missing at $WIDGET\"\n  echo \"error: Available Apps often needs widgets embedded under companion PlugIns/\"\n  ls -la \"$WATCH/PlugIns\" 2>/dev/null || true\n  exit 1\nfi\nEXE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \"$PLIST\" 2>/dev/null || echo CheckMoneyWatch)\nEXE=\"$WATCH/$EXE_NAME\"\nif [ ! -f \"$EXE\" ]; then\n  echo \"error: Watch executable missing at $EXE — Available Apps will stay empty\"\n  ls -la \"$WATCH\" || true\n  exit 1\nfi\n# Nested re-sign after CodeSignOnCopy so iPhone-install PlugIns is accepted by watchOS Available Apps.\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ] && [ \"${EXPANDED_CODE_SIGN_IDENTITY}\" != \"-\" ]; then\n  ENT=\"${SRCROOT}/CheckMoneyWatch/CheckMoneyWatch.entitlements\"\n  if [ -f \"$ENT\" ]; then\n    /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --entitlements \"$ENT\" --timestamp=none \"$WATCH\"\n  else\n    /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --timestamp=none \"$WATCH\"\n  fi\nfi\nif ! /usr/bin/codesign --verify --deep --strict \"$WATCH\" 2>/dev/null; then\n  echo \"error: embedded Watch companion failed codesign --verify — Available Apps will reject it\"\n  /usr/bin/codesign --verify --deep --strict \"$WATCH\" || true\n  exit 1\nfi\nTEAM=$(/usr/bin/codesign -dvv \"$WATCH\" 2>&1 | sed -n 's/^TeamIdentifier=//p' | head -1)\necho \"note: Watch companion OK → $WATCH\"\necho \"note: companion of $COMPANION · independent=$INDEP · UIDeviceFamily=$FAMILY · Team=$TEAM · widgets OK · Available Apps after iPhone Run\"\n/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' \"$PLIST\" 2>/dev/null || true\n/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \"$PLIST\" 2>/dev/null || true\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -549,6 +570,11 @@
 			target = F10000000000000000000002 /* CheckMoneyWatch */;
 			targetProxy = P10000000000000000000001 /* PBXContainerItemProxy */;
 		};
+		P20000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F10000000000000000000003 /* CheckMoneyWatchWidgets */;
+			targetProxy = P10000000000000000000002 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -613,7 +639,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -646,7 +672,7 @@
 				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -678,7 +704,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -714,7 +740,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -750,7 +776,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -780,7 +806,7 @@
 				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;

@@ -10,6 +10,7 @@ enum AppTab: Hashable {
 
 /// Home / Stats / History / Categories — Add stays a Home sheet.
 struct RootTabView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: AppTab = .home
 
     var body: some View {
@@ -41,6 +42,11 @@ struct RootTabView: View {
         .tint(Color.primary)
         .task {
             ExchangeRateStore.shared.refreshIfNeeded()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                PhoneWatchSync.shared.refreshAfterForeground()
+            }
         }
     }
 }

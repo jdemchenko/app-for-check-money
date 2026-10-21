@@ -99,19 +99,46 @@ final class WatchStore: NSObject, ObservableObject {
     }
 
     private func sendPendingToPhone(_ pending: WatchPendingAdd) {
-        guard let session, session.activationState == .activated else { return }
+        guard let session else {
+            #if DEBUG
+            print("WatchStore: no WCSession — pending kept local only")
+            #endif
+            return
+        }
+        guard session.activationState == .activated else {
+            #if DEBUG
+            print("WatchStore: WCSession not activated yet — transfer will retry after activate")
+            #endif
+            // Still try transferUserInfo; system queues once session activates.
+            guard let data = try? JSONEncoder.iso8601.encode(pending) else { return }
+            session.transferUserInfo(["pendingAdd": data.base64EncodedString()])
+            return
+        }
         guard let data = try? JSONEncoder.iso8601.encode(pending) else { return }
         let payload: [String: Any] = ["pendingAdd": data.base64EncodedString()]
 
-        // Reliable queue even if phone is temporarily unreachable.
+        // Background-safe queue (phone locked / app not foreground). Do NOT put pending
+        // adds in applicationContext — latest-wins and races phone→watch snapshots.
         session.transferUserInfo(payload)
 
         if session.isReachable {
-            session.sendMessage(payload, replyHandler: { _ in }, errorHandler: { _ in
-                try? session.updateApplicationContext(payload)
-            })
+            session.sendMessage(
+                payload,
+                replyHandler: { _ in
+                    #if DEBUG
+                    print("WatchStore: sendMessage pendingAdd delivered")
+                    #endif
+                },
+                errorHandler: { error in
+                    #if DEBUG
+                    print("WatchStore: sendMessage failed (\(error.localizedDescription)); transferUserInfo already queued")
+                    #endif
+                }
+            )
         } else {
-            try? session.updateApplicationContext(payload)
+            #if DEBUG
+            print("WatchStore: phone not reachable — transferUserInfo queued for background delivery")
+            #endif
         }
     }
 

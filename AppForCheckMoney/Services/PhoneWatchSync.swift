@@ -226,48 +226,68 @@ extension PhoneWatchSync: WCSessionDelegate {
     }
     #endif
 
+    /// Reply **immediately** — deferring `replyHandler` onto MainActor makes Watch
+    /// `sendMessage` time out, so transfers never complete while the phone UI is busy.
     nonisolated func session(
         _ session: WCSession,
         didReceiveMessage message: [String: Any],
         replyHandler: @escaping ([String: Any]) -> Void
     ) {
-        Task { @MainActor in
-            if let b64 = message["pendingAdd"] as? String,
-               let data = Data(base64Encoded: b64),
-               let add = try? JSONDecoder.iso8601.decode(WatchPendingAdd.self, from: data) {
-                ingestPendingAdd(add)
-                replyHandler(["ok": true])
-                return
-            }
-            if message["requestSnapshot"] as? Bool == true {
-                pushSnapshot()
-                replyHandler(["ok": true])
-                return
-            }
+        let pendingB64 = message["pendingAdd"] as? String
+        let wantsSnapshot = message["requestSnapshot"] as? Bool == true
+        guard pendingB64 != nil || wantsSnapshot else {
             replyHandler(["ok": false])
+            return
+        }
+        replyHandler(["ok": true])
+        Task { @MainActor in
+            PhoneWatchSync.shared.handleIncomingPendingAdd(pendingB64)
+            if wantsSnapshot {
+                PhoneWatchSync.shared.pushSnapshot()
+            }
+        }
+    }
+
+    nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        Task { @MainActor in
+            PhoneWatchSync.shared.handleIncomingPendingAdd(message["pendingAdd"] as? String)
+            if message["requestSnapshot"] as? Bool == true {
+                PhoneWatchSync.shared.pushSnapshot()
+            }
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
         Task { @MainActor in
-            if let b64 = applicationContext["pendingAdd"] as? String,
-               let data = Data(base64Encoded: b64),
-               let add = try? JSONDecoder.iso8601.decode(WatchPendingAdd.self, from: data) {
-                ingestPendingAdd(add)
-            }
+            PhoneWatchSync.shared.handleIncomingPendingAdd(applicationContext["pendingAdd"] as? String)
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
         Task { @MainActor in
-            if let b64 = userInfo["pendingAdd"] as? String,
-               let data = Data(base64Encoded: b64),
-               let add = try? JSONDecoder.iso8601.decode(WatchPendingAdd.self, from: data) {
-                ingestPendingAdd(add)
-                return
-            }
-            // Snapshot pushed via transferUserInfo — ignore on phone.
+            // Primary Watch→phone path: transferUserInfo queues while phone is locked / backgrounded.
+            PhoneWatchSync.shared.handleIncomingPendingAdd(userInfo["pendingAdd"] as? String)
         }
+    }
+
+    /// Call when iPhone becomes active so any disk-queued / late WCSession payloads merge.
+    func refreshAfterForeground() {
+        refreshWatchInstallState()
+        mergePendingFromWatch()
+        if isWatchAppInstalled {
+            pushSnapshot()
+        }
+    }
+
+    fileprivate func handleIncomingPendingAdd(_ b64: String?) {
+        guard let b64,
+              let data = Data(base64Encoded: b64),
+              let add = try? JSONDecoder.iso8601.decode(WatchPendingAdd.self, from: data)
+        else { return }
+        #if DEBUG
+        print("PhoneWatchSync: received Watch pendingAdd id=\(add.id) amount=\(add.amount)")
+        #endif
+        ingestPendingAdd(add)
     }
 }
 
