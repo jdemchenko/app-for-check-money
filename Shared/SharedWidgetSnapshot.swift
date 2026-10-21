@@ -11,6 +11,8 @@ struct SharedWidgetSnapshot: Codable, Hashable {
     var budgetEnabled: Bool
     var budgetAmount: Double
     var budgetSpent: Double
+    /// Last N calendar days of expense totals (display currency), oldest → newest. Empty on legacy snapshots.
+    var recentDailyExpenses: [Double]
 
     static var empty: SharedWidgetSnapshot {
         .init(
@@ -21,8 +23,63 @@ struct SharedWidgetSnapshot: Codable, Hashable {
             currencySymbol: "Br",
             budgetEnabled: false,
             budgetAmount: 0,
-            budgetSpent: 0
+            budgetSpent: 0,
+            recentDailyExpenses: Array(repeating: 0, count: 7)
         )
+    }
+
+    init(
+        updatedAt: Date,
+        todayExpense: Double,
+        monthBalance: Double,
+        monthExpense: Double,
+        currencySymbol: String,
+        budgetEnabled: Bool,
+        budgetAmount: Double,
+        budgetSpent: Double,
+        recentDailyExpenses: [Double] = []
+    ) {
+        self.updatedAt = updatedAt
+        self.todayExpense = todayExpense
+        self.monthBalance = monthBalance
+        self.monthExpense = monthExpense
+        self.currencySymbol = currencySymbol
+        self.budgetEnabled = budgetEnabled
+        self.budgetAmount = budgetAmount
+        self.budgetSpent = budgetSpent
+        self.recentDailyExpenses = recentDailyExpenses
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case updatedAt, todayExpense, monthBalance, monthExpense
+        case currencySymbol, budgetEnabled, budgetAmount, budgetSpent
+        case recentDailyExpenses
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        updatedAt = try c.decode(Date.self, forKey: .updatedAt)
+        todayExpense = try c.decode(Double.self, forKey: .todayExpense)
+        monthBalance = try c.decode(Double.self, forKey: .monthBalance)
+        monthExpense = try c.decode(Double.self, forKey: .monthExpense)
+        currencySymbol = try c.decode(String.self, forKey: .currencySymbol)
+        budgetEnabled = try c.decode(Bool.self, forKey: .budgetEnabled)
+        budgetAmount = try c.decode(Double.self, forKey: .budgetAmount)
+        budgetSpent = try c.decode(Double.self, forKey: .budgetSpent)
+        recentDailyExpenses = try c.decodeIfPresent([Double].self, forKey: .recentDailyExpenses) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(updatedAt, forKey: .updatedAt)
+        try c.encode(todayExpense, forKey: .todayExpense)
+        try c.encode(monthBalance, forKey: .monthBalance)
+        try c.encode(monthExpense, forKey: .monthExpense)
+        try c.encode(currencySymbol, forKey: .currencySymbol)
+        try c.encode(budgetEnabled, forKey: .budgetEnabled)
+        try c.encode(budgetAmount, forKey: .budgetAmount)
+        try c.encode(budgetSpent, forKey: .budgetSpent)
+        try c.encode(recentDailyExpenses, forKey: .recentDailyExpenses)
     }
 }
 

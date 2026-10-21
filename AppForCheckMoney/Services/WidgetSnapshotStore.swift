@@ -5,6 +5,8 @@ import WidgetKit
 /// Uses Keychain Sharing (Personal Team–safe) — not App Groups.
 enum WidgetSnapshotStore {
     typealias Snapshot = SharedWidgetSnapshot
+    /// Days included in the large-widget sparkline (oldest → newest).
+    static let recentDayCount = 7
 
     static func save(_ snapshot: Snapshot) {
         SharedWidgetSnapshotStore.save(snapshot)
@@ -45,6 +47,14 @@ enum WidgetSnapshotStore {
                 .reduce(0.0) { $0 + $1.amountIn(budgetCur) }
         }()
 
+        let recentDaily = recentDailyExpenses(
+            transactions: transactions,
+            displayCurrency: displayCurrency,
+            endingAt: dayStart,
+            dayCount: recentDayCount,
+            calendar: cal
+        )
+
         save(
             Snapshot(
                 updatedAt: now,
@@ -54,8 +64,32 @@ enum WidgetSnapshotStore {
                 currencySymbol: displayCurrency.displaySymbol,
                 budgetEnabled: settings.budgetEnabled,
                 budgetAmount: settings.budgetAmount,
-                budgetSpent: budgetSpent
+                budgetSpent: budgetSpent,
+                recentDailyExpenses: recentDaily
             )
         )
+    }
+
+    /// Expense totals per calendar day for the last `dayCount` days (oldest → newest).
+    static func recentDailyExpenses(
+        transactions: [MoneyTransaction],
+        displayCurrency: AppCurrency,
+        endingAt dayStart: Date,
+        dayCount: Int,
+        calendar: Calendar = .current
+    ) -> [Double] {
+        guard dayCount > 0 else { return [] }
+        guard let windowStart = calendar.date(byAdding: .day, value: -(dayCount - 1), to: dayStart) else {
+            return Array(repeating: 0, count: dayCount)
+        }
+        var totals = Array(repeating: 0.0, count: dayCount)
+        for tx in transactions where tx.type == .expense {
+            let day = calendar.startOfDay(for: tx.date)
+            guard day >= windowStart, day <= dayStart else { continue }
+            let offset = calendar.dateComponents([.day], from: windowStart, to: day).day ?? 0
+            guard offset >= 0, offset < dayCount else { continue }
+            totals[offset] += tx.amountIn(displayCurrency)
+        }
+        return totals
     }
 }
