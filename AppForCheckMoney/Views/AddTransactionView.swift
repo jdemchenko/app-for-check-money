@@ -25,6 +25,7 @@ struct AddTransactionView: View {
     @State private var draft: VoiceDraft?
     @State private var isHoldingMic = false
     @State private var entryCurrency: AppCurrency = CurrencySettings.shared.entryCurrency
+    @State private var paymentMethod: PaymentMethod = .unspecified
     @StateObject private var speech = SpeechRecognizer()
     @ObservedObject private var currencySettings = CurrencySettings.shared
 
@@ -261,6 +262,18 @@ struct AddTransactionView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
+                    Text(L10n.string("field.payment"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Picker(L10n.string("field.payment"), selection: $paymentMethod) {
+                        ForEach(PaymentMethod.allCases) { method in
+                            Text(method.title).tag(method)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
                     Text(L10n.string("field.note"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -315,7 +328,8 @@ struct AddTransactionView: View {
             note: note.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
             date: date,
             source: mode == .voice ? .voice : .manual,
-            currency: entryCurrency
+            currency: entryCurrency,
+            paymentMethod: paymentMethod
         )
         modelContext.insert(tx)
         try? modelContext.save()

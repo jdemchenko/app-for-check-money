@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
@@ -11,14 +12,24 @@ struct HistoryView: View {
     @State private var query = ""
     @State private var typeFilter: TypeFilter = .all
     @State private var categoryFilter: String = "all"
+    @State private var paymentFilter: PaymentFilter = .all
     @State private var fromDate: Date?
     @State private var toDate: Date?
     @State private var showFilters = false
     @State private var selected: MoneyTransaction?
+    @State private var editing: MoneyTransaction?
+    @State private var exportURL: URL?
+    @State private var showShare = false
+    @State private var exportError: String?
     @ObservedObject private var currencySettings = CurrencySettings.shared
 
     enum TypeFilter: String, CaseIterable, Identifiable {
         case all, expense, income
+        var id: String { rawValue }
+    }
+
+    enum PaymentFilter: String, CaseIterable, Identifiable {
+        case all, cash, card, unspecified
         var id: String { rawValue }
     }
 
@@ -28,6 +39,12 @@ struct HistoryView: View {
             if typeFilter == .expense, tx.type != .expense { return false }
             if typeFilter == .income, tx.type != .income { return false }
             if categoryFilter != "all", tx.categoryId != categoryFilter { return false }
+            switch paymentFilter {
+            case .all: break
+            case .cash: if tx.paymentMethod != .cash { return false }
+            case .card: if tx.paymentMethod != .card { return false }
+            case .unspecified: if tx.paymentMethod != .unspecified { return false }
+            }
             if let fromDate {
                 let start = Calendar.current.startOfDay(for: fromDate)
                 if tx.date < start { return false }
@@ -40,7 +57,7 @@ struct HistoryView: View {
             }
             if !q.isEmpty {
                 let cat = categories.first { $0.id == tx.categoryId }
-                let hay = "\(tx.note ?? "") \(cat?.displayName() ?? "") \(tx.amount) \(tx.currency.code) \(tx.currency.displaySymbol)".lowercased()
+                let hay = "\(tx.note ?? "") \(cat?.displayName() ?? "") \(tx.amount) \(tx.currency.code) \(tx.paymentMethod.title)".lowercased()
                 if !hay.contains(q) { return false }
             }
             return true
@@ -119,7 +136,15 @@ struct HistoryView: View {
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $query, prompt: L10n.string("history.search"))
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        exportCSV()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .accessibilityLabel(L10n.string("export.share"))
+                    .disabled(filtered.isEmpty)
+
                     Button {
                         showFilters = true
                     } label: {
@@ -135,9 +160,49 @@ struct HistoryView: View {
             }
             .sheet(item: $selected) { tx in
                 transactionDetail(tx)
-                    .presentationDetents([.medium])
+                    .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
+            .sheet(item: $editing) { tx in
+                EditTransactionView(transaction: tx)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showShare) {
+                if let exportURL {
+                    ShareSheet(items: [exportURL])
+                }
+            }
+            .alert(
+                L10n.string("export.share"),
+                isPresented: Binding(
+                    get: { exportError != nil },
+                    set: { if !$0 { exportError = nil } }
+                )
+            ) {
+                Button(L10n.string("common.ok"), role: .cancel) { exportError = nil }
+            } message: {
+                Text(exportError ?? "")
+            }
+        }
+    }
+
+    private func exportCSV() {
+        guard !filtered.isEmpty else {
+            exportError = L10n.string("export.empty")
+            return
+        }
+        let csv = CSVExport.makeCSV(
+            transactions: filtered,
+            categories: categories,
+            from: fromDate,
+            to: toDate
+        )
+        do {
+            exportURL = try CSVExport.writeTempFile(csv: csv)
+            showShare = true
+        } catch {
+            exportError = L10n.string("export.failed")
         }
     }
 
@@ -168,6 +233,15 @@ struct HistoryView: View {
                         Text(L10n.string("filter.all")).tag(TypeFilter.all)
                         Text(L10n.string("type.expense")).tag(TypeFilter.expense)
                         Text(L10n.string("type.income")).tag(TypeFilter.income)
+                    }
+                    .pickerStyle(.segmented)
+
+                    QuietSectionLabel(text: L10n.string("field.payment"))
+                    Picker(L10n.string("field.payment"), selection: $paymentFilter) {
+                        Text(L10n.string("filter.all")).tag(PaymentFilter.all)
+                        Text(L10n.string("payment.cash")).tag(PaymentFilter.cash)
+                        Text(L10n.string("payment.card")).tag(PaymentFilter.card)
+                        Text(L10n.string("payment.unspecified")).tag(PaymentFilter.unspecified)
                     }
                     .pickerStyle(.segmented)
 
@@ -238,6 +312,7 @@ struct HistoryView: View {
                     Button(L10n.string("history.reset")) {
                         typeFilter = .all
                         categoryFilter = "all"
+                        paymentFilter = .all
                         fromDate = nil
                         toDate = nil
                         query = ""
@@ -263,6 +338,11 @@ struct HistoryView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    if tx.paymentMethod != .unspecified {
+                        Text(L10n.string("field.payment") + ": " + tx.paymentMethod.title)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     if let note = tx.note, !note.isEmpty {
                         GlassPanel {
                             VStack(alignment: .leading, spacing: 6) {
@@ -273,6 +353,10 @@ struct HistoryView: View {
                                     .font(.body)
                             }
                         }
+                    }
+                    GlassActionButton(title: L10n.string("common.edit"), systemImage: "pencil") {
+                        editing = tx
+                        selected = nil
                     }
                     GlassActionButton(
                         title: L10n.string("common.delete"),
@@ -299,4 +383,13 @@ struct HistoryView: View {
     }
 }
 
-extension MoneyTransaction: Identifiable {}
+/// UIKit share wrapper for CSV export.
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}

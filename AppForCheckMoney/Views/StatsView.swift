@@ -32,7 +32,7 @@ struct StatsView: View {
 
                     totalsCard
 
-                    if snapshot.categoryBreakdown.isEmpty {
+                    if snapshot.categoryBreakdown.isEmpty && snapshot.dailySpend.isEmpty {
                         GlassPanel(padding: 28, corner: AppTheme.cornerMedium) {
                             ContentUnavailableView(
                                 L10n.string("stats.empty"),
@@ -42,13 +42,18 @@ struct StatsView: View {
                             .frame(maxWidth: .infinity)
                         }
                     } else {
+                        if !snapshot.dailySpend.isEmpty {
+                            dailyChartSection
+                        }
                         if snapshot.expenseCount > 0 {
                             averageCard
                         }
                         if !snapshot.top3.isEmpty {
                             top3Section
                         }
-                        categorySection
+                        if !snapshot.categoryBreakdown.isEmpty {
+                            categorySection
+                        }
                     }
 
                     Text(CurrencyConverter.ratesFootnote)
@@ -111,6 +116,43 @@ struct StatsView: View {
                     Text("\(priorLabel) \(sign)\(MoneyFormat.currency(delta, code: snapshot.displayCurrency))")
                         .font(.caption)
                         .foregroundStyle(delta > 0 ? AppTheme.expense : AppTheme.income)
+                }
+            }
+        }
+    }
+
+    private var dailyChartSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            QuietSectionLabel(text: L10n.string("stats.daily"))
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                let days = Array(snapshot.dailySpend.suffix(14))
+                let maxExpense = max(days.map(\.expense).max() ?? 1, 1)
+                if days.isEmpty {
+                    Text(L10n.string("stats.dailyEmpty"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    HStack(alignment: .bottom, spacing: 4) {
+                        ForEach(days) { day in
+                            VStack(spacing: 4) {
+                                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                    .fill(Color.primary.opacity(0.35))
+                                    .frame(
+                                        height: max(4, CGFloat(day.expense / maxExpense) * 88)
+                                    )
+                                    .accessibilityLabel(day.day.formatted(date: .abbreviated, time: .omitted))
+                                    .accessibilityValue(
+                                        MoneyFormat.currency(day.expense, code: snapshot.displayCurrency)
+                                    )
+                                Text(day.day.formatted(.dateTime.day()))
+                                    .font(.system(size: 9).monospacedDigit())
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .frame(height: 110, alignment: .bottom)
                 }
             }
         }

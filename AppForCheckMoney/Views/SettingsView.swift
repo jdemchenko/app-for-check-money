@@ -3,7 +3,11 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject private var currencySettings = CurrencySettings.shared
     @ObservedObject private var rates = ExchangeRateStore.shared
+    @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.dismiss) private var dismiss
+
+    @State private var showRecurring = false
+    @State private var budgetText: String = ""
 
     var body: some View {
         NavigationStack {
@@ -21,6 +25,10 @@ struct SettingsView: View {
                         selection: $currencySettings.entryCurrency
                     )
 
+                    budgetBlock
+                    securityBlock
+                    recurringBlock
+                    iCloudBlock
                     ratesBlock
                 }
                 .padding(20)
@@ -36,6 +44,104 @@ struct SettingsView: View {
             .task {
                 rates.refreshIfNeeded()
             }
+            .onAppear {
+                budgetText = settings.budgetAmount > 0
+                    ? String(format: "%g", settings.budgetAmount)
+                    : ""
+            }
+            .sheet(isPresented: $showRecurring) {
+                RecurringListView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+    }
+
+    private var budgetBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("budget.title"))
+            Text(L10n.string("budget.hint"))
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Toggle(L10n.string("budget.enabled"), isOn: $settings.budgetEnabled)
+
+                    if settings.budgetEnabled {
+                        TextField(L10n.string("budget.amount"), text: $budgetText)
+                            .keyboardType(.decimalPad)
+                            .glassField()
+                            .onChange(of: budgetText) { _, newValue in
+                                let normalized = newValue.replacingOccurrences(of: ",", with: ".")
+                                if let value = Double(normalized), value > 0 {
+                                    settings.budgetAmount = value
+                                }
+                            }
+
+                        Picker(L10n.string("field.currency"), selection: $settings.budgetCurrency) {
+                            ForEach(AppCurrency.allCases) { code in
+                                Text(code.code).tag(code)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                }
+            }
+        }
+    }
+
+    private var securityBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("lock.title"))
+            Text(L10n.string("lock.hint"))
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                Toggle(AppLockService.biometryLabel, isOn: $settings.lockEnabled)
+            }
+        }
+    }
+
+    private var recurringBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("recurring.title"))
+            Button {
+                showRecurring = true
+            } label: {
+                HStack {
+                    Text(L10n.string("recurring.manage"))
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(14)
+                .background {
+                    AppTheme.continuousRect(AppTheme.cornerMedium)
+                        .fill(.ultraThinMaterial)
+                }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var iCloudBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("icloud.title"))
+            Text(DataStore.iCloudStatusMessage)
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                Toggle(L10n.string("icloud.prefer"), isOn: $settings.preferiCloudSync)
+            }
+
+            Text(L10n.string("icloud.restartNote"))
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
     }
 

@@ -126,3 +126,54 @@
 "common.edit" = "Edit";
 "common.ok" = "OK";
 "common.close" = "Close";
+
+"field.payment" = "Payment";
+"payment.unspecified" = "Not set";
+"payment.cash" = "Cash";
+"payment.card" = "Card";
+
+"budget.title" = "Monthly budget";
+"budget.hint" = "Quiet progress on Home for this month’s spending.";
+"budget.enabled" = "Track monthly limit";
+"budget.amount" = "Limit amount";
+
+"lock.title" = "App lock";
+"lock.hint" = "Require Face ID / Touch ID or device passcode when opening CheckMoney.";
+"lock.subtitle" = "Unlock to see your balances";
+"lock.reason" = "Unlock CheckMoney";
+"lock.failed" = "Couldn’t unlock. Try again.";
+"lock.unlocking" = "Unlocking…";
+"lock.faceID" = "Unlock with Face ID";
+"lock.touchID" = "Unlock with Touch ID";
+"lock.opticID" = "Unlock with Optic ID";
+"lock.passcode" = "Unlock with Passcode";
+
+"onboarding.headline" = "Track money by voice";
+"onboarding.voiceTitle" = "Hold the mic";
+"onboarding.voiceBody" = "Say an amount and category — CheckMoney drafts the expense for you.";
+"onboarding.bynTitle" = "BYN by default";
+"onboarding.bynBody" = "«Рублей» means your entry currency (BYN). Dollars and euros only when said explicitly.";
+"onboarding.continue" = "Continue";
+
+"recurring.title" = "Recurring";
+"recurring.manage" = "Manage recurring";
+"recurring.add" = "New recurring";
+"recurring.empty" = "No recurring yet";
+"recurring.emptyHint" = "Add rent, telecom, or salary so CheckMoney posts them on schedule.";
+"recurring.weekly" = "Weekly";
+"recurring.monthly" = "Monthly";
+"recurring.frequency" = "Frequency";
+"recurring.next" = "Next date";
+
+"export.share" = "Export CSV";
+"export.failed" = "Couldn’t create the CSV file. Try again.";
+"export.empty" = "Nothing to export for the current filters.";
+
+"stats.daily" = "By day";
+"stats.dailyEmpty" = "No daily spend in this period.";
+
+"icloud.title" = "iCloud sync";
+"icloud.off" = "Local only — sync between your iPhones is off.";
+"icloud.prefer" = "Prefer iCloud when available";
+"icloud.personalTeamNote" = "CloudKit needs a paid Apple Developer team and iCloud capability. On Personal Team, data stays on this iPhone (toggle prepares a future paid-team setup; restart after enabling).";
+"icloud.restartNote" = "Restart the app after changing iCloud preference.";

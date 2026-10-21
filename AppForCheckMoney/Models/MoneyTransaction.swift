@@ -16,6 +16,8 @@ final class MoneyTransaction {
     /// ISO-ish code stored per transaction: byn | rub | usd | eur.
     /// Missing/empty on legacy rows → treated as BYN (never rewritten in bulk).
     var currencyRaw: String = AppCurrency.byn.rawValue
+    /// "" | cash | card — empty means unspecified (legacy rows).
+    var paymentMethodRaw: String = ""
 
     init(
         id: String = UUID().uuidString,
@@ -26,7 +28,8 @@ final class MoneyTransaction {
         date: Date = .now,
         createdAt: Date = .now,
         source: EntrySource = .manual,
-        currency: AppCurrency = .byn
+        currency: AppCurrency = .byn,
+        paymentMethod: PaymentMethod = .unspecified
     ) {
         self.id = id
         self.amount = amount
@@ -37,6 +40,7 @@ final class MoneyTransaction {
         self.createdAt = createdAt
         self.sourceRaw = source.rawValue
         self.currencyRaw = currency.rawValue
+        self.paymentMethodRaw = paymentMethod.rawValue
     }
 
     var type: TransactionType {
@@ -52,6 +56,11 @@ final class MoneyTransaction {
     var currency: AppCurrency {
         get { AppCurrency.parse(currencyRaw) }
         set { currencyRaw = newValue.rawValue }
+    }
+
+    var paymentMethod: PaymentMethod {
+        get { PaymentMethod.parse(paymentMethodRaw) }
+        set { paymentMethodRaw = newValue.rawValue }
     }
 
     var signedAmount: Double {

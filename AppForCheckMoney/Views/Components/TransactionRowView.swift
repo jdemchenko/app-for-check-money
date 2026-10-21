@@ -49,10 +49,16 @@ struct TransactionRowView: View {
     }
 
     private var subtitle: String {
+        var parts: [String] = []
+        if transaction.paymentMethod != .unspecified {
+            parts.append(transaction.paymentMethod.title)
+        }
         if let note = transaction.note?.trimmingCharacters(in: .whitespacesAndNewlines),
            !note.isEmpty {
-            return note
+            parts.append(note)
+        } else {
+            parts.append(MoneyFormat.dayLabel(transaction.date))
         }
-        return MoneyFormat.dayLabel(transaction.date)
+        return parts.joined(separator: " · ")
     }
 }

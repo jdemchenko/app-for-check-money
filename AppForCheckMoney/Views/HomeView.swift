@@ -11,6 +11,7 @@ struct HomeView: View {
     private var categories: [MoneyCategory]
 
     @ObservedObject private var currencySettings = CurrencySettings.shared
+    @EnvironmentObject private var settings: AppSettingsStore
     @StateObject private var speech = SpeechRecognizer()
     @State private var pendingDraft: VoiceDraft?
     @State private var overrideCategoryId: String?
@@ -213,8 +214,49 @@ struct HomeView: View {
                     }
                     .accessibilityElement(children: .combine)
                 }
+
+                if settings.budgetEnabled, settings.budgetAmount > 0 {
+                    let spent = monthBudgetSpent
+                    let limit = settings.budgetAmount
+                    let progress = min(1, max(0, spent / limit))
+                    Divider().opacity(0.2).padding(.vertical, 2)
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(L10n.string("budget.title"))
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.secondary)
+                            Spacer(minLength: 8)
+                            Text(
+                                MoneyFormat.currency(spent, code: settings.budgetCurrency)
+                                    + " / "
+                                    + MoneyFormat.currency(limit, code: settings.budgetCurrency)
+                            )
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(progress >= 1 ? AppTheme.expense : .secondary)
+                        }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                AppTheme.continuousRect(AppTheme.radiusControl)
+                                    .fill(Color.primary.opacity(0.06))
+                                AppTheme.continuousRect(AppTheme.radiusControl)
+                                    .fill(Color.primary.opacity(progress >= 1 ? 0.45 : 0.28))
+                                    .frame(width: max(4, geo.size.width * progress))
+                            }
+                        }
+                        .frame(height: 5)
+                        .clipShape(AppTheme.continuousRect(AppTheme.radiusControl))
+                        .accessibilityLabel(L10n.string("budget.title"))
+                        .accessibilityValue("\(Int((progress * 100).rounded()))%")
+                    }
+                }
             }
         }
+    }
+
+    private var monthBudgetSpent: Double {
+        monthTransactions
+            .filter { $0.type == .expense }
+            .reduce(0) { $0 + $1.amountIn(settings.budgetCurrency) }
     }
 
     /// Hold to talk — press starts listening, release stops and saves.

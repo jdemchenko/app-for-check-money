@@ -126,3 +126,54 @@
 "common.edit" = "Изменить";
 "common.ok" = "OK";
 "common.close" = "Закрыть";
+
+"field.payment" = "Оплата";
+"payment.unspecified" = "Не указано";
+"payment.cash" = "Наличные";
+"payment.card" = "Карта";
+
+"budget.title" = "Бюджет месяца";
+"budget.hint" = "Тихий прогресс на Home по тратам этого месяца.";
+"budget.enabled" = "Следить за лимитом";
+"budget.amount" = "Сумма лимита";
+
+"lock.title" = "Блокировка";
+"lock.hint" = "Face ID / Touch ID или код устройства при открытии CheckMoney.";
+"lock.subtitle" = "Разблокируйте, чтобы видеть балансы";
+"lock.reason" = "Разблокировать CheckMoney";
+"lock.failed" = "Не удалось разблокировать. Попробуйте ещё раз.";
+"lock.unlocking" = "Разблокировка…";
+"lock.faceID" = "Разблокировать Face ID";
+"lock.touchID" = "Разблокировать Touch ID";
+"lock.opticID" = "Разблокировать Optic ID";
+"lock.passcode" = "Разблокировать кодом";
+
+"onboarding.headline" = "Учёт голосом";
+"onboarding.voiceTitle" = "Удерживайте микрофон";
+"onboarding.voiceBody" = "Скажите сумму и категорию — CheckMoney подготовит черновик.";
+"onboarding.bynTitle" = "По умолчанию BYN";
+"onboarding.bynBody" = "«Рублей» — валюта ввода (BYN). Доллары и евро — только если сказаны явно.";
+"onboarding.continue" = "Продолжить";
+
+"recurring.title" = "Повторы";
+"recurring.manage" = "Управлять повторами";
+"recurring.add" = "Новый повтор";
+"recurring.empty" = "Повторов пока нет";
+"recurring.emptyHint" = "Добавьте аренду, связь или зарплату — CheckMoney создаст операции по расписанию.";
+"recurring.weekly" = "Еженедельно";
+"recurring.monthly" = "Ежемесячно";
+"recurring.frequency" = "Частота";
+"recurring.next" = "Следующая дата";
+
+"export.share" = "Экспорт CSV";
+"export.failed" = "Не удалось создать CSV. Попробуйте ещё раз.";
+"export.empty" = "Нечего экспортировать по текущим фильтрам.";
+
+"stats.daily" = "По дням";
+"stats.dailyEmpty" = "Нет трат по дням за этот период.";
+
+"icloud.title" = "Синхронизация iCloud";
+"icloud.off" = "Только на этом iPhone — синк между устройствами выключен.";
+"icloud.prefer" = "Предпочитать iCloud, если доступен";
+"icloud.personalTeamNote" = "CloudKit нужен платный Apple Developer и capability iCloud. На Personal Team данные остаются на этом iPhone (переключатель готовит будущий платный team; после включения перезапустите приложение).";
+"icloud.restartNote" = "Перезапустите приложение после смены настройки iCloud.";

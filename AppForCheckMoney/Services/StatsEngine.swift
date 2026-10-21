@@ -10,6 +10,13 @@ struct CategorySpend: Identifiable {
     let share: Double
 }
 
+struct DaySpend: Identifiable, Hashable {
+    var id: Date { day }
+    let day: Date
+    /// Expense total in display currency for that calendar day.
+    let expense: Double
+}
+
 struct StatsSnapshot {
     let period: StatsPeriod
     let displayCurrency: AppCurrency
@@ -17,6 +24,7 @@ struct StatsSnapshot {
     let expense: Double
     var balance: Double { income - expense }
     let categoryBreakdown: [CategorySpend]
+    let dailySpend: [DaySpend]
     let transactionCount: Int
     let expenseCount: Int
     /// Average expense check in display currency.
@@ -78,12 +86,23 @@ enum StatsEngine {
             return ((expense - priorExpense) * 100).rounded() / 100
         }()
 
+        let cal = Calendar.current
+        var byDay: [Date: Double] = [:]
+        for tx in filtered where tx.type == .expense {
+            let day = cal.startOfDay(for: tx.date)
+            byDay[day, default: 0] += tx.amountIn(displayCurrency)
+        }
+        let daily: [DaySpend] = byDay.keys.sorted().map { day in
+            DaySpend(day: day, expense: byDay[day] ?? 0)
+        }
+
         return StatsSnapshot(
             period: period,
             displayCurrency: displayCurrency,
             income: income,
             expense: expense,
             categoryBreakdown: breakdown,
+            dailySpend: daily,
             transactionCount: filtered.count,
             expenseCount: expenseCount,
             expenseDelta: expenseDelta
