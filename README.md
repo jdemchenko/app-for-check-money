@@ -73,6 +73,16 @@ node scripts/currency-selftest.mjs
 node scripts/csv-import-selftest.mjs
 ```
 
+## Promo deck (web)
+
+Fullscreen marketing slides (RU + short EN):
+
+```bash
+cd Promo && npm install && npm run dev
+```
+
+Open [http://127.0.0.1:47321](http://127.0.0.1:47321). Keys: ← → / Space. Export: `?clean=1`. Details: `Promo/README.md`.
+
 ## Project structure
 
 ```
@@ -80,9 +90,10 @@ AppForCheckMoney.xcodeproj/
 AppForCheckMoney/                   # iPhone / iPad (SwiftData)
   Services/                         # Voice, CSV import/export, intents, reminder, lock…
 Shared/                             # SharedVoiceParser, AmountWords, widget snapshot
+CheckMoneyPhoneWidgets/             # Home Screen widget (Keychain Sharing)
 CheckMoneyWatch/                    # watchOS companion
 CheckMoneyWatchWidgets/
-CheckMoneyPhoneWidgets/             # Home Screen widget (Keychain Sharing)
+Promo/                              # Vite promo slide deck (web)
 ```
 
 ## Privacy (Info.plist)
