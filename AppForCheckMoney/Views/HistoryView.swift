@@ -21,6 +21,8 @@ struct HistoryView: View {
     @State private var exportURL: URL?
     @State private var showShare = false
     @State private var exportError: String?
+    @State private var importMessage: String?
+    @State private var showImporter = false
     @State private var pendingDelete: MoneyTransaction?
     @ObservedObject private var currencySettings = CurrencySettings.shared
 
@@ -58,7 +60,20 @@ struct HistoryView: View {
             }
             if !q.isEmpty {
                 let cat = categories.first { $0.id == tx.categoryId }
-                let hay = "\(tx.note ?? "") \(cat?.displayName() ?? "") \(tx.amount) \(tx.currency.code) \(tx.paymentMethod.title)".lowercased()
+                let amountPlain = String(format: "%g", tx.amount)
+                let amountFixed = String(format: "%.2f", tx.amount)
+                let hay = [
+                    tx.note ?? "",
+                    cat?.displayName() ?? "",
+                    cat?.nameRu ?? "",
+                    cat?.nameEn ?? "",
+                    amountPlain,
+                    amountFixed,
+                    tx.currency.code,
+                    tx.currency.displaySymbol,
+                    tx.paymentMethod.title,
+                    tx.type.rawValue,
+                ].joined(separator: " ").lowercased()
                 if !hay.contains(q) { return false }
             }
             return true
@@ -130,9 +145,16 @@ struct HistoryView: View {
             .liquidScreen()
             .navigationTitle(L10n.string("tab.history"))
             .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $query, prompt: L10n.string("history.search"))
+            .searchable(text: $query, prompt: L10n.string("history.searchHint"))
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showImporter = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .accessibilityLabel(L10n.string("import.title"))
+
                     Button {
                         exportCSV()
                     } label: {
@@ -147,6 +169,23 @@ struct HistoryView: View {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
                     .accessibilityLabel(L10n.string("history.filters"))
+                }
+            }
+            .fileImporter(
+                isPresented: $showImporter,
+                allowedContentTypes: [.commaSeparatedText, .plainText, .utf8PlainText],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    if let url = urls.first { importCSV(from: url) }
+                case .failure:
+                    importMessage = L10n.string("import.failed")
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .checkMoneyImportCSVText)) { note in
+                if let text = note.object as? String {
+                    importCSV(text: text)
                 }
             }
             .sheet(isPresented: $showFilters) {
@@ -179,6 +218,17 @@ struct HistoryView: View {
                 Button(L10n.string("common.ok"), role: .cancel) { exportError = nil }
             } message: {
                 Text(exportError ?? "")
+            }
+            .alert(
+                L10n.string("import.title"),
+                isPresented: Binding(
+                    get: { importMessage != nil },
+                    set: { if !$0 { importMessage = nil } }
+                )
+            ) {
+                Button(L10n.string("common.ok"), role: .cancel) { importMessage = nil }
+            } message: {
+                Text(importMessage ?? "")
             }
             .overlay {
                 if pendingDelete != nil {
@@ -229,6 +279,73 @@ struct HistoryView: View {
         } catch {
             exportError = L10n.string("export.failed")
         }
+    }
+
+    private func importCSV(from url: URL) {
+        let accessed = url.startAccessingSecurityScopedResource()
+        defer { if accessed { url.stopAccessingSecurityScopedResource() } }
+        do {
+            let rows = try CSVImport.parseFile(url: url)
+            applyImport(rows)
+        } catch {
+            importMessage = (error as? LocalizedError)?.errorDescription
+                ?? L10n.string("import.failed")
+        }
+    }
+
+    private func importCSV(text: String) {
+        do {
+            let rows = try CSVImport.parse(text: text)
+            applyImport(rows)
+        } catch {
+            importMessage = (error as? LocalizedError)?.errorDescription
+                ?? L10n.string("import.failed")
+        }
+    }
+
+    private func applyImport(_ rows: [CSVImportRow]) {
+        var inserted = 0
+        for row in rows {
+            let categoryId = resolveCategoryId(name: row.categoryName, type: row.type)
+            let tx = MoneyTransaction(
+                amount: row.amount,
+                type: row.type,
+                categoryId: categoryId,
+                note: row.note,
+                date: row.date,
+                source: .manual,
+                currency: row.currency,
+                paymentMethod: row.payment
+            )
+            modelContext.insert(tx)
+            inserted += 1
+        }
+        try? modelContext.save()
+        PhoneWatchSync.shared.pushSnapshot()
+        importMessage = String(format: L10n.string("import.successFormat"), inserted)
+    }
+
+    private func resolveCategoryId(name: String, type: TransactionType) -> String {
+        let norm = TextNormalizer.normalize(name)
+        if !norm.isEmpty {
+            if let match = categories.first(where: {
+                TextNormalizer.normalize($0.nameRu) == norm
+                    || TextNormalizer.normalize($0.nameEn) == norm
+                    || TextNormalizer.normalize($0.displayName()) == norm
+            }) {
+                return match.id
+            }
+            if let fuzzy = categories.first(where: {
+                TextNormalizer.normalize($0.nameRu).contains(norm)
+                    || TextNormalizer.normalize($0.nameEn).contains(norm)
+                    || norm.contains(TextNormalizer.normalize($0.nameRu))
+            }) {
+                return fuzzy.id
+            }
+        }
+        return CategoryMatcher.categories(for: type, in: categories).first?.id
+            ?? categories.first?.id
+            ?? "other"
     }
 
     private func dayHeader(_ day: Date, items: [MoneyTransaction]) -> some View {

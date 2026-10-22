@@ -31,6 +31,36 @@
 	<!-- Expanded at build: TeamID.com.jdemchenko.AppForCheckMoney (must match keychain-access-groups). -->
 	<key>CheckMoneyKeychainAccessGroup</key>
 	<string>$(DEVELOPMENT_TEAM).com.jdemchenko.AppForCheckMoney</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.jdemchenko.AppForCheckMoney</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>checkmoney</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>CSV</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.comma-separated-values-text</string>
+				<string>public.plain-text</string>
+				<string>public.text</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

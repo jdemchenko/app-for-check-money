@@ -22,6 +22,15 @@ struct AppForCheckMoneyApp: App {
         WindowGroup {
             AppRootHost()
                 .environmentObject(AppSettingsStore.shared)
+                .onOpenURL { url in
+                    if IncomingDraftStore.shared.handle(url: url) { return }
+                    IncomingDraftStore.shared.handleOpenedFile(url: url)
+                }
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                    if let url = activity.webpageURL {
+                        _ = IncomingDraftStore.shared.handle(url: url)
+                    }
+                }
         }
         .modelContainer(container)
     }
@@ -58,6 +67,10 @@ private struct AppRootHost: View {
             if !settings.lockEnabled { unlocked = true }
             Task { @MainActor in
                 PhoneWatchSync.shared.start(modelContext: modelContext)
+                await ReminderService.apply(
+                    enabled: settings.reminderEnabled,
+                    hour: settings.reminderHour
+                )
             }
             publishWidget()
         }

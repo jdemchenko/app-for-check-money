@@ -11,12 +11,17 @@ struct VoiceDraft: Equatable {
     /// Explicit foreign currency from speech (USD/EUR/…).
     /// `nil` when the user said «руб» / bare amount — use Settings **entry** currency (default BYN).
     var currency: AppCurrency?
+    /// Recurring cadence from speech (`weekly` / `monthly`).
+    var frequency: RecurringFrequency?
 
-    /// Happy-path autosave: amount + keyword category.
+    /// Happy-path autosave: amount + keyword category, not a recurring rule.
     var isAutosaveReady: Bool {
+        guard frequency == nil else { return false }
         guard let amount, amount > 0 else { return false }
         return categoryMatchedByKeyword && categoryId != nil
     }
+
+    var isRecurring: Bool { frequency != nil }
 
     init(
         amount: Double?,
@@ -25,7 +30,8 @@ struct VoiceDraft: Equatable {
         note: String,
         rawText: String,
         categoryMatchedByKeyword: Bool,
-        currency: AppCurrency?
+        currency: AppCurrency?,
+        frequency: RecurringFrequency? = nil
     ) {
         self.amount = amount
         self.type = type
@@ -34,6 +40,7 @@ struct VoiceDraft: Equatable {
         self.rawText = rawText
         self.categoryMatchedByKeyword = categoryMatchedByKeyword
         self.currency = currency
+        self.frequency = frequency
     }
 
     init(from shared: SharedVoiceDraft) {
@@ -44,6 +51,7 @@ struct VoiceDraft: Equatable {
         rawText = shared.rawText
         categoryMatchedByKeyword = shared.categoryMatchedByKeyword
         currency = shared.currencyRaw.flatMap { AppCurrency(rawValue: $0) }
+        frequency = shared.frequencyRaw.flatMap { RecurringFrequency(rawValue: $0) }
     }
 }
 
@@ -68,6 +76,16 @@ enum VoiceParser {
         let sharedCats = categories.map { $0.asSharedDTO }
         let draft = SharedVoiceParser.parse(rawText: rawText, categories: sharedCats)
         return VoiceDraft(from: draft)
+    }
+
+    /// One utterance → one or more drafts (multi-expense / recurring).
+    static func parseMany(
+        rawText: String,
+        categories: [MoneyCategory]
+    ) -> [VoiceDraft] {
+        let sharedCats = categories.map { $0.asSharedDTO }
+        return SharedVoiceParser.parseMany(rawText: rawText, categories: sharedCats)
+            .map(VoiceDraft.init(from:))
     }
 }
 

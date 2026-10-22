@@ -105,6 +105,7 @@
 "history.empty" = "Ничего не найдено";
 "history.emptyHint" = "Измените фильтры или добавьте операцию.";
 "history.search" = "Поиск";
+"history.searchHint" = "Сумма, заметка или категория";
 "history.filters" = "Фильтры";
 "history.reset" = "Сбросить";
 "history.dateRange" = "Период";
@@ -140,6 +141,8 @@
 "budget.hint" = "Тихий прогресс на Home по тратам этого месяца.";
 "budget.enabled" = "Следить за лимитом";
 "budget.amount" = "Сумма лимита";
+"budget.categories" = "Бюджеты категорий";
+"budget.categoriesHint" = "Необязательные лимиты по категориям (та же валюта, что у бюджета месяца).";
 
 "lock.title" = "Блокировка";
 "lock.hint" = "Face ID / Touch ID или код устройства при открытии CheckMoney.";
@@ -173,8 +176,35 @@
 "export.failed" = "Не удалось создать CSV. Попробуйте ещё раз.";
 "export.empty" = "Нечего экспортировать по текущим фильтрам.";
 
+"import.title" = "Импорт CSV";
+"import.empty" = "Файл пустой.";
+"import.noRows" = "В файле не найдено операций.";
+"import.failed" = "Не удалось импортировать файл.";
+"import.successFormat" = "Импортировано операций: %d.";
+
 "stats.daily" = "По дням";
 "stats.dailyEmpty" = "Нет трат по дням за этот период.";
+"stats.insights" = "Инсайты";
+"stats.dailyAvg" = "Среднее за день";
+"stats.largestExpense" = "Крупнейший расход";
+"stats.largestIncome" = "Крупнейший доход";
+
+"voice.batchTitle" = "Сохранить эти расходы?";
+"voice.batchSave" = "Сохранить все";
+"voice.recurringTitle" = "Создать повтор?";
+"voice.recurringSave" = "Создать";
+"voice.recurringSaved" = "Повтор сохранён";
+
+"home.pasteDraft" = "Вставить текст";
+"home.pasteDraftHint" = "Разобрать буфер обмена как голосовую фразу";
+"home.pasteEmpty" = "Буфер обмена пуст";
+
+"reminder.title" = "Напоминание";
+"reminder.hint" = "Локальный тихий nudge залогировать день. Данные никуда не уходят.";
+"reminder.enabled" = "Напоминать залогировать";
+"reminder.hourFormat" = "Около %d:00";
+"reminder.notificationTitle" = "CheckMoney";
+"reminder.notificationBody" = "Залогировать сегодня? Удержите микрофон или добавьте вручную.";
 
 "icloud.title" = "Синхронизация iCloud";
 "icloud.off" = "Только на этом iPhone — синк между устройствами выключен.";

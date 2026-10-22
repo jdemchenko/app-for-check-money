@@ -32,6 +32,9 @@ struct StatsView: View {
                     .pickerStyle(.segmented)
 
                     totalsCard
+                    if snapshot.expenseCount > 0 || snapshot.income > 0 {
+                        insightsSection
+                    }
 
                     if snapshot.categoryBreakdown.isEmpty && snapshot.dailySpend.isEmpty {
                         GlassPanel(padding: 28, corner: AppTheme.cornerMedium) {
@@ -45,9 +48,6 @@ struct StatsView: View {
                     } else {
                         if !snapshot.dailySpend.isEmpty {
                             dailyChartSection
-                        }
-                        if snapshot.expenseCount > 0 {
-                            averageCard
                         }
                         if !snapshot.top3.isEmpty {
                             top3Section
@@ -189,16 +189,89 @@ struct StatsView: View {
         }
     }
 
-    private var averageCard: some View {
-        GlassPanel(padding: 16, corner: AppTheme.cornerMedium) {
-            HStack {
-                Text(L10n.string("stats.avgCheck"))
-                    .font(.subheadline)
-                    .themeSecondary()
-                Spacer(minLength: 8)
-                Text(MoneyFormat.currency(snapshot.averageCheck, code: snapshot.displayCurrency))
-                    .font(.subheadline.weight(.semibold).monospacedDigit())
+    private var insightsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            QuietSectionLabel(text: L10n.string("stats.insights"))
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                VStack(alignment: .leading, spacing: 12) {
+                    if let delta = snapshot.expenseDelta, period != .all {
+                        let priorLabel = period == .week
+                            ? L10n.string("stats.vsLastWeek")
+                            : L10n.string("stats.vsLastMonth")
+                        let pct: String = {
+                            guard let prior = snapshot.priorExpense, prior > 0 else {
+                                return ""
+                            }
+                            let p = ((snapshot.expense - prior) / prior * 1000).rounded() / 10
+                            let sign = p > 0 ? "+" : ""
+                            return " \(sign)\(p)%"
+                        }()
+                        insightRow(
+                            title: priorLabel,
+                            value: {
+                                let sign = delta > 0 ? "+" : ""
+                                return "\(sign)\(MoneyFormat.currency(delta, code: snapshot.displayCurrency))\(pct)"
+                            }(),
+                            emphasizeExpense: delta > 0
+                        )
+                    }
+
+                    if snapshot.dailyAverage > 0 {
+                        insightRow(
+                            title: L10n.string("stats.dailyAvg"),
+                            value: MoneyFormat.currency(
+                                snapshot.dailyAverage,
+                                code: snapshot.displayCurrency
+                            )
+                        )
+                    }
+
+                    if snapshot.averageCheck > 0 {
+                        insightRow(
+                            title: L10n.string("stats.avgCheck"),
+                            value: MoneyFormat.currency(
+                                snapshot.averageCheck,
+                                code: snapshot.displayCurrency
+                            )
+                        )
+                    }
+
+                    if let largest = snapshot.largestExpense {
+                        insightRow(
+                            title: L10n.string("stats.largestExpense"),
+                            value: "\(largest.name) · \(MoneyFormat.currency(largest.amount, code: snapshot.displayCurrency))",
+                            emphasizeExpense: true
+                        )
+                    }
+
+                    if let name = snapshot.largestIncomeName,
+                       let amount = snapshot.largestIncomeAmount {
+                        insightRow(
+                            title: L10n.string("stats.largestIncome"),
+                            value: "\(name) · \(MoneyFormat.currency(amount, code: snapshot.displayCurrency))",
+                            emphasizeExpense: false
+                        )
+                    }
+                }
             }
+        }
+    }
+
+    private func insightRow(title: String, value: String, emphasizeExpense: Bool? = nil) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+                .font(.subheadline)
+                .themeSecondary()
+            Spacer(minLength: 8)
+            Text(value)
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .multilineTextAlignment(.trailing)
+                .foregroundStyle(
+                    emphasizeExpense == true
+                        ? AppTheme.expense
+                        : (emphasizeExpense == false ? AppTheme.income : Color.primary)
+                )
         }
     }
 

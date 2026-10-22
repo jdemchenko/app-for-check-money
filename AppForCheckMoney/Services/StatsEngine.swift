@@ -35,6 +35,13 @@ struct StatsSnapshot {
     var top3: [CategorySpend] { Array(categoryBreakdown.prefix(3)) }
     /// Expense delta vs prior equal window (week/month). Nil when not applicable.
     let expenseDelta: Double?
+    /// Mean daily spend across days that had expense (or calendar days in period).
+    let dailyAverage: Double
+    let largestExpense: CategorySpend?
+    let largestIncomeName: String?
+    let largestIncomeAmount: Double?
+    /// Prior-period expense for % insight (week/month only).
+    let priorExpense: Double?
 }
 
 enum StatsEngine {
@@ -78,12 +85,15 @@ enum StatsEngine {
             }
             .sorted { $0.amount > $1.amount }
 
-        let expenseDelta: Double? = {
+        let priorExpenseValue: Double? = {
             guard let range = period.previousRange(now: now) else { return nil }
-            let priorExpense = transactions
+            return transactions
                 .filter { $0.type == .expense && $0.date >= range.start && $0.date < range.end }
                 .reduce(0.0) { $0 + $1.amountIn(displayCurrency) }
-            return ((expense - priorExpense) * 100).rounded() / 100
+        }()
+        let expenseDelta: Double? = {
+            guard let prior = priorExpenseValue else { return nil }
+            return ((expense - prior) * 100).rounded() / 100
         }()
 
         let cal = Calendar.current
@@ -96,6 +106,26 @@ enum StatsEngine {
             DaySpend(day: day, expense: byDay[day] ?? 0)
         }
 
+        let dailyAverage: Double = {
+            let daysWithSpend = daily.filter { $0.expense > 0 }
+            guard !daysWithSpend.isEmpty else { return 0 }
+            let sum = daysWithSpend.reduce(0.0) { $0 + $1.expense }
+            return (sum / Double(daysWithSpend.count) * 100).rounded() / 100
+        }()
+
+        let largestExpense = breakdown.first
+
+        var largestIncomeName: String?
+        var largestIncomeAmount: Double?
+        var incomeByCat: [String: Double] = [:]
+        for tx in filtered where tx.type == .income {
+            incomeByCat[tx.categoryId, default: 0] += tx.amountIn(displayCurrency)
+        }
+        if let top = incomeByCat.max(by: { $0.value < $1.value }) {
+            largestIncomeAmount = (top.value * 100).rounded() / 100
+            largestIncomeName = catMap[top.key]?.displayName() ?? L10n.string("category.unknown")
+        }
+
         return StatsSnapshot(
             period: period,
             displayCurrency: displayCurrency,
@@ -105,7 +135,12 @@ enum StatsEngine {
             dailySpend: daily,
             transactionCount: filtered.count,
             expenseCount: expenseCount,
-            expenseDelta: expenseDelta
+            expenseDelta: expenseDelta,
+            dailyAverage: dailyAverage,
+            largestExpense: largestExpense,
+            largestIncomeName: largestIncomeName,
+            largestIncomeAmount: largestIncomeAmount,
+            priorExpense: priorExpenseValue
         )
     }
 

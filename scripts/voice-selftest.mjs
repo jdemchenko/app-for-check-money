@@ -555,20 +555,58 @@ function inferCurrency(text) {
   return null;
 }
 
+const MONTHLY_RE =
+  new RegExp(`${WB}(every\\s+month|each\\s+month|monthly|per\\s+month|раз\\s+в\\s+месяц|каждый\\s+месяц|каждую\\s+месяц|ежемесячно|раз\\s+в\\s+мес)${WA}`, "i");
+const WEEKLY_RE =
+  new RegExp(`${WB}(every\\s+week|each\\s+week|weekly|per\\s+week|раз\\s+в\\s+недел[юи]|каждую\\s+неделю|каждый\\s+недел[юи]|еженедельно)${WA}`, "i");
+const MULTI_SPLIT = /(?:,\s*|\s+и\s+|\s+and\s+)(?=(?:[^0-9]{0,40})?\d)/gi;
+
+function detectFrequency(text) {
+  if (MONTHLY_RE.test(text)) return "monthly";
+  if (WEEKLY_RE.test(text)) return "weekly";
+  return null;
+}
+
+function stripRecurringCues(text) {
+  return text
+    .replace(MONTHLY_RE, " ")
+    .replace(WEEKLY_RE, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function splitMultiExpense(text) {
+  const parts = [];
+  let last = 0;
+  MULTI_SPLIT.lastIndex = 0;
+  let m;
+  while ((m = MULTI_SPLIT.exec(text)) !== null) {
+    const piece = text.slice(last, m.index).trim();
+    if (piece) parts.push(piece);
+    last = m.index + m[0].length;
+  }
+  const tail = text.slice(last).trim();
+  if (tail) parts.push(tail);
+  const withAmount = parts.filter((p) => parseAmount(p) != null);
+  return withAmount.length >= 2 ? withAmount : [text];
+}
+
 function parse(rawText) {
-  const amount = parseAmount(rawText);
-  let type = inferType(rawText);
-  let matched = autoAssign(rawText, type);
-  if (!matched) matched = autoAssign(rawText, null);
+  const frequency = detectFrequency(rawText);
+  const working = frequency ? stripRecurringCues(rawText) : rawText;
+  const amount = parseAmount(working);
+  let type = inferType(working);
+  let matched = autoAssign(working, type);
+  if (!matched) matched = autoAssign(working, null);
   if (!type && matched) type = matched.kind === "income" ? "income" : "expense";
   if (!type) type = "expense";
-  matched = autoAssign(rawText, type) ?? autoAssign(rawText, null);
+  matched = autoAssign(working, type) ?? autoAssign(working, null);
   const categoryMatchedByKeyword = Boolean(matched);
   const categoryId =
     matched?.id ??
     CATEGORIES.find((c) => c.kind === type || c.kind === "both")?.id;
-  const note = extractNote(rawText, matched);
-  const currency = inferCurrency(rawText);
+  const note = extractNote(working, matched);
+  const currency = inferCurrency(working);
   return {
     amount,
     type,
@@ -576,8 +614,27 @@ function parse(rawText) {
     note,
     categoryMatchedByKeyword,
     currency,
-    isAutosaveReady: Boolean(amount && amount > 0 && categoryMatchedByKeyword && categoryId),
+    frequency,
+    isAutosaveReady: Boolean(
+      !frequency && amount && amount > 0 && categoryMatchedByKeyword && categoryId
+    ),
   };
+}
+
+function parseMany(rawText) {
+  const trimmed = String(rawText).trim();
+  if (!trimmed) return [];
+  const frequency = detectFrequency(trimmed);
+  if (frequency) {
+    const draft = parse(trimmed);
+    return [draft];
+  }
+  const segments = splitMultiExpense(trimmed);
+  if (segments.length >= 2) {
+    const drafts = segments.map(parse).filter((d) => d.amount && d.amount > 0);
+    if (drafts.length >= 2) return drafts;
+  }
+  return [parse(trimmed)];
 }
 
 function applyManualOverride(draft, newCategoryId) {
@@ -695,6 +752,16 @@ const cases = [
     input: "две тысячи 50 рублей",
     expect: { amount: 2050, currency: null },
   },
+  {
+    name: "recurring Netflix every month",
+    input: "Netflix 10 dollars every month",
+    expect: { amount: 10, currency: "usd", frequency: "monthly", autosave: false },
+  },
+  {
+    name: "recurring RU каждый месяц",
+    input: "аренда 200 каждый месяц",
+    expect: { amount: 200, categoryId: "housing", frequency: "monthly", autosave: false },
+  },
 ];
 
 let failed = 0;
@@ -736,6 +803,9 @@ for (const c of cases) {
   if (Object.prototype.hasOwnProperty.call(c.expect, "currency") && draft.currency !== c.expect.currency) {
     bugs.push(`currency: got ${draft.currency} expected ${c.expect.currency}`);
   }
+  if (Object.prototype.hasOwnProperty.call(c.expect, "frequency") && draft.frequency !== c.expect.frequency) {
+    bugs.push(`frequency: got ${draft.frequency} expected ${c.expect.frequency}`);
+  }
 
   if (c.overrideTo) {
     draft = applyManualOverride(draft, c.overrideTo);
@@ -755,8 +825,24 @@ for (const c of cases) {
   }
 }
 
+const multi = parseMany("кофе 5 и такси 12");
+{
+  const bugs = [];
+  if (multi.length !== 2) bugs.push(`count ${multi.length}`);
+  else {
+    if (multi[0].amount !== 5) bugs.push("amount0");
+    if (multi[1].amount !== 12) bugs.push("amount1");
+    if (multi[0].categoryId !== "food") bugs.push("cat0");
+    if (multi[1].categoryId !== "transport") bugs.push("cat1");
+  }
+  const ok = bugs.length === 0;
+  if (!ok) failed += 1;
+  console.log(`${ok ? "PASS" : "FAIL"}  multi coffee+taxi`);
+  if (!ok) for (const b of bugs) console.log(`      - ${b}`);
+}
+
 console.log("\n---");
-console.log(`Total: ${results.length}, passed: ${results.length - failed}, failed: ${failed}`);
+console.log(`Total: ${results.length + 1}, passed: ${results.length + 1 - failed}, failed: ${failed}`);
 if (failed > 0) {
   process.exit(1);
 }

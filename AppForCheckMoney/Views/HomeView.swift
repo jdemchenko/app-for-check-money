@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct HomeView: View {
     @Binding var selectedTab: AppTab
@@ -15,6 +16,8 @@ struct HomeView: View {
     @EnvironmentObject private var settings: AppSettingsStore
     @StateObject private var speech = SpeechRecognizer()
     @State private var pendingDraft: VoiceDraft?
+    @State private var pendingBatch: [VoiceDraft]?
+    @State private var pendingRecurring: VoiceDraft?
     @State private var overrideCategoryId: String?
     @State private var statusMessage: String?
     @State private var showStatus = false
@@ -24,6 +27,7 @@ struct HomeView: View {
     /// Soft day-total / category % after save (DeepSeek-style, no toast).
     @State private var quietFeedback: String?
     @State private var quietFeedbackTask: Task<Void, Never>?
+    @ObservedObject private var incoming = IncomingDraftStore.shared
 
     private var monthTransactions: [MoneyTransaction] {
         let cal = Calendar.current
@@ -157,8 +161,77 @@ struct HomeView: View {
             .alert(statusMessage ?? "", isPresented: $showStatus) {
                 Button(L10n.string("common.ok"), role: .cancel) {}
             }
+            .overlay {
+                if let batch = pendingBatch {
+                    batchConfirmOverlay(batch)
+                } else if let recurring = pendingRecurring {
+                    recurringConfirmOverlay(recurring)
+                }
+            }
+            .animation(.easeOut(duration: 0.2), value: pendingBatch?.count)
+            .animation(.easeOut(duration: 0.2), value: pendingRecurring?.rawText)
+            .onChange(of: incoming.pendingText) { _, _ in
+                consumeIncomingDraft()
+            }
+            .onAppear { consumeIncomingDraft() }
             .id(currencySettings.displayCurrency.rawValue)
         }
+    }
+
+    @ViewBuilder
+    private func batchConfirmOverlay(_ batch: [VoiceDraft]) -> some View {
+        let lines = batch.map { draft in
+            let amount = MoneyFormat.currency(
+                draft.amount ?? 0,
+                code: draft.currency ?? currencySettings.entryCurrency
+            )
+            let cat = categories.first { $0.id == draft.categoryId }?.displayName() ?? "—"
+            let note = draft.note.isEmpty ? cat : draft.note
+            return "\(amount) · \(note)"
+        }.joined(separator: "\n")
+
+        ZStack {
+            Color.black.opacity(0.28)
+                .ignoresSafeArea()
+                .onTapGesture { pendingBatch = nil }
+            QuietConfirmPanel(
+                title: L10n.string("voice.batchTitle"),
+                message: lines,
+                confirmTitle: L10n.string("voice.batchSave"),
+                confirmDestructive: false,
+                onConfirm: { saveBatch(batch) },
+                onCancel: { pendingBatch = nil }
+            )
+        }
+        .transition(.opacity)
+        .zIndex(10)
+    }
+
+    @ViewBuilder
+    private func recurringConfirmOverlay(_ draft: VoiceDraft) -> some View {
+        let amount = MoneyFormat.currency(
+            draft.amount ?? 0,
+            code: draft.currency ?? currencySettings.entryCurrency
+        )
+        let freq = draft.frequency?.title ?? L10n.string("recurring.monthly")
+        let cat = categories.first { $0.id == draft.categoryId }?.displayName() ?? "—"
+        let detail = [amount, freq, cat, draft.note].filter { !$0.isEmpty }.joined(separator: " · ")
+
+        ZStack {
+            Color.black.opacity(0.28)
+                .ignoresSafeArea()
+                .onTapGesture { pendingRecurring = nil }
+            QuietConfirmPanel(
+                title: L10n.string("voice.recurringTitle"),
+                message: detail,
+                confirmTitle: L10n.string("voice.recurringSave"),
+                confirmDestructive: false,
+                onConfirm: { saveRecurring(draft) },
+                onCancel: { pendingRecurring = nil }
+            )
+        }
+        .transition(.opacity)
+        .zIndex(10)
     }
 
     // MARK: - Sections
@@ -252,8 +325,71 @@ struct HomeView: View {
                         .accessibilityValue("\(Int((progress * 100).rounded()))%")
                     }
                 }
+
+                if !activeCategoryBudgetRows.isEmpty {
+                    Divider().opacity(colorScheme == .dark ? 0.22 : 0.14).padding(.vertical, 2)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(L10n.string("budget.categories"))
+                            .font(.caption.weight(.medium))
+                            .themeSecondary()
+                        ForEach(activeCategoryBudgetRows, id: \.id) { row in
+                            HStack {
+                                Text(row.name)
+                                    .font(.caption)
+                                    .themeSecondary()
+                                    .lineLimit(1)
+                                Spacer(minLength: 8)
+                                Text(
+                                    MoneyFormat.currency(row.spent, code: settings.budgetCurrency)
+                                        + " / "
+                                        + MoneyFormat.currency(row.limit, code: settings.budgetCurrency)
+                                )
+                                .font(.caption.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(
+                                    row.progress >= 1 ? AppTheme.expense : AppTheme.labelSecondary(colorScheme)
+                                )
+                            }
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    AppTheme.continuousRect(AppTheme.radiusControl)
+                                        .fill(AppTheme.trackFill(colorScheme))
+                                    AppTheme.continuousRect(AppTheme.radiusControl)
+                                        .fill(AppTheme.trackValue(colorScheme, emphasized: row.progress >= 1))
+                                        .frame(width: max(4, geo.size.width * row.progress))
+                                }
+                            }
+                            .frame(height: 3)
+                            .clipShape(AppTheme.continuousRect(AppTheme.radiusControl))
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private struct CategoryBudgetRow {
+        let id: String
+        let name: String
+        let spent: Double
+        let limit: Double
+        var progress: Double { min(1, max(0, spent / max(limit, 0.0001))) }
+    }
+
+    private var activeCategoryBudgetRows: [CategoryBudgetRow] {
+        settings.categoryBudgets.keys.compactMap { id -> CategoryBudgetRow? in
+            guard let limit = settings.categoryBudget(for: id) else { return nil }
+            let cat = categories.first { $0.id == id }
+            let spent = monthTransactions
+                .filter { $0.type == .expense && $0.categoryId == id }
+                .reduce(0.0) { $0 + $1.amountIn(settings.budgetCurrency) }
+            return CategoryBudgetRow(
+                id: id,
+                name: cat?.displayName() ?? L10n.string("category.unknown"),
+                spent: spent,
+                limit: limit
+            )
+        }
+        .sorted { $0.progress > $1.progress }
     }
 
     private var monthBudgetSpent: Double {
@@ -339,6 +475,16 @@ struct HomeView: View {
                             .fill(.thinMaterial)
                     }
             }
+
+            Button {
+                pasteClipboardDraft()
+            } label: {
+                Text(L10n.string("home.pasteDraft"))
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(L10n.string("home.pasteDraftHint"))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -412,17 +558,50 @@ struct HomeView: View {
             flash(L10n.string("home.quickEntryEmpty"))
             return
         }
-        let draft = VoiceParser.parse(rawText: trimmed, categories: categories)
-        if draft.isAutosaveReady {
-            save(draft, categoryId: draft.categoryId!)
+        let drafts = VoiceParser.parseMany(rawText: trimmed, categories: categories)
+        guard let first = drafts.first else {
+            flash(L10n.string("home.quickEntryNoAmount"))
             return
         }
-        if draft.amount != nil {
-            overrideCategoryId = draft.categoryId
-            pendingDraft = draft
+
+        if drafts.count >= 2 {
+            pendingBatch = drafts
+            speech.clearTranscript()
+            return
+        }
+
+        if first.isRecurring, first.amount != nil {
+            pendingRecurring = first
+            speech.clearTranscript()
+            return
+        }
+
+        if first.isAutosaveReady {
+            save(first, categoryId: first.categoryId!)
+            return
+        }
+        if first.amount != nil {
+            overrideCategoryId = first.categoryId
+            pendingDraft = first
         } else {
             flash(L10n.string("home.quickEntryNoAmount"))
         }
+    }
+
+    private func consumeIncomingDraft() {
+        guard let text = incoming.consume() else { return }
+        handleUtterance(text)
+    }
+
+    private func pasteClipboardDraft() {
+        guard let text = UIPasteboard.general.string?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !text.isEmpty
+        else {
+            flash(L10n.string("home.pasteEmpty"))
+            return
+        }
+        handleUtterance(text)
     }
 
     private func save(_ draft: VoiceDraft, categoryId: String) {
@@ -446,6 +625,71 @@ struct HomeView: View {
             presentQuietFeedback(for: tx)
         } else {
             quietFeedback = nil
+        }
+    }
+
+    private func saveBatch(_ batch: [VoiceDraft]) {
+        var lastExpense: MoneyTransaction?
+        for draft in batch {
+            guard let amount = draft.amount, amount > 0 else { continue }
+            let categoryId = draft.categoryId
+                ?? CategoryMatcher.categories(for: draft.type ?? .expense, in: categories).first?.id
+            guard let categoryId else { continue }
+            let tx = MoneyTransaction(
+                amount: amount,
+                type: draft.type ?? .expense,
+                categoryId: categoryId,
+                note: draft.note.isEmpty ? nil : draft.note,
+                date: .now,
+                source: .voice,
+                currency: draft.currency ?? currencySettings.entryCurrency
+            )
+            modelContext.insert(tx)
+            if tx.type == .expense { lastExpense = tx }
+        }
+        try? modelContext.save()
+        PhoneWatchSync.shared.pushSnapshot()
+        pendingBatch = nil
+        speech.clearTranscript()
+        if let lastExpense {
+            presentQuietFeedback(for: lastExpense)
+        }
+    }
+
+    private func saveRecurring(_ draft: VoiceDraft) {
+        guard let amount = draft.amount, amount > 0,
+              let frequency = draft.frequency
+        else {
+            pendingRecurring = nil
+            return
+        }
+        let categoryId = draft.categoryId
+            ?? CategoryMatcher.categories(for: draft.type ?? .expense, in: categories).first?.id
+        guard let categoryId else {
+            pendingRecurring = nil
+            flash(L10n.string("home.quickEntryNoAmount"))
+            return
+        }
+        let rule = RecurringRule(
+            amount: amount,
+            type: draft.type ?? .expense,
+            categoryId: categoryId,
+            note: draft.note.isEmpty ? nil : draft.note,
+            currency: draft.currency ?? currencySettings.entryCurrency,
+            frequency: frequency,
+            nextFireDate: .now
+        )
+        modelContext.insert(rule)
+        _ = RecurringEngine.applyDue(in: modelContext)
+        try? modelContext.save()
+        PhoneWatchSync.shared.pushSnapshot()
+        pendingRecurring = nil
+        quietFeedback = L10n.string("voice.recurringSaved")
+        quietFeedbackTask?.cancel()
+        quietFeedbackTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeOut(duration: 0.35)) { quietFeedback = nil }
         }
     }
 

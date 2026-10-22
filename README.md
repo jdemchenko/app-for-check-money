@@ -4,78 +4,85 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 > This repository is an **independent** iOS app. It is not related to Fitil.
 
+**Launch candidate:** marketing **1.1**, build **24**.
+
 ## Features
 
 - **Manual entry** — amount, expense/income, category, optional note, date, payment method (cash/card)
 - **Voice entry** — `SFSpeechRecognizer` + microphone; Home **quick entry** autosaves on a confident parse (amount + category). Low-confidence cases get a one-tap confirm with manual category override. Full Add → Voice flow remains for manual editing.
-- **Categories** — seeded defaults (Food, Transport, Housing, Salary, …); **auto-assign** from note/voice keywords (RU/EN synonyms, АЗС/заправка/gas station, …) with **manual override**; new/edited categories **auto-suggest marker keywords** from the name (editable before save); **delete custom** categories (built-ins locked) — txs reassign to Other / Other income
-- **Screens** — Home (balance + quiet monthly budget bar + floating glass mic + recent), Stats, History (edit + CSV share), Categories; manual Add as a sheet from Home
-- **Budget** — optional monthly spend limit with quiet progress on Home
-- **Recurring** — weekly/monthly rules (rent, telecom, salary) auto-post when due
+- **Multi-expense voice** — «кофе 5 и такси 12» → QuietConfirmPanel batch save
+- **Voice → recurring** — «Netflix 10 every month» / «аренда 200 каждый месяц» → confirm → `RecurringRule`
+- **App Intents / Siri** — «Add expense» + «Log expense from text» (Shortcuts; no paid team)
+- **Share / paste** — URL scheme `checkmoney://draft?text=…`, open CSV/text documents, Home **Paste text draft**
+- **Categories** — seeded defaults; keyword auto-assign (RU/EN); custom categories; built-ins locked delete
+- **Screens** — Home (balance + monthly + category budget bars + floating glass mic + recent), Stats (quiet insights), History (search / edit / CSV import+export), Categories
+- **Budget** — optional monthly spend limit + **per-category** monthly limits
+- **Recurring** — weekly/monthly rules auto-post when due
 - **App lock** — Face ID / Touch ID / device passcode gate
+- **Daily reminder** — optional local notification (Settings)
 - **Onboarding** — one screen (hold-to-talk + BYN default)
-- **iPhone widget** — today spend / month balance via Keychain Sharing (no App Groups; Personal Team–safe)
-- **iCloud** — best-effort toggle; **CloudKit requires paid team** — Personal Team stays local-only (honest note in Settings)
-- **UI** — Liquid Glass–inspired materials (`.ultraThinMaterial` / specular rims / soft depth), minimal chrome, system Light/Dark
-- **Currency** — each transaction stores its own currency; Settings has **display** (totals via approximate BYN-pivot rates) and **entry default** (new ops). Changing Settings never rewrites past amounts. Voice «руб» → entry default (BYN); dollars/euros stamp USD/EUR.
-- **Stats** — week / month / all overview + **daily spend bars** + spend by category (converted to display currency)
-- **Apple Watch** — Hold-to-dictate companion (one breath → parse amount/category/currency → sync to iPhone). Minimal UI; phone SwiftData is source of truth. Sync: Documents cache + WatchConnectivity. **Today spend** complication. **Available Apps install work is paused.**
-- **App icon** — minimal checkmark glass; Default / Dark / Tinted Home Screen Appearances; Watch 1024×1024 icon; no in-app picker
-- **System appearance** — Light/Dark; restrained ADA-inspired materials
-- **Localization** — English + Russian (`en` / `ru` `.lproj`); UI language follows the device locale
+- **iPhone widget** — today / balance / budget / 7-day bars via Keychain Sharing
+- **iCloud** — best-effort toggle; CloudKit requires paid team
+- **UI** — quiet Liquid Glass–inspired materials, system Light/Dark
+- **Currency** — per-transaction; display + entry default; voice «руб» → entry default (BYN)
+- **Stats** — week / month / all + daily bars + category % + quiet insights (vs last, daily avg, largest)
+- **Apple Watch** — dictate companion + today complication (**Available Apps install work is paused**)
+- **Localization** — English + Russian
 
 ## Requirements
 
 - macOS with **Xcode 26+** recommended for watchOS 26 devices (iOS 18 / watchOS 11+ SDKs)
-- iOS **18.0+** Simulator or device; watchOS **11.0+** companion (runs on watchOS **26.6**)
-- Same Signing **Team** on iPhone + Watch + **CheckMoneyPhoneWidgets** targets. Do **not** add App Groups on Personal Team (entitlements stay empty). Simulator works with automatic signing.
+- iOS **18.0+** Simulator or device; watchOS **11.0+** companion
+- Same Signing **Team** on iPhone + Watch + **CheckMoneyPhoneWidgets**. Do **not** add App Groups on Personal Team.
 
 ## Open & run
 
 1. Clone this repo on a Mac.
-2. Open `AppForCheckMoney.xcodeproj` in Xcode.
-3. Select the **AppForCheckMoney** scheme and an iOS 18+ Simulator (or your device).
-4. Set the **same Team** under Signing & Capabilities on **AppForCheckMoney**, **CheckMoneyWatch**, **CheckMoneyWatchWidgets**, and **CheckMoneyPhoneWidgets** (`PRODUCT_BUNDLE_IDENTIFIER` is `com.jdemchenko.AppForCheckMoney`). Leave App Groups off on Personal Team.
-5. Press **Run** (⌘R).
+2. `git pull origin cursor/app-for-check-money-50c5`
+3. Open `AppForCheckMoney.xcodeproj` in Xcode.
+4. Select scheme **AppForCheckMoney** → iOS 18+ Simulator or device.
+5. Same Team on all targets; leave App Groups off on Personal Team.
+6. **Product → Clean Build Folder**, then **Run** (⌘R).
 
-### Apple Watch (companion — same product)
+### Mac verify (launch candidate)
 
-**Одно приложение с компаньоном на часах.** Не отдельный Watch‑продукт.
+After install, smoke:
 
-**Только так:** scheme **AppForCheckMoney** → **iPhone** → **Run**.  
-Build log must show `Watch companion OK → …/PlugIns/CheckMoneyWatch.app`. Then iPhone **Watch** app → **Available Apps** → **CheckMoney** (or auto-install). Tap mic → dictate → syncs to iPhone via WCSession.
+1. Onboarding → Home hold-to-talk: `кофе 5` autosave; `кофе 5 и такси 12` batch confirm; `аренда 200 каждый месяц` recurring confirm.
+2. Settings → category budget for Food → appears under monthly bar on Home.
+3. Stats → Insights strip (vs last / daily avg / largest).
+4. History → search amount/note; export CSV; import CSV (re-import own export).
+5. Home → Paste text draft (clipboard `20 dollars food`).
+6. Shortcuts / Siri: **Add expense** with amount.
+7. Lock on → background → reopen asks biometrics.
+8. Widget: add CheckMoney large — 7-day bars update after a save.
+9. Optional: Settings → daily reminder → allow notifications.
 
-Watch-only Run installs an **orphan** companion: iPhone Watch app will remove it. Always delete Watch-only CheckMoney + the iPhone app, Clean, then iPhone Run so Available Apps is the only path.
-
-Build log must include `app-id=…watchkitapp` (not empty entitlements). After Run: trust the Personal Team developer on iPhone (Settings → General → VPN & Device Management); enable Developer Mode on Watch if prompted. Personal Team is not a hard block — packaging must stay PlugIns + CodeSignOnCopy (never nested `codesign --force`).
-
-`CheckMoneyWatch` scheme = emergency debug only (same companion binary — not a second App Store / Watch Store app). Full guide: agent-store `docs/apple-watch.md`.
+Watch Available Apps: **do not block launch** (paused); only re-check if this tip broke packaging.
 
 ### Voice on Simulator
 
-Speech recognition often needs a **physical device** (or a Simulator with a working mic input). If voice is unavailable, Home quick entry / Add → Voice show a clear fallback and manual entry still works.
+Speech often needs a **physical device**. Manual / paste / intents still work.
 
 ### Logic self-test (no Xcode)
-
-Parse + category matcher examples (RU/EN) can be checked on any machine with Node:
 
 ```bash
 node scripts/voice-selftest.mjs
 node scripts/keyword-suggest-selftest.mjs
 node scripts/currency-selftest.mjs
+node scripts/csv-import-selftest.mjs
 ```
 
 ## Project structure
 
 ```
-AppForCheckMoney.xcodeproj/          # Xcode project + AppForCheckMoney / CheckMoneyWatch schemes
-AppForCheckMoney/                   # iPhone / iPad app (SwiftData)
-  Services/PhoneWatchSync.swift     # Push snapshot + merge Watch pending adds
-  Services/DataStore.swift          # Local SwiftData; optional CloudKit when paid team
-Shared/                             # SyncModels, LocalSyncStore, SharedVoiceParser (iOS + Watch)
-CheckMoneyWatch/                    # watchOS companion UI
-CheckMoneyWatchWidgets/             # Today spend complication
-CheckMoneyPhoneWidgets/             # iPhone home-screen widget (Keychain Sharing snapshot)
+AppForCheckMoney.xcodeproj/
+AppForCheckMoney/                   # iPhone / iPad (SwiftData)
+  Services/                         # Voice, CSV import/export, intents, reminder, lock…
+Shared/                             # SharedVoiceParser, AmountWords, widget snapshot
+CheckMoneyWatch/                    # watchOS companion
+CheckMoneyWatchWidgets/
+CheckMoneyPhoneWidgets/             # Home Screen widget (Keychain Sharing)
 ```
 
 ## Privacy (Info.plist)
@@ -83,10 +90,13 @@ CheckMoneyPhoneWidgets/             # iPhone home-screen widget (Keychain Sharin
 - `NSMicrophoneUsageDescription`
 - `NSSpeechRecognitionUsageDescription`
 - `NSFaceIDUsageDescription`
+- URL scheme `checkmoney://` + document types for CSV/text
 
-## Design notes
+## Post-launch (skipped for 1.1)
 
-UI follows Apple HIG: `NavigationStack`, large titles, grouped lists, SF Symbols, and `.regularMaterial` cards. When building with a newer SDK that ships Liquid Glass APIs (iOS 26+), those can be adopted behind availability checks without changing the data layer.
+- Receipt OCR / Vision
+- Pro / IAP, shared spaces, paid Developer, seed-rename lock
+- Watch Available Apps packaging push
 
 ## License
 

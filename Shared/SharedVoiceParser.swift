@@ -11,12 +11,17 @@ struct SharedVoiceDraft: Equatable {
     /// Explicit foreign currency from speech (USD/EUR/…).
     /// `nil` when the user said «руб» / bare amount — use entry default (BYN).
     var currencyRaw: String?
+    /// `weekly` / `monthly` when speech asked for a recurring rule; otherwise `nil`.
+    var frequencyRaw: String?
 
-    /// Happy-path autosave: amount + keyword category.
+    /// Happy-path autosave: amount + keyword category, not recurring.
     var isAutosaveReady: Bool {
+        guard frequencyRaw == nil else { return false }
         guard let amount, amount > 0 else { return false }
         return categoryMatchedByKeyword && categoryId != nil
     }
+
+    var isRecurring: Bool { frequencyRaw != nil }
 }
 
 enum SharedVoiceParser {
@@ -74,6 +79,26 @@ enum SharedVoiceParser {
 
     private static let fillerWords = try! NSRegularExpression(
         pattern: #"(?i)\b(пожалуйста|please|точка|point|ээ+|эм+|hmm+|uh+|um+)\b"#,
+        options: []
+    )
+
+    /// Recurring cues — monthly first (longer phrases before shorter).
+    private static let monthlyRecurring = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(every\s+month|each\s+month|monthly|per\s+month|раз\s+в\s+месяц|каждый\s+месяц|каждую\s+месяц|ежемесячно|раз\s+в\s+мес)"#
+            + wa,
+        options: []
+    )
+    private static let weeklyRecurring = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(every\s+week|each\s+week|weekly|per\s+week|раз\s+в\s+недел[юи]|каждую\s+неделю|каждый\s+недел[юи]|еженедельно)"#
+            + wa,
+        options: []
+    )
+
+    /// Split multi-expense utterances: «кофе 5 и такси 12», «coffee 5 and taxi 12».
+    private static let multiSplit = try! NSRegularExpression(
+        pattern: #"(?i)(?:,\s*|\s+и\s+|\s+and\s+)(?=(?:[^0-9]{0,40})?\d)"#,
         options: []
     )
 
@@ -284,22 +309,53 @@ enum SharedVoiceParser {
         return nil
     }
 
+    /// One utterance → one or more drafts. Recurring stays a single draft with `frequencyRaw`.
+    static func parseMany(
+        rawText: String,
+        categories: [SharedCategoryDTO]
+    ) -> [SharedVoiceDraft] {
+        let trimmed = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        if let frequency = detectFrequency(in: trimmed) {
+            var draft = parse(rawText: stripRecurringCues(trimmed), categories: categories)
+            draft.frequencyRaw = frequency
+            draft.rawText = trimmed
+            return [draft]
+        }
+
+        let segments = splitMultiExpense(trimmed)
+        if segments.count >= 2 {
+            let drafts = segments.compactMap { segment -> SharedVoiceDraft? in
+                let d = parse(rawText: segment, categories: categories)
+                guard let amount = d.amount, amount > 0 else { return nil }
+                return d
+            }
+            if drafts.count >= 2 { return drafts }
+        }
+
+        return [parse(rawText: trimmed, categories: categories)]
+    }
+
     static func parse(
         rawText: String,
         categories: [SharedCategoryDTO]
     ) -> SharedVoiceDraft {
-        let amount = parseAmount(from: rawText)
-        var type = inferType(from: rawText)
-        let currency = inferCurrency(from: rawText)
+        let frequency = detectFrequency(in: rawText)
+        let working = frequency != nil ? stripRecurringCues(rawText) : rawText
+
+        let amount = parseAmount(from: working)
+        var type = inferType(from: working)
+        let currency = inferCurrency(from: working)
 
         var matched = SharedCategoryMatcher.autoAssign(
-            text: rawText,
+            text: working,
             categories: categories,
             preferredTypeRaw: type
         )
         if matched == nil {
             matched = SharedCategoryMatcher.autoAssign(
-                text: rawText,
+                text: working,
                 categories: categories,
                 preferredTypeRaw: nil
             )
@@ -314,11 +370,11 @@ enum SharedVoiceParser {
 
         // Re-score with final type preference, then unrestricted fallback.
         matched = SharedCategoryMatcher.autoAssign(
-            text: rawText,
+            text: working,
             categories: categories,
             preferredTypeRaw: type
         ) ?? SharedCategoryMatcher.autoAssign(
-            text: rawText,
+            text: working,
             categories: categories,
             preferredTypeRaw: nil
         )
@@ -328,7 +384,7 @@ enum SharedVoiceParser {
             ?? SharedCategoryMatcher.categories(forRaw: type!, in: categories).first?.id
 
         let note = extractNote(
-            from: rawText,
+            from: working,
             matchedCategory: matched,
             allCategories: categories
         )
@@ -340,8 +396,58 @@ enum SharedVoiceParser {
             note: note,
             rawText: rawText,
             categoryMatchedByKeyword: categoryMatchedByKeyword,
-            currencyRaw: currency
+            currencyRaw: currency,
+            frequencyRaw: frequency
         )
+    }
+
+    // MARK: - Recurring / multi
+
+    static func detectFrequency(in text: String) -> String? {
+        let range = NSRange(text.startIndex..., in: text)
+        if monthlyRecurring.firstMatch(in: text, options: [], range: range) != nil {
+            return "monthly"
+        }
+        if weeklyRecurring.firstMatch(in: text, options: [], range: range) != nil {
+            return "weekly"
+        }
+        return nil
+    }
+
+    static func stripRecurringCues(_ text: String) -> String {
+        var working = text
+        let full = NSRange(working.startIndex..., in: working)
+        working = monthlyRecurring.stringByReplacingMatches(
+            in: working, options: [], range: full, withTemplate: " "
+        )
+        let full2 = NSRange(working.startIndex..., in: working)
+        working = weeklyRecurring.stringByReplacingMatches(
+            in: working, options: [], range: full2, withTemplate: " "
+        )
+        return working.replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    static func splitMultiExpense(_ text: String) -> [String] {
+        let range = NSRange(text.startIndex..., in: text)
+        let matches = multiSplit.matches(in: text, options: [], range: range)
+        guard !matches.isEmpty else { return [text] }
+
+        var parts: [String] = []
+        var start = text.startIndex
+        for match in matches {
+            guard let cut = Range(match.range, in: text) else { continue }
+            let piece = String(text[start..<cut.lowerBound])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !piece.isEmpty { parts.append(piece) }
+            start = cut.upperBound
+        }
+        let tail = String(text[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        if !tail.isEmpty { parts.append(tail) }
+
+        // Keep only segments that still look like they carry an amount.
+        let withAmount = parts.filter { parseAmount(from: $0) != nil }
+        return withAmount.count >= 2 ? withAmount : [text]
     }
 
     // MARK: - Note extraction
@@ -643,6 +749,35 @@ extension SharedVoiceParser {
             "две тысячи 50 рублей",
             amount: 2050, expectNilCurrency: true
         )
+
+        let multi = parseMany(rawText: "кофе 5 и такси 12", categories: categories)
+        if multi.count != 2 {
+            failures.append("multi count: got \(multi.count) expected 2")
+        } else {
+            if multi[0].amount != 5 { failures.append("multi[0] amount") }
+            if multi[1].amount != 12 { failures.append("multi[1] amount") }
+            if multi[0].categoryId != "food" { failures.append("multi[0] category food") }
+            if multi[1].categoryId != "transport" { failures.append("multi[1] category transport") }
+        }
+
+        let recurring = parseMany(
+            rawText: "Netflix 10 dollars every month",
+            categories: categories
+        )
+        if recurring.count != 1 || recurring.first?.frequencyRaw != "monthly" {
+            failures.append("recurring monthly: \(String(describing: recurring.first?.frequencyRaw))")
+        }
+        if recurring.first?.amount != 10 {
+            failures.append("recurring amount")
+        }
+
+        let weekly = parse(
+            rawText: "аренда 200 каждый месяц",
+            categories: categories
+        )
+        if weekly.frequencyRaw != "monthly" {
+            failures.append("ru recurring monthly")
+        }
 
         return failures
     }

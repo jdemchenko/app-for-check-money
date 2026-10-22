@@ -1,13 +1,16 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @ObservedObject private var currencySettings = CurrencySettings.shared
     @ObservedObject private var rates = ExchangeRateStore.shared
     @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \MoneyCategory.sortOrder) private var categories: [MoneyCategory]
 
     @State private var showRecurring = false
     @State private var budgetText: String = ""
+    @State private var categoryBudgetTexts: [String: String] = [:]
 
     var body: some View {
         NavigationStack {
@@ -26,6 +29,8 @@ struct SettingsView: View {
                     )
 
                     budgetBlock
+                    categoryBudgetBlock
+                    reminderBlock
                     securityBlock
                     recurringBlock
                     iCloudBlock
@@ -48,6 +53,15 @@ struct SettingsView: View {
                 budgetText = settings.budgetAmount > 0
                     ? String(format: "%g", settings.budgetAmount)
                     : ""
+                var texts: [String: String] = [:]
+                for cat in categories where cat.kind.matches(.expense) {
+                    if let limit = settings.categoryBudget(for: cat.id) {
+                        texts[cat.id] = String(format: "%g", limit)
+                    } else {
+                        texts[cat.id] = ""
+                    }
+                }
+                categoryBudgetTexts = texts
             }
             .sheet(isPresented: $showRecurring) {
                 RecurringListView()
@@ -85,6 +99,79 @@ struct SettingsView: View {
                             }
                         }
                         .pickerStyle(.segmented)
+                    }
+                }
+            }
+        }
+    }
+
+    private var categoryBudgetBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("budget.categories"))
+            Text(L10n.string("budget.categoriesHint"))
+                .font(.footnote)
+                .themeTertiary()
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(categories.filter { $0.kind.matches(.expense) }, id: \.id) { cat in
+                        HStack(spacing: 10) {
+                            Text(cat.displayName())
+                                .font(.subheadline)
+                                .lineLimit(1)
+                            Spacer(minLength: 8)
+                            TextField(
+                                L10n.string("budget.amount"),
+                                text: Binding(
+                                    get: { categoryBudgetTexts[cat.id] ?? "" },
+                                    set: { newValue in
+                                        categoryBudgetTexts[cat.id] = newValue
+                                        let normalized = newValue
+                                            .replacingOccurrences(of: ",", with: ".")
+                                            .trimmingCharacters(in: .whitespaces)
+                                        if normalized.isEmpty {
+                                            settings.setCategoryBudget(nil, for: cat.id)
+                                        } else if let value = Double(normalized), value > 0 {
+                                            settings.setCategoryBudget(value, for: cat.id)
+                                        }
+                                    }
+                                )
+                            )
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(maxWidth: 110)
+                            .glassField()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var reminderBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("reminder.title"))
+            Text(L10n.string("reminder.hint"))
+                .font(.footnote)
+                .themeTertiary()
+
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Toggle(L10n.string("reminder.enabled"), isOn: $settings.reminderEnabled)
+
+                    if settings.reminderEnabled {
+                        Stepper(
+                            value: $settings.reminderHour,
+                            in: 0...23
+                        ) {
+                            Text(
+                                String(
+                                    format: L10n.string("reminder.hourFormat"),
+                                    settings.reminderHour
+                                )
+                            )
+                            .font(.subheadline)
+                        }
                     }
                 }
             }

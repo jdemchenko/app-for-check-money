@@ -105,6 +105,7 @@
 "history.empty" = "Nothing found";
 "history.emptyHint" = "Try adjusting filters or add a transaction.";
 "history.search" = "Search";
+"history.searchHint" = "Amount, note, or category";
 "history.filters" = "Filters";
 "history.reset" = "Reset";
 "history.dateRange" = "Date range";
@@ -140,6 +141,8 @@
 "budget.hint" = "Quiet progress on Home for this month’s spending.";
 "budget.enabled" = "Track monthly limit";
 "budget.amount" = "Limit amount";
+"budget.categories" = "Category budgets";
+"budget.categoriesHint" = "Optional monthly limits per category (same currency as the monthly budget).";
 
 "lock.title" = "App lock";
 "lock.hint" = "Require Face ID / Touch ID or device passcode when opening CheckMoney.";
@@ -173,8 +176,35 @@
 "export.failed" = "Couldn’t create the CSV file. Try again.";
 "export.empty" = "Nothing to export for the current filters.";
 
+"import.title" = "Import CSV";
+"import.empty" = "The file is empty.";
+"import.noRows" = "No transactions found in this file.";
+"import.failed" = "Couldn’t import that file.";
+"import.successFormat" = "Imported %d transactions.";
+
 "stats.daily" = "By day";
 "stats.dailyEmpty" = "No daily spend in this period.";
+"stats.insights" = "Insights";
+"stats.dailyAvg" = "Daily average";
+"stats.largestExpense" = "Largest expense";
+"stats.largestIncome" = "Largest income";
+
+"voice.batchTitle" = "Save these expenses?";
+"voice.batchSave" = "Save all";
+"voice.recurringTitle" = "Create recurring?";
+"voice.recurringSave" = "Create";
+"voice.recurringSaved" = "Recurring rule saved";
+
+"home.pasteDraft" = "Paste text draft";
+"home.pasteDraftHint" = "Parse the clipboard like a voice phrase";
+"home.pasteEmpty" = "Clipboard is empty";
+
+"reminder.title" = "Daily reminder";
+"reminder.hint" = "Optional local nudge to log spending. Nothing leaves the device.";
+"reminder.enabled" = "Remind me to log";
+"reminder.hourFormat" = "Around %d:00";
+"reminder.notificationTitle" = "CheckMoney";
+"reminder.notificationBody" = "Quick log for today? Hold the mic or add manually.";
 
 "icloud.title" = "iCloud sync";
 "icloud.off" = "Local only — sync between your iPhones is off.";
