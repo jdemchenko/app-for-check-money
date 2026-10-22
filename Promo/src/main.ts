@@ -1,345 +1,295 @@
 import './style.css'
 
-type Slide = {
+const checkSvg = `
+<svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+  <path d="M14 34.5 26.5 47 50 18" stroke="#F5F5F7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+
+const micSvg = `
+<svg viewBox="0 0 64 64" aria-hidden="true">
+  <rect x="24" y="10" width="16" height="28" rx="8"/>
+  <path d="M18 30a14 14 0 0 0 28 0"/>
+  <path d="M32 44v10"/>
+  <path d="M22 54h20"/>
+</svg>`
+
+const lockSvg = `
+<svg viewBox="0 0 64 64" aria-hidden="true">
+  <rect x="14" y="28" width="36" height="28" rx="8"/>
+  <path d="M22 28v-6a10 10 0 0 1 20 0v6"/>
+</svg>`
+
+type Frame = {
   id: string
-  layout?: 'split' | 'solo'
-  eyebrow?: string
-  brand?: boolean
-  title: string
-  body: string
-  en: string
-  meta?: string
-  visual: string
+  file: string
+  html: string
 }
 
-const slides: Slide[] = [
+const frames: Frame[] = [
   {
     id: 'hero',
-    layout: 'solo',
-    brand: true,
-    title: 'Деньги — на скорости речи',
-    body: 'Voice-first личный трекер финансов для iPhone. Тихий Liquid Glass, BYN по умолчанию, всё на устройстве.',
-    en: 'Voice-first personal finance · quiet Liquid Glass · BYN-first',
-    meta: '<strong>Ivan Demchenko</strong> · CheckMoney / AppForCheckMoney',
-    visual: `
-      <div class="orb orb-a"></div>
-      <div class="orb orb-b"></div>
-      <div class="glass-card">
-        <p class="label">Сегодня</p>
-        <p class="value">−48,20 Br</p>
-        <p class="hint">Удерживай и говори — сумма уже в журнале</p>
+    file: '01-hero.png',
+    html: `
+      <div class="safe hero-stack">
+        <div class="brand-row">
+          <div class="brand-mark">${checkSvg}</div>
+          <div class="brand-name">CheckMoney</div>
+        </div>
+        <p class="line">Деньги — голосом</p>
+        <div class="big-visual">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="status"><span>9:41</span><span>●●●</span></div>
+              <h1 class="nav-title">CheckMoney</h1>
+              <div class="glass balance-card">
+                <p class="balance-label">Баланс</p>
+                <p class="balance-value">1 284 Br</p>
+                <div class="balance-meta">
+                  <span class="in">↓ 2 400</span>
+                  <span class="out">↑ 1 116</span>
+                </div>
+                <div class="budget">
+                  <div class="budget-row"><span>Бюджет</span><span>420 / 1 000</span></div>
+                  <div class="track"><i></i></div>
+                </div>
+              </div>
+              <div class="mic-wrap">
+                <div class="mic">${micSvg}</div>
+              </div>
+              <p class="mic-caption">Удерживайте</p>
+              <div class="glass recent">
+                <div class="tx">
+                  <div class="glyph">☕</div>
+                  <div class="tx-main"><strong>Еда</strong><span>кофе</span></div>
+                  <div class="tx-amt">−8 Br</div>
+                </div>
+                <div class="tx">
+                  <div class="glyph">🚗</div>
+                  <div class="tx-main"><strong>Транспорт</strong><span>такси</span></div>
+                  <div class="tx-amt">−12 Br</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     `,
   },
   {
     id: 'voice',
-    layout: 'split',
-    eyebrow: 'Голос',
-    title: 'Сказал — учтено',
-    body: 'Удерживай кнопку на Home и говори. On-device NLP понимает сумму, тип, валюту и категорию — без облачного AI.',
-    en: 'Hold to talk · on-device NLP · QuietConfirm',
-    visual: `
-      <div class="wave" aria-hidden="true">
-        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-      </div>
-      <div class="glass-card">
-        <p class="label">Распознано</p>
-        <p class="value">«кофе 8»</p>
-        <p class="hint">Кафе · 8,00 Br · расход</p>
-      </div>
-    `,
-  },
-  {
-    id: 'multi',
-    layout: 'split',
-    eyebrow: 'Мульти · Recurring',
-    title: 'Одна фраза — несколько строк',
-    body: '«Кофе 5 и такси 12» → пачка с подтверждением. «Нетфликс 20 каждый месяц» → recurring-правило. Всё локально.',
-    en: 'Multi-tx voice · recurring from speech',
-    visual: `
-      <div class="stack-lines">
-        <div class="row"><span>Кофе</span><span class="amt">5,00 Br</span></div>
-        <div class="row"><span>Такси</span><span class="amt">12,00 Br</span></div>
-        <div class="row"><span>Netflix · каждый месяц</span><span class="amt">20,00 Br</span></div>
+    file: '02-voice.png',
+    html: `
+      <div class="safe hero-stack">
+        <div class="brand-row">
+          <div class="brand-mark">${checkSvg}</div>
+          <div class="brand-name">CheckMoney</div>
+        </div>
+        <p class="line">Сказал — учтено</p>
+        <div class="big-visual" style="flex-direction:column;gap:28px">
+          <div class="wave" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="mic" style="width:200px;height:200px">${micSvg}</div>
+          <div class="glass bubble">«кофе 8»</div>
+        </div>
       </div>
     `,
   },
   {
-    id: 'privacy',
-    layout: 'split',
-    eyebrow: 'Приватность',
-    title: 'Данные никуда не уходят',
-    body: 'Парсинг на устройстве, без нашего бэкенда и без аккаунта. Face ID / Touch ID закрывает вход — тихо и по делу.',
-    en: 'On-device NLP · no cloud AI · Face ID lock',
-    visual: `
-      <div class="lock-ring" aria-hidden="true"></div>
-      <div class="glass-card">
-        <p class="label">Защита</p>
-        <p class="value">Face ID</p>
-        <p class="hint">Журнал остаётся только у вас</p>
-      </div>
-    `,
-  },
-  {
-    id: 'byn',
-    layout: 'split',
-    eyebrow: 'Валюта',
-    title: 'BYN — родной язык денег',
-    body: 'Белорусский рубль по умолчанию для ввода и отображения. «Руб» → BYN. Мультивалюта на операции с понятным pivot.',
-    en: 'BYN-first · multi-currency · Br symbol',
-    visual: `
-      <div class="currency-chip">Br</div>
-      <div class="currency-chip alt">USD · EUR · RUB</div>
-      <div class="glass-card">
-        <p class="label">Баланс</p>
-        <p class="value">1 240,50 Br</p>
-        <p class="hint">Display &amp; entry default · BYN</p>
+    id: 'flow',
+    file: '03-voice-flow.png',
+    html: `
+      <div class="safe hero-stack">
+        <div class="brand-row">
+          <div class="brand-mark">${checkSvg}</div>
+          <div class="brand-name">CheckMoney</div>
+        </div>
+        <p class="line">Голос → запись</p>
+        <div class="big-visual">
+          <div class="flow">
+            <div class="glass flow-card">
+              <p class="k">Фраза</p>
+              <p class="v">кофе 5<br>и такси 12</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="glass flow-card">
+              <p class="k">Журнал</p>
+              <p class="v" style="font-size:32px;line-height:1.35">Еда −5<br>Такси −12</p>
+            </div>
+          </div>
+        </div>
       </div>
     `,
   },
   {
     id: 'stats',
-    layout: 'split',
-    eyebrow: 'Статистика',
-    title: 'Тихая аналитика',
-    body: 'Сравнение с прошлым периодом, дневной средний, средний чек, крупнейшие суммы — без шума дашборда.',
-    en: 'Quiet insights · vs last · daily avg',
-    visual: `
-      <div class="bars" aria-hidden="true">
-        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-      </div>
-      <div class="glass-card">
-        <p class="label">Этот месяц</p>
-        <p class="value">−12% к прошлому</p>
-        <p class="hint">Средний чек · топ категорий</p>
-      </div>
-    `,
-  },
-  {
-    id: 'budgets',
-    layout: 'split',
-    eyebrow: 'Бюджеты',
-    title: 'Лимиты без тревоги',
-    body: 'Месячный spend limit и тихие полосы по категориям на Home. Контроль виден, но не кричит.',
-    en: 'Monthly limit · category budgets · quiet bars',
-    visual: `
-      <div class="budget">
-        <div>
-          <div class="cap"><span>Еда</span><span>62%</span></div>
-          <div class="track"><div class="fill a"></div></div>
+    file: '04-stats.png',
+    html: `
+      <div class="safe hero-stack">
+        <div class="brand-row">
+          <div class="brand-mark">${checkSvg}</div>
+          <div class="brand-name">CheckMoney</div>
         </div>
-        <div>
-          <div class="cap"><span>Транспорт</span><span>38%</span></div>
-          <div class="track"><div class="fill b"></div></div>
-        </div>
-        <div>
-          <div class="cap"><span>Месяц</span><span>81%</span></div>
-          <div class="track"><div class="fill c"></div></div>
+        <p class="line">Неделя в барах</p>
+        <div class="big-visual">
+          <div class="glass bars" aria-hidden="true">
+            <div class="col"><div class="bar" style="height:38%"></div><span class="d">пн</span></div>
+            <div class="col"><div class="bar" style="height:62%"></div><span class="d">вт</span></div>
+            <div class="col"><div class="bar" style="height:28%"></div><span class="d">ср</span></div>
+            <div class="col"><div class="bar" style="height:84%"></div><span class="d">чт</span></div>
+            <div class="col"><div class="bar" style="height:48%"></div><span class="d">пт</span></div>
+            <div class="col"><div class="bar" style="height:70%"></div><span class="d">сб</span></div>
+            <div class="col"><div class="bar" style="height:44%"></div><span class="d">вс</span></div>
+          </div>
         </div>
       </div>
     `,
   },
   {
-    id: 'widgets',
-    layout: 'split',
-    eyebrow: 'Виджеты',
-    title: 'Взгляд с Home Screen',
-    body: 'Small, Medium и Large: баланс, бюджет и 7-дневные бары — без открытия приложения.',
-    en: 'Widgets S / M / L · 7-day bars',
-    visual: `
-      <div class="widget-grid">
-        <div class="widget">
-          <span class="w-label">Сегодня</span>
-          <p class="w-value">−18 Br</p>
+    id: 'categories',
+    file: '05-categories.png',
+    html: `
+      <div class="safe hero-stack">
+        <div class="brand-row">
+          <div class="brand-mark">${checkSvg}</div>
+          <div class="brand-name">CheckMoney</div>
         </div>
-        <div class="widget">
-          <span class="w-label">Бюджет</span>
-          <p class="w-value">81%</p>
-        </div>
-        <div class="widget wide">
-          <span class="w-label">7 дней</span>
-          <p class="w-value">Тихие бары на Large</p>
+        <p class="line">Куда уходит</p>
+        <div class="big-visual">
+          <div class="rings" aria-hidden="true">
+            <div class="ring a"></div>
+            <div class="ring b"></div>
+            <div class="ring c"></div>
+            <div class="ring-center">
+              <p class="k">месяц</p>
+              <p class="v">1 116</p>
+            </div>
+          </div>
         </div>
       </div>
     `,
   },
   {
-    id: 'siri',
-    layout: 'split',
-    eyebrow: 'Siri · Shortcuts',
-    title: 'Добавь расход голосом Siri',
-    body: 'App Intents: «добавить расход» и лог из текста — Action Button, Back Tap, Shortcuts. Без облака.',
-    en: 'App Intents · Siri · Shortcuts',
-    visual: `
-      <div class="siri-pill">«CheckMoney, кофе 8»</div>
-      <div class="glass-card">
-        <p class="label">Intent</p>
-        <p class="value">AddExpense</p>
-        <p class="hint">Без открытия UI · on-device</p>
+    id: 'widget',
+    file: '06-widget.png',
+    html: `
+      <div class="safe hero-stack">
+        <div class="brand-row">
+          <div class="brand-mark">${checkSvg}</div>
+          <div class="brand-name">CheckMoney</div>
+        </div>
+        <p class="line">На домашнем экране</p>
+        <div class="big-visual">
+          <div class="glass widget">
+            <p class="k">CheckMoney</p>
+            <p class="v">1 284 Br</p>
+            <p class="sub">сегодня −48 Br</p>
+            <div class="widget-bars" aria-hidden="true">
+              <i style="height:35%"></i>
+              <i style="height:58%"></i>
+              <i style="height:28%"></i>
+              <i style="height:76%"></i>
+              <i style="height:44%"></i>
+              <i style="height:62%"></i>
+              <i style="height:50%"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+  },
+  {
+    id: 'lock',
+    file: '07-lock.png',
+    html: `
+      <div class="safe hero-stack">
+        <div class="brand-row">
+          <div class="brand-mark">${checkSvg}</div>
+          <div class="brand-name">CheckMoney</div>
+        </div>
+        <p class="line">Только вы</p>
+        <div class="big-visual">
+          <div class="glass lock">
+            <div class="icon">${lockSvg}</div>
+            <p class="v">Face ID</p>
+          </div>
+        </div>
       </div>
     `,
   },
   {
     id: 'cta',
-    layout: 'solo',
-    brand: true,
-    title: 'Скоро в TestFlight и App Store',
-    body: 'Личный voice-first трекер без подписки и без облачного AI. Тихий premium для iPhone.',
-    en: 'TestFlight / App Store — coming soon',
-    meta: '<strong>Ivan Demchenko</strong> · CheckMoney',
-    visual: `
-      <div class="orb orb-a"></div>
-      <div class="orb orb-b"></div>
-      <div class="glass-card">
-        <p class="label">Статус</p>
-        <p class="value">Launch candidate 1.1</p>
-        <p class="hint">Build 24 · Personal Team</p>
+    file: '08-cta.png',
+    html: `
+      <div class="safe">
+        <div class="cta-center">
+          <div class="cta-mark">${checkSvg}</div>
+          <p class="cta-name">CheckMoney</p>
+          <p class="cta-line">на скорости речи</p>
+        </div>
       </div>
     `,
   },
 ]
 
-function renderSlide(slide: Slide, index: number): string {
-  const titleBlock = slide.brand
-    ? `<h1 class="brand">Check<span>Money</span></h1>
-       <p class="headline" style="max-width:18ch">${slide.title}</p>`
-    : `<p class="eyebrow">${slide.eyebrow ?? ''}</p>
-       <h2 class="headline">${slide.title}</h2>`
+function brandMarkFix() {
+  // Replace emoji glyphs in hero recent with sparse SF-like symbols via CSS letters.
+}
 
-  const copy = `
-    <div class="copy">
-      ${titleBlock}
-      <p class="lede">${slide.body}</p>
-      <p class="en">${slide.en}</p>
-      ${slide.meta ? `<div class="meta">${slide.meta}</div>` : ''}
+function render() {
+  const params = new URLSearchParams(location.search)
+  const exportMode = params.has('export') || params.has('clean')
+  if (exportMode) document.body.classList.add('export-mode')
+
+  // Prefer non-emoji glyphs in the phone mock (Threads-safe, quiet).
+  const homeHtml = frames[0].html
+    .replaceAll('☕', '◉')
+    .replaceAll('🚗', '▸')
+  frames[0].html = homeHtml
+  brandMarkFix()
+
+  const only = params.get('frame')
+  const list = only ? frames.filter((f) => f.id === only || f.file.startsWith(only)) : frames
+
+  const app = document.querySelector<HTMLDivElement>('#app')
+  if (!app) return
+
+  app.innerHTML = `
+    <div class="deck">
       ${
-        slide.id === 'cta'
-          ? `<div class="cta-panel">
-               <p>Пишите для TestFlight-доступа. App Store — в подготовке.</p>
-               <p class="soon">Coming soon</p>
-             </div>`
-          : ''
+        exportMode
+          ? ''
+          : `<div class="hud"><strong>Threads</strong> · 1080×1920 · ←→ · <code>?export=1</code></div>`
       }
+      ${list
+        .map(
+          (f) => `
+        <section class="frame" data-frame="${f.id}" data-file="${f.file}" aria-label="${f.id}">
+          ${f.html}
+        </section>`
+        )
+        .join('')}
     </div>
   `
 
-  const visual = `<div class="visual" aria-hidden="true">${slide.visual}</div>`
-
-  return `
-    <section class="slide${index === 0 ? ' is-active' : ''}" data-layout="${slide.layout ?? 'solo'}" data-id="${slide.id}" aria-hidden="${index === 0 ? 'false' : 'true'}">
-      <div class="slide-inner">
-        ${copy}
-        ${visual}
-      </div>
-    </section>
-  `
-}
-
-const params = new URLSearchParams(location.search)
-if (params.get('clean') === '1') {
-  document.body.classList.add('clean')
-}
-
-const startIndex = Math.min(
-  Math.max(0, Number(params.get('slide') ?? '1') - 1),
-  slides.length - 1,
-)
-
-const app = document.querySelector<HTMLDivElement>('#app')!
-
-app.innerHTML = `
-  <div class="deck" tabindex="0" role="application" aria-label="CheckMoney promo deck">
-    <div class="atmosphere" aria-hidden="true"></div>
-    <div class="progress" aria-hidden="true"><i></i></div>
-    <div class="slides">
-      ${slides.map(renderSlide).join('')}
-    </div>
-    <div class="chrome">
-      <div class="slide-count" aria-live="polite"></div>
-      <div class="dots" role="tablist" aria-label="Слайды"></div>
-      <div class="hint-keys">← → · Space · Home/End</div>
-      <div class="nav">
-        <button type="button" data-nav="prev" aria-label="Предыдущий">‹</button>
-        <button type="button" data-nav="next" aria-label="Следующий">›</button>
-      </div>
-    </div>
-  </div>
-`
-
-const deck = app.querySelector<HTMLDivElement>('.deck')!
-const slideEls = [...app.querySelectorAll<HTMLElement>('.slide')]
-const dots = app.querySelector<HTMLDivElement>('.dots')!
-const countEl = app.querySelector<HTMLDivElement>('.slide-count')!
-const progressBar = app.querySelector<HTMLElement>('.progress > i')!
-
-dots.innerHTML = slides
-  .map(
-    (_, i) =>
-      `<button type="button" role="tab" aria-label="Слайд ${i + 1}" data-goto="${i}"></button>`,
-  )
-  .join('')
-
-let index = startIndex
-
-function go(next: number) {
-  index = (next + slides.length) % slides.length
-  slideEls.forEach((el, i) => {
-    const active = i === index
-    el.classList.toggle('is-active', active)
-    el.setAttribute('aria-hidden', active ? 'false' : 'true')
-  })
-  dots.querySelectorAll('button').forEach((btn, i) => {
-    btn.classList.toggle('is-active', i === index)
-  })
-  countEl.textContent = `${String(index + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`
-  progressBar.style.width = `${((index + 1) / slides.length) * 100}%`
-  const url = new URL(location.href)
-  url.searchParams.set('slide', String(index + 1))
-  history.replaceState(null, '', url)
-}
-
-deck.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
-    e.preventDefault()
-    go(index + 1)
-  } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-    e.preventDefault()
-    go(index - 1)
-  } else if (e.key === 'Home') {
-    e.preventDefault()
-    go(0)
-  } else if (e.key === 'End') {
-    e.preventDefault()
-    go(slides.length - 1)
+  if (!exportMode) {
+    let index = 0
+    const sections = [...document.querySelectorAll<HTMLElement>('.frame')]
+    const focus = () => sections[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault()
+        index = Math.min(sections.length - 1, index + 1)
+        focus()
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault()
+        index = Math.max(0, index - 1)
+        focus()
+      }
+    })
   }
-})
 
-app.querySelector('[data-nav="prev"]')?.addEventListener('click', () => go(index - 1))
-app.querySelector('[data-nav="next"]')?.addEventListener('click', () => go(index + 1))
-dots.addEventListener('click', (e) => {
-  const target = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-goto]')
-  if (!target) return
-  go(Number(target.dataset.goto))
-})
+  ;(window as unknown as { __CHECKMONEY_FRAMES__: Frame[] }).__CHECKMONEY_FRAMES__ = frames
+}
 
-let touchX = 0
-deck.addEventListener(
-  'touchstart',
-  (e) => {
-    touchX = e.changedTouches[0]?.clientX ?? 0
-  },
-  { passive: true },
-)
-deck.addEventListener(
-  'touchend',
-  (e) => {
-    const x = e.changedTouches[0]?.clientX ?? 0
-    const dx = x - touchX
-    if (Math.abs(dx) < 48) return
-    go(dx < 0 ? index + 1 : index - 1)
-  },
-  { passive: true },
-)
-
-go(index)
-deck.focus()
+render()

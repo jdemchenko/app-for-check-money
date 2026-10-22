@@ -73,15 +73,16 @@ node scripts/currency-selftest.mjs
 node scripts/csv-import-selftest.mjs
 ```
 
-## Promo deck (web)
+## Promo — Threads frames
 
-Fullscreen marketing slides (RU + short EN):
+Dark **1080×1920** carousel PNGs (minimal copy, UI mockups):
 
 ```bash
-cd Promo && npm install && npm run dev
+cd Promo && npm install && npx playwright install chromium && npm run export:threads
 ```
 
-Open [http://127.0.0.1:47321](http://127.0.0.1:47321). Keys: ← → / Space. Export: `?clean=1`. Details: `Promo/README.md`.
+Preview: `npm run dev` → http://127.0.0.1:47321 (`?export=1` for clean frames).  
+Output: agent-store `media/promo-threads/`. Details: `Promo/README.md`.
 
 ## Project structure
 
@@ -93,7 +94,7 @@ Shared/                             # SharedVoiceParser, AmountWords, widget sna
 CheckMoneyPhoneWidgets/             # Home Screen widget (Keychain Sharing)
 CheckMoneyWatch/                    # watchOS companion
 CheckMoneyWatchWidgets/
-Promo/                              # Vite promo slide deck (web)
+Promo/                              # Threads 1080×1920 export frames (Vite + Playwright)
 ```
 
 ## Privacy (Info.plist)
