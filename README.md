@@ -4,7 +4,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 > This repository is an **independent** iOS app. It is not related to Fitil.
 
-**Launch candidate:** marketing **1.1**, build **24**.
+**Launch candidate:** marketing **1.2**, build **26** — optimized for **iOS 26** Liquid Glass (dual-path fallback to iOS 18+). See agent-store `docs/ios26-ready.md`.
 
 ## Features
 
@@ -23,7 +23,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 - **Onboarding** — one screen (hold-to-talk + BYN default)
 - **iPhone widget** — today / balance / budget / 7-day bars via Keychain Sharing
 - **iCloud** — best-effort toggle; CloudKit requires paid team
-- **UI** — quiet Liquid Glass–inspired materials, system Light/Dark
+- **UI** — quiet Liquid Glass: iOS 26 `glassEffect` on panels/mic/controls; materials fallback on earlier iOS; system Light/Dark
 - **Currency** — per-transaction; display + entry default; voice «руб» → entry default (BYN)
 - **Stats** — week / month / all + daily bars + category % + quiet insights (vs last, daily avg, largest)
 - **Apple Watch** — dictate companion + today complication (**Available Apps install work is paused**)
@@ -31,9 +31,9 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 ## Requirements
 
-- macOS with **Xcode 26+** recommended for watchOS 26 devices (iOS 18 / watchOS 11+ SDKs)
-- iOS **18.0+** Simulator or device; watchOS **11.0+** companion
-- Same Signing **Team** on iPhone + Watch + **CheckMoneyPhoneWidgets**. Do **not** add App Groups on Personal Team.
+- macOS with **Xcode 26+** (iOS 26 / watchOS 26 SDKs) required to compile `glassEffect` paths
+- Runtime: iOS **18.0+** (best on **iOS 26**); watchOS **11.0+** companion
+- Same Signing **Team** (`3G9UZZBWW9` Personal Team in project) on iPhone + Watch + widgets. Do **not** add App Groups on Personal Team.
 
 ## Open & run
 

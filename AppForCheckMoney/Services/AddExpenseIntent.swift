@@ -5,8 +5,12 @@ import Foundation
 /// Siri / Shortcuts: add an expense without opening the full UI (no paid team needed).
 struct AddExpenseIntent: AppIntent {
     static var title: LocalizedStringResource = "Add expense"
-    static var description = IntentDescription("Log a CheckMoney expense by amount and optional note.")
-    static var openAppWhenRun: Bool = false
+    static var description: IntentDescription {
+        IntentDescription("Log a CheckMoney expense by amount and optional note.")
+    }
+
+    /// Keep Shortcuts/Siri able to run without bringing the UI forward.
+    static var openAppWhenRun: Bool { false }
 
     @Parameter(title: "Amount")
     var amount: Double
@@ -98,8 +102,11 @@ enum AddExpenseIntentError: Error, CustomLocalizedStringResourceConvertible {
 /// Log from free-form text (Shortcuts Share Sheet → this intent).
 struct LogExpenseFromTextIntent: AppIntent {
     static var title: LocalizedStringResource = "Log expense from text"
-    static var description = IntentDescription("Parse a phrase like “coffee 5” and save or open a draft.")
-    static var openAppWhenRun: Bool = true
+    static var description: IntentDescription {
+        IntentDescription("Parse a phrase like “coffee 5” and save or open a draft.")
+    }
+
+    static var openAppWhenRun: Bool { true }
 
     @Parameter(title: "Text")
     var text: String

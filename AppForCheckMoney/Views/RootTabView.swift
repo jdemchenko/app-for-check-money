@@ -9,35 +9,25 @@ enum AppTab: Hashable {
 }
 
 /// Home / Stats / History / Categories — Add stays a Home sheet.
+/// Uses `Tab` (iOS 18+) so iOS 26 applies system Liquid Glass to the tab bar with no custom chrome.
 struct RootTabView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: AppTab = .home
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView(selectedTab: $selectedTab)
-                .tabItem {
-                    Label(L10n.string("tab.home"), systemImage: "house.fill")
-                }
-                .tag(AppTab.home)
-
-            StatsView()
-                .tabItem {
-                    Label(L10n.string("tab.stats"), systemImage: "chart.bar.fill")
-                }
-                .tag(AppTab.stats)
-
-            HistoryView()
-                .tabItem {
-                    Label(L10n.string("tab.history"), systemImage: "list.bullet")
-                }
-                .tag(AppTab.history)
-
-            CategoriesView()
-                .tabItem {
-                    Label(L10n.string("tab.categories"), systemImage: "folder.fill")
-                }
-                .tag(AppTab.categories)
+            Tab(L10n.string("tab.home"), systemImage: "house.fill", value: AppTab.home) {
+                HomeView(selectedTab: $selectedTab)
+            }
+            Tab(L10n.string("tab.stats"), systemImage: "chart.bar.fill", value: AppTab.stats) {
+                StatsView()
+            }
+            Tab(L10n.string("tab.history"), systemImage: "list.bullet", value: AppTab.history) {
+                HistoryView()
+            }
+            Tab(L10n.string("tab.categories"), systemImage: "folder.fill", value: AppTab.categories) {
+                CategoriesView()
+            }
         }
         .tint(Color.primary)
         .task {

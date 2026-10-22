@@ -10,6 +10,7 @@ struct QuietConfirmPanel: View {
     let onCancel: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -26,10 +27,8 @@ struct QuietConfirmPanel: View {
                         .font(.subheadline.weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 44)
-                        .background {
-                            AppTheme.continuousRect(AppTheme.radiusControl)
-                                .fill(.ultraThinMaterial)
-                        }
+                        .padding(.horizontal, 8)
+                        .modifier(QuietConfirmButtonChrome(emphasized: false, destructive: false))
                 }
                 .buttonStyle(.plain)
 
@@ -39,30 +38,68 @@ struct QuietConfirmPanel: View {
                         .foregroundStyle(confirmDestructive ? AppTheme.expense : Color.primary)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 44)
-                        .background {
-                            AppTheme.continuousRect(AppTheme.radiusControl)
-                                .fill(.thinMaterial)
-                                .overlay {
-                                    AppTheme.continuousRect(AppTheme.radiusControl)
-                                        .strokeBorder(
-                                            (confirmDestructive ? AppTheme.expense : Color.primary).opacity(0.18),
-                                            lineWidth: 0.7
-                                        )
-                                }
-                        }
+                        .padding(.horizontal, 8)
+                        .modifier(
+                            QuietConfirmButtonChrome(
+                                emphasized: true,
+                                destructive: confirmDestructive
+                            )
+                        )
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(18)
-        .background {
-            AppTheme.continuousRect(AppTheme.cornerLarge)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    AppTheme.continuousRect(AppTheme.cornerLarge)
-                        .strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
-                }
-        }
+        .modifier(QuietConfirmPanelChrome(scheme: colorScheme, reduceTransparency: reduceTransparency))
         .padding(.horizontal, 28)
+    }
+}
+
+private struct QuietConfirmButtonChrome: ViewModifier {
+    var emphasized: Bool
+    var destructive: Bool
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        let shape = AppTheme.continuousRect(AppTheme.radiusControl)
+        if #available(iOS 26.0, *), !reduceTransparency {
+            content.glassEffect(
+                emphasized ? .regular.interactive() : .regular,
+                in: shape
+            )
+        } else {
+            content.background {
+                shape
+                    .fill(emphasized ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(.ultraThinMaterial))
+                    .overlay {
+                        if emphasized {
+                            shape.strokeBorder(
+                                (destructive ? AppTheme.expense : Color.primary).opacity(0.18),
+                                lineWidth: 0.7
+                            )
+                        }
+                    }
+            }
+        }
+    }
+}
+
+private struct QuietConfirmPanelChrome: ViewModifier {
+    var scheme: ColorScheme
+    var reduceTransparency: Bool
+
+    func body(content: Content) -> some View {
+        let shape = AppTheme.continuousRect(AppTheme.cornerLarge)
+        if #available(iOS 26.0, *), !reduceTransparency {
+            content.glassEffect(.regular, in: shape)
+        } else {
+            content.background {
+                shape
+                    .fill(.ultraThinMaterial)
+                    .overlay {
+                        shape.strokeBorder(AppTheme.glassStroke(scheme), lineWidth: 1)
+                    }
+            }
+        }
     }
 }

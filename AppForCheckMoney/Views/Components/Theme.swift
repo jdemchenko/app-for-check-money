@@ -157,32 +157,44 @@ struct AtmosphereBackground: View {
     }
 }
 
-// MARK: - Glass surfaces
+// MARK: - Glass surfaces (iOS 26 Liquid Glass + dual-path fallback)
 
+/// Quiet content panels / controls — prefers system Liquid Glass on iOS 26.
 struct GlassPanel<Content: View>: View {
     var padding: CGFloat = 18
     /// Always `radiusPanel` — callers may pass legacy corner args; ignored for uniformity.
     var corner: CGFloat = AppTheme.radiusPanel
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @ViewBuilder var content: Content
 
     var body: some View {
-        content
+        let shape = AppTheme.continuousRect(AppTheme.radiusPanel)
+        let padded = content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                AppTheme.continuousRect(AppTheme.radiusPanel)
-                    .fill(panelFill)
-                    .overlay {
-                        AppTheme.continuousRect(AppTheme.radiusPanel)
-                            .strokeBorder(AppTheme.glassStroke(scheme), lineWidth: scheme == .dark ? 0.6 : 0.8)
-                    }
-                    .shadow(
-                        color: .black.opacity(scheme == .dark ? 0.28 : 0.07),
-                        radius: scheme == .dark ? 16 : 12,
-                        y: scheme == .dark ? 6 : 4
-                    )
-            }
+
+        if #available(iOS 26.0, *), !reduceTransparency {
+            padded
+                .glassEffect(.regular, in: shape)
+        } else {
+            padded
+                .background {
+                    shape
+                        .fill(panelFill)
+                        .overlay {
+                            shape.strokeBorder(
+                                AppTheme.glassStroke(scheme),
+                                lineWidth: scheme == .dark ? 0.6 : 0.8
+                            )
+                        }
+                        .shadow(
+                            color: .black.opacity(scheme == .dark ? 0.28 : 0.07),
+                            radius: scheme == .dark ? 16 : 12,
+                            y: scheme == .dark ? 6 : 4
+                        )
+                }
+        }
     }
 
     private var panelFill: AnyShapeStyle {
@@ -197,19 +209,25 @@ struct GlassPanel<Content: View>: View {
 
 struct GlassFieldBackground: ViewModifier {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     func body(content: Content) -> some View {
-        content
+        let shape = AppTheme.continuousRect(AppTheme.radiusControl)
+        let field = content
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-            .background {
-                AppTheme.continuousRect(AppTheme.radiusControl)
+
+        if #available(iOS 26.0, *), !reduceTransparency {
+            field.glassEffect(.regular, in: shape)
+        } else {
+            field.background {
+                shape
                     .fill(scheme == .dark ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(Color.white))
                     .overlay {
-                        AppTheme.continuousRect(AppTheme.radiusControl)
-                            .strokeBorder(AppTheme.hairline(scheme), lineWidth: 0.7)
+                        shape.strokeBorder(AppTheme.hairline(scheme), lineWidth: 0.7)
                     }
             }
+        }
     }
 }
 
@@ -227,37 +245,119 @@ extension View {
     func glassChip(selected: Bool) -> some View {
         modifier(GlassChipBackground(selected: selected))
     }
+
+    /// Hold-to-talk / primary floating control — interactive Liquid Glass on iOS 26.
+    func quietInteractiveGlassCircle(listening: Bool = false) -> some View {
+        modifier(QuietInteractiveGlassCircle(listening: listening))
+    }
+
+    /// Compact confirm / chrome surface with dual-path glass.
+    func quietGlassSurface(corner: CGFloat, interactive: Bool = false) -> some View {
+        modifier(QuietGlassSurface(corner: corner, interactive: interactive))
+    }
+}
+
+private struct QuietInteractiveGlassCircle: ViewModifier {
+    var listening: Bool
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *), !reduceTransparency {
+            content
+                .frame(width: 108, height: 108)
+                .glassEffect(.regular.interactive(), in: Circle())
+                .overlay {
+                    Circle()
+                        .fill(Color.primary.opacity(listening ? 0.10 : 0.04))
+                }
+        } else {
+            content
+                .background {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 108, height: 108)
+                        .overlay {
+                            Circle()
+                                .fill(Color.primary.opacity(listening ? 0.12 : 0.06))
+                        }
+                        .overlay {
+                            Circle()
+                                .strokeBorder(AppTheme.glassStroke(scheme), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
+                }
+                .frame(width: 108, height: 108)
+        }
+    }
+}
+
+private struct QuietGlassSurface: ViewModifier {
+    var corner: CGFloat
+    var interactive: Bool
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        let shape = AppTheme.continuousRect(corner)
+        if #available(iOS 26.0, *), !reduceTransparency {
+            if interactive {
+                content.glassEffect(.regular.interactive(), in: shape)
+            } else {
+                content.glassEffect(.regular, in: shape)
+            }
+        } else {
+            content.background {
+                shape.fill(.ultraThinMaterial)
+            }
+        }
+    }
 }
 
 private struct GlassChipBackground: ViewModifier {
     var selected: Bool
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     func body(content: Content) -> some View {
-        content
-            .background {
-                AppTheme.continuousRect(AppTheme.radiusControl)
-                    .fill(chipFill)
-                    .overlay {
-                        AppTheme.continuousRect(AppTheme.radiusControl)
-                            .strokeBorder(
+        let shape = AppTheme.continuousRect(AppTheme.radiusControl)
+        if #available(iOS 26.0, *), !reduceTransparency {
+            content
+                .glassEffect(
+                    selected ? .regular.interactive() : .regular,
+                    in: shape
+                )
+                .overlay {
+                    shape.strokeBorder(
+                        selected
+                            ? AppTheme.selectionStroke(scheme)
+                            : Color.clear,
+                        lineWidth: selected ? 1.0 : 0
+                    )
+                }
+        } else {
+            content
+                .background {
+                    shape
+                        .fill(chipFill)
+                        .overlay {
+                            shape.strokeBorder(
                                 selected
                                     ? AppTheme.selectionStroke(scheme)
                                     : AppTheme.hairline(scheme),
                                 lineWidth: selected ? 1.1 : 0.7
                             )
                             .overlay {
-                                AppTheme.continuousRect(AppTheme.radiusControl)
-                                    .fill(
-                                        selected
-                                            ? (scheme == .dark
-                                                ? Color.primary.opacity(0.08)
-                                                : Color.black.opacity(0.04))
-                                            : Color.clear
-                                    )
+                                shape.fill(
+                                    selected
+                                        ? (scheme == .dark
+                                            ? Color.primary.opacity(0.08)
+                                            : Color.black.opacity(0.04))
+                                        : Color.clear
+                                )
                             }
-                    }
-            }
+                        }
+                }
+        }
     }
 
     private var chipFill: AnyShapeStyle {
@@ -275,6 +375,7 @@ struct GlassActionButton: View {
     var isDestructive: Bool = false
     var action: () -> Void
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         Button(action: action) {
@@ -289,20 +390,38 @@ struct GlassActionButton: View {
             .frame(minHeight: AppTheme.touchMin - 8)
             .padding(.vertical, 12)
             .foregroundStyle(isDestructive ? AppTheme.expense : Color.primary)
-            .background {
-                AppTheme.continuousRect(AppTheme.radiusPanel)
+            .modifier(GlassActionChrome(
+                isDestructive: isDestructive,
+                scheme: scheme,
+                reduceTransparency: reduceTransparency
+            ))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct GlassActionChrome: ViewModifier {
+    var isDestructive: Bool
+    var scheme: ColorScheme
+    var reduceTransparency: Bool
+
+    func body(content: Content) -> some View {
+        let shape = AppTheme.continuousRect(AppTheme.radiusPanel)
+        if #available(iOS 26.0, *), !reduceTransparency {
+            content.glassEffect(.regular.interactive(), in: shape)
+        } else {
+            content.background {
+                shape
                     .fill(scheme == .dark ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(Color.white))
                     .overlay {
-                        AppTheme.continuousRect(AppTheme.radiusPanel)
-                            .strokeBorder(
-                                (isDestructive ? AppTheme.expense : Color.primary)
-                                    .opacity(scheme == .dark ? 0.18 : 0.14),
-                                lineWidth: 0.8
-                            )
+                        shape.strokeBorder(
+                            (isDestructive ? AppTheme.expense : Color.primary)
+                                .opacity(scheme == .dark ? 0.18 : 0.14),
+                            lineWidth: 0.8
+                        )
                     }
             }
         }
-        .buttonStyle(.plain)
     }
 }
 

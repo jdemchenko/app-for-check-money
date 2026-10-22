@@ -43,14 +43,7 @@ struct AppLockGate: View {
             }
             .padding(28)
             .frame(maxWidth: 320)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                            .strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
-                    }
-            }
+            .quietGlassSurface(corner: AppTheme.cornerLarge)
             .padding(24)
         }
         .task {

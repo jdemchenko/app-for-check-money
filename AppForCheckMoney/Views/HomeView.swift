@@ -401,42 +401,28 @@ struct HomeView: View {
     /// Hold to talk — press starts listening, release stops and saves.
     private var quickMic: some View {
         VStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .frame(width: 108, height: 108)
-                    .overlay {
-                        Circle()
-                            .fill(Color.primary.opacity(speech.isListening ? 0.12 : 0.06))
-                    }
-                    .overlay {
-                        Circle()
-                            .strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
-                    }
-                    .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
-
-                Image(systemName: speech.isListening ? "waveform" : "mic.fill")
-                    .font(.system(size: 34, weight: .medium))
-                    .foregroundStyle(.primary)
-                    .contentTransition(.symbolEffect(.replace))
-                    .symbolEffect(.pulse, isActive: speech.isListening)
-            }
-            .scaleEffect(isHoldingMic || speech.isListening ? 1.06 : 1.0)
-            .animation(.spring(response: 0.28, dampingFraction: 0.72), value: isHoldingMic)
-            .animation(.spring(response: 0.28, dampingFraction: 0.72), value: speech.isListening)
-            // Use weight-based impact (iOS 17+). Avoid `.impact(flexibility:)` /
-            // `SensoryFeedback.Flexibility` — those require a newer SDK than iOS 18.
-            .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: isHoldingMic)
-            .frame(minWidth: AppTheme.touchMin, minHeight: AppTheme.touchMin)
-            .contentShape(Circle())
-            .gesture(holdToTalkGesture)
-            .disabled({
-                if case .unavailable = speech.status { return true }
-                if case .failed = speech.status { return true }
-                return false
-            }())
-            .accessibilityLabel(L10n.string("home.quickEntry"))
-            .accessibilityHint(L10n.string("home.quickEntryHint"))
+            Image(systemName: speech.isListening ? "waveform" : "mic.fill")
+                .font(.system(size: 34, weight: .medium))
+                .foregroundStyle(.primary)
+                .contentTransition(.symbolEffect(.replace))
+                .symbolEffect(.pulse, isActive: speech.isListening)
+                .quietInteractiveGlassCircle(listening: speech.isListening)
+                .scaleEffect(isHoldingMic || speech.isListening ? 1.06 : 1.0)
+                .animation(.spring(response: 0.28, dampingFraction: 0.72), value: isHoldingMic)
+                .animation(.spring(response: 0.28, dampingFraction: 0.72), value: speech.isListening)
+                // Use weight-based impact (iOS 17+). Avoid `.impact(flexibility:)` /
+                // `SensoryFeedback.Flexibility` — those require a newer SDK than iOS 18.
+                .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: isHoldingMic)
+                .frame(minWidth: AppTheme.touchMin, minHeight: AppTheme.touchMin)
+                .contentShape(Circle())
+                .gesture(holdToTalkGesture)
+                .disabled({
+                    if case .unavailable = speech.status { return true }
+                    if case .failed = speech.status { return true }
+                    return false
+                }())
+                .accessibilityLabel(L10n.string("home.quickEntry"))
+                .accessibilityHint(L10n.string("home.quickEntryHint"))
 
             Text(
                 speech.isListening
