@@ -1,0 +1,213 @@
+"app.name" = "CheckMoney";
+
+"tab.home" = "Home";
+"tab.add" = "Add";
+"tab.categories" = "Categories";
+"tab.history" = "History";
+"tab.stats" = "Stats";
+
+"home.balance" = "Balance";
+"home.income" = "Income";
+"home.expense" = "Expenses";
+"home.recent" = "Recent";
+"home.empty" = "No transactions yet";
+"home.emptyHint" = "Hold the mic or tap + to add an entry.";
+"home.quickEntry" = "Hold to talk";
+"home.quickEntryHint" = "Press and hold, speak amount and category — release to save";
+"home.quickEntryStop" = "Release to save";
+"home.quickEntryEmpty" = "Didn’t catch that. Try again.";
+"home.quickEntryNoAmount" = "Couldn’t hear an amount. Try again or use Add.";
+"home.monthIn" = "This month ·";
+"home.today" = "Today";
+"home.seeAll" = "See all";
+"home.quietFeedback" = "Today %@ · %@ %@%%";
+
+"add.mode" = "Mode";
+"add.manual" = "Manual";
+"add.voice" = "Voice";
+"add.saved" = "Saved";
+
+"settings.title" = "Settings";
+"settings.currency" = "Currency";
+"settings.displayCurrency" = "Display currency";
+"settings.displayCurrencyHint" = "Totals convert into this currency. Existing transactions keep their own currency.";
+"settings.entryCurrency" = "Default for new entries";
+"settings.entryCurrencyHint" = "Stamped onto new voice/manual ops. “руб” in speech uses this (not RUB).";
+"settings.ratesHint" = "Conversion uses approximate static rates (BYN pivot) for overview only — not live FX.";
+"settings.ratesTitle" = "Exchange rates";
+"settings.ratesRefresh" = "Refresh rates";
+"settings.ratesLive" = "Source: myfin.by (НБРБ). Updated %@ · totals only — saved amounts stay as entered.";
+"settings.ratesStaticFallback" = "Source: myfin.by unavailable — using built-in fallback. Totals only; saved amounts stay as entered.";
+"currency.byn" = "Belarusian ruble (Br)";
+"currency.rub" = "Russian ruble (₽)";
+"currency.usd" = "US dollar ($)";
+"currency.eur" = "Euro (€)";
+"common.done" = "Done";
+
+"stats.period" = "Period";
+"stats.week" = "Week";
+"stats.month" = "Month";
+"stats.all" = "All";
+"stats.overview" = "Overview";
+"stats.byCategory" = "By category";
+"stats.top3" = "Top spending";
+"stats.avgCheck" = "Average check";
+"stats.vsLastWeek" = "vs last week";
+"stats.vsLastMonth" = "vs last month";
+"stats.empty" = "No data yet";
+"stats.emptyHint" = "Add a few expenses to see the breakdown.";
+"stats.ops" = "ops";
+
+"field.amount" = "Amount";
+"field.type" = "Type";
+"field.category" = "Category";
+"field.currency" = "Currency";
+"field.note" = "Note";
+"field.notePlaceholder" = "Optional";
+"field.date" = "Date";
+
+"type.expense" = "Expense";
+"type.income" = "Income";
+"type.both" = "Both";
+
+"category.auto" = "Auto";
+"category.unknown" = "Uncategorized";
+
+"voice.hint" = "Try: “Spent 12 on coffee” or “Got salary 3000”";
+"voice.tap" = "Tap and speak";
+"voice.listening" = "Listening…";
+"voice.start" = "Start listening";
+"voice.stop" = "Stop listening";
+"voice.draft" = "Draft";
+"voice.clear" = "Clear";
+"voice.unsupported" = "Voice input isn’t available on this device. Use manual entry.";
+"voice.permissionDenied" = "Microphone or speech permission is off. Enable them in Settings, or use manual entry.";
+"voice.sessionFailed" = "Couldn’t start the microphone session. Tap the mic to try again. On Simulator, check System Settings → Sound and that an input device is available.";
+
+"categories.defaults" = "Defaults";
+"categories.custom" = "Custom";
+"categories.customEmpty" = "No custom categories yet.";
+"categories.add" = "New category";
+"categories.restore" = "Restore defaults";
+"categories.delete" = "Delete category";
+"categories.deleteConfirm" = "Delete “%@”?";
+"categories.deleteReassign" = "Its transactions move to Other (or Other income). Built-in categories can’t be deleted.";
+"categories.deleteReassignCount" = "%d transactions will move to Other (or Other income). Built-in categories can’t be deleted.";
+"categories.nameRu" = "Name (RU)";
+"categories.nameEn" = "Name (EN)";
+"categories.keywords" = "Keywords";
+"categories.keywordsHint" = "Comma-separated — used for auto-categorization";
+"categories.keywordsAuto" = "Suggested from the name — edit anytime";
+"categories.colorHex" = "Color hex";
+"categories.symbol" = "SF Symbol name";
+"categories.symbolSuggest" = "Suggested icons";
+
+"history.empty" = "Nothing found";
+"history.emptyHint" = "Try adjusting filters or add a transaction.";
+"history.search" = "Search";
+"history.searchHint" = "Amount, note, or category";
+"history.filters" = "Filters";
+"history.reset" = "Reset";
+"history.dateRange" = "Date range";
+"history.from" = "From";
+"history.to" = "To";
+"history.useFrom" = "Filter from date";
+"history.useTo" = "Filter to date";
+"history.detail" = "Transaction";
+"history.deleteConfirm" = "Delete this transaction?";
+"history.deleteHint" = "This can’t be undone.";
+"history.deleteConfirm" = "Delete this transaction?";
+"history.deleteHint" = "This can’t be undone.";
+
+"filter.all" = "All";
+
+"date.today" = "Today";
+"date.yesterday" = "Yesterday";
+
+"common.save" = "Save";
+"common.cancel" = "Cancel";
+"common.confirm" = "Confirm";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.ok" = "OK";
+"common.close" = "Close";
+
+"field.payment" = "Payment";
+"payment.unspecified" = "Not set";
+"payment.cash" = "Cash";
+"payment.card" = "Card";
+
+"budget.title" = "Monthly budget";
+"budget.hint" = "Quiet progress on Home for this month’s spending.";
+"budget.enabled" = "Track monthly limit";
+"budget.amount" = "Limit amount";
+"budget.categories" = "Category budgets";
+"budget.categoriesHint" = "Optional monthly limits per category (same currency as the monthly budget).";
+
+"lock.title" = "App lock";
+"lock.hint" = "Require Face ID / Touch ID or device passcode when opening CheckMoney.";
+"lock.subtitle" = "Unlock to see your balances";
+"lock.reason" = "Unlock CheckMoney";
+"lock.failed" = "Couldn’t unlock. Try again.";
+"lock.unlocking" = "Unlocking…";
+"lock.faceID" = "Unlock with Face ID";
+"lock.touchID" = "Unlock with Touch ID";
+"lock.opticID" = "Unlock with Optic ID";
+"lock.passcode" = "Unlock with Passcode";
+
+"onboarding.headline" = "Track money by voice";
+"onboarding.voiceTitle" = "Hold the mic";
+"onboarding.voiceBody" = "Say an amount and category — CheckMoney drafts the expense for you.";
+"onboarding.bynTitle" = "BYN by default";
+"onboarding.bynBody" = "«Рублей» means your entry currency (BYN). Dollars and euros only when said explicitly.";
+"onboarding.continue" = "Continue";
+
+"recurring.title" = "Recurring";
+"recurring.manage" = "Manage recurring";
+"recurring.add" = "New recurring";
+"recurring.empty" = "No recurring yet";
+"recurring.emptyHint" = "Add rent, telecom, or salary so CheckMoney posts them on schedule.";
+"recurring.weekly" = "Weekly";
+"recurring.monthly" = "Monthly";
+"recurring.frequency" = "Frequency";
+"recurring.next" = "Next date";
+
+"export.share" = "Export CSV";
+"export.failed" = "Couldn’t create the CSV file. Try again.";
+"export.empty" = "Nothing to export for the current filters.";
+
+"import.title" = "Import CSV";
+"import.empty" = "The file is empty.";
+"import.noRows" = "No transactions found in this file.";
+"import.failed" = "Couldn’t import that file.";
+"import.successFormat" = "Imported %d transactions.";
+
+"stats.daily" = "By day";
+"stats.dailyEmpty" = "No daily spend in this period.";
+"stats.insights" = "Insights";
+"stats.dailyAvg" = "Daily average";
+"stats.largestExpense" = "Largest expense";
+"stats.largestIncome" = "Largest income";
+
+"voice.batchTitle" = "Save these expenses?";
+"voice.batchSave" = "Save all";
+"voice.recurringTitle" = "Create recurring?";
+"voice.recurringSave" = "Create";
+"voice.recurringSaved" = "Recurring rule saved";
+
+"home.pasteDraft" = "Paste text draft";
+"home.pasteDraftHint" = "Parse the clipboard like a voice phrase";
+"home.pasteEmpty" = "Clipboard is empty";
+
+"reminder.title" = "Daily reminder";
+"reminder.hint" = "Optional local nudge to log spending. Nothing leaves the device.";
+"reminder.enabled" = "Remind me to log";
+"reminder.hourFormat" = "Around %d:00";
+"reminder.notificationTitle" = "CheckMoney";
+"reminder.notificationBody" = "Quick log for today? Hold the mic or add manually.";
+
+"icloud.title" = "iCloud sync";
+"icloud.off" = "Local only — sync between your iPhones is off.";
+"icloud.prefer" = "Prefer iCloud when available";
+"icloud.personalTeamNote" = "CloudKit needs a paid Apple Developer team and iCloud capability. On Personal Team, data stays on this iPhone (toggle prepares a future paid-team setup; restart after enabling).";
+"icloud.restartNote" = "Restart the app after changing iCloud preference.";

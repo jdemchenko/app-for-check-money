@@ -1,0 +1,213 @@
+"app.name" = "CheckMoney";
+
+"tab.home" = "Главная";
+"tab.add" = "Добавить";
+"tab.categories" = "Категории";
+"tab.history" = "История";
+"tab.stats" = "Статистика";
+
+"home.balance" = "Баланс";
+"home.income" = "Доходы";
+"home.expense" = "Расходы";
+"home.recent" = "Недавние";
+"home.empty" = "Пока нет операций";
+"home.emptyHint" = "Удерживайте микрофон или нажмите +, чтобы добавить.";
+"home.quickEntry" = "Удерживайте микрофон";
+"home.quickEntryHint" = "Зажмите, скажите сумму и категорию — отпустите, чтобы сохранить";
+"home.quickEntryStop" = "Отпустите, чтобы сохранить";
+"home.quickEntryEmpty" = "Не расслышала. Попробуйте ещё раз.";
+"home.quickEntryNoAmount" = "Не услышала сумму. Повторите или добавьте вручную.";
+"home.monthIn" = "Этот месяц ·";
+"home.today" = "Сегодня";
+"home.seeAll" = "Все";
+"home.quietFeedback" = "Сегодня %@ · %@ %@%%";
+
+"add.mode" = "Режим";
+"add.manual" = "Вручную";
+"add.voice" = "Голосом";
+"add.saved" = "Сохранено";
+
+"settings.title" = "Настройки";
+"settings.currency" = "Валюта";
+"settings.displayCurrency" = "Валюта отображения";
+"settings.displayCurrencyHint" = "Итоги пересчитываются в эту валюту. Уже сохранённые операции не меняются.";
+"settings.entryCurrency" = "Валюта новых записей";
+"settings.entryCurrencyHint" = "Ставится на новые голосовые/ручные операции. «руб» в речи = эта валюта (не RUB).";
+"settings.ratesHint" = "Пересчёт по приблизительным статичным курсам (опора BYN) только для обзора — не живой FX.";
+"settings.ratesTitle" = "Курсы валют";
+"settings.ratesRefresh" = "Обновить курсы";
+"settings.ratesLive" = "Источник: myfin.by (НБРБ). Обновлено %@ · только итоги — сохранённые суммы не меняются.";
+"settings.ratesStaticFallback" = "Источник: myfin.by недоступен — запасные курсы. Только итоги; сохранённые суммы не меняются.";
+"currency.byn" = "Белорусский рубль (Br)";
+"currency.rub" = "Российский рубль (₽)";
+"currency.usd" = "Доллар США ($)";
+"currency.eur" = "Евро (€)";
+"common.done" = "Готово";
+
+"stats.period" = "Период";
+"stats.week" = "Неделя";
+"stats.month" = "Месяц";
+"stats.all" = "Всё";
+"stats.overview" = "Обзор";
+"stats.byCategory" = "По категориям";
+"stats.top3" = "Топ трат";
+"stats.avgCheck" = "Средний чек";
+"stats.vsLastWeek" = "к прошлой неделе";
+"stats.vsLastMonth" = "к прошлому месяцу";
+"stats.empty" = "Пока нет данных";
+"stats.emptyHint" = "Добавьте несколько расходов, чтобы увидеть разбивку.";
+"stats.ops" = "оп.";
+
+"field.amount" = "Сумма";
+"field.type" = "Тип";
+"field.category" = "Категория";
+"field.currency" = "Валюта";
+"field.note" = "Заметка";
+"field.notePlaceholder" = "Необязательно";
+"field.date" = "Дата";
+
+"type.expense" = "Расход";
+"type.income" = "Доход";
+"type.both" = "Оба";
+
+"category.auto" = "Авто";
+"category.unknown" = "Без категории";
+
+"voice.hint" = "Например: «Потратил 450 на кофе» или «Получил зарплату 80000»";
+"voice.tap" = "Нажмите и говорите";
+"voice.listening" = "Слушаю…";
+"voice.start" = "Начать запись";
+"voice.stop" = "Остановить";
+"voice.draft" = "Черновик";
+"voice.clear" = "Сбросить";
+"voice.unsupported" = "Голосовой ввод недоступен на этом устройстве. Используйте ручной ввод.";
+"voice.permissionDenied" = "Нет доступа к микрофону или распознаванию речи. Разрешите в Настройках или вводите вручную.";
+"voice.sessionFailed" = "Не удалось запустить микрофон. Нажмите ещё раз. В Симуляторе проверьте System Settings → Sound и наличие входного устройства.";
+
+"categories.defaults" = "Базовые";
+"categories.custom" = "Свои";
+"categories.customEmpty" = "Своих категорий пока нет.";
+"categories.add" = "Новая категория";
+"categories.restore" = "Восстановить базовые";
+"categories.delete" = "Удалить категорию";
+"categories.deleteConfirm" = "Удалить «%@»?";
+"categories.deleteReassign" = "Операции перейдут в «Другое» (или «Прочий доход»). Базовые категории удалить нельзя.";
+"categories.deleteReassignCount" = "%d операций перейдут в «Другое» (или «Прочий доход»). Базовые категории удалить нельзя.";
+"categories.nameRu" = "Название (RU)";
+"categories.nameEn" = "Название (EN)";
+"categories.keywords" = "Ключевые слова";
+"categories.keywordsHint" = "Через запятую — для авто-категоризации";
+"categories.keywordsAuto" = "Подставляются по названию — можно править";
+"categories.colorHex" = "Цвет (hex)";
+"categories.symbol" = "Имя SF Symbol";
+"categories.symbolSuggest" = "Подсказки иконок";
+
+"history.empty" = "Ничего не найдено";
+"history.emptyHint" = "Измените фильтры или добавьте операцию.";
+"history.search" = "Поиск";
+"history.searchHint" = "Сумма, заметка или категория";
+"history.filters" = "Фильтры";
+"history.reset" = "Сбросить";
+"history.dateRange" = "Период";
+"history.from" = "С";
+"history.to" = "По";
+"history.useFrom" = "Фильтр с даты";
+"history.useTo" = "Фильтр по дату";
+"history.detail" = "Операция";
+"history.deleteConfirm" = "Удалить эту операцию?";
+"history.deleteHint" = "Отменить будет нельзя.";
+"history.deleteConfirm" = "Удалить эту операцию?";
+"history.deleteHint" = "Отменить будет нельзя.";
+
+"filter.all" = "Все";
+
+"date.today" = "Сегодня";
+"date.yesterday" = "Вчера";
+
+"common.save" = "Сохранить";
+"common.cancel" = "Отмена";
+"common.confirm" = "Подтвердить";
+"common.delete" = "Удалить";
+"common.edit" = "Изменить";
+"common.ok" = "OK";
+"common.close" = "Закрыть";
+
+"field.payment" = "Оплата";
+"payment.unspecified" = "Не указано";
+"payment.cash" = "Наличные";
+"payment.card" = "Карта";
+
+"budget.title" = "Бюджет месяца";
+"budget.hint" = "Тихий прогресс на Home по тратам этого месяца.";
+"budget.enabled" = "Следить за лимитом";
+"budget.amount" = "Сумма лимита";
+"budget.categories" = "Бюджеты категорий";
+"budget.categoriesHint" = "Необязательные лимиты по категориям (та же валюта, что у бюджета месяца).";
+
+"lock.title" = "Блокировка";
+"lock.hint" = "Face ID / Touch ID или код устройства при открытии CheckMoney.";
+"lock.subtitle" = "Разблокируйте, чтобы видеть балансы";
+"lock.reason" = "Разблокировать CheckMoney";
+"lock.failed" = "Не удалось разблокировать. Попробуйте ещё раз.";
+"lock.unlocking" = "Разблокировка…";
+"lock.faceID" = "Разблокировать Face ID";
+"lock.touchID" = "Разблокировать Touch ID";
+"lock.opticID" = "Разблокировать Optic ID";
+"lock.passcode" = "Разблокировать кодом";
+
+"onboarding.headline" = "Учёт голосом";
+"onboarding.voiceTitle" = "Удерживайте микрофон";
+"onboarding.voiceBody" = "Скажите сумму и категорию — CheckMoney подготовит черновик.";
+"onboarding.bynTitle" = "По умолчанию BYN";
+"onboarding.bynBody" = "«Рублей» — валюта ввода (BYN). Доллары и евро — только если сказаны явно.";
+"onboarding.continue" = "Продолжить";
+
+"recurring.title" = "Повторы";
+"recurring.manage" = "Управлять повторами";
+"recurring.add" = "Новый повтор";
+"recurring.empty" = "Повторов пока нет";
+"recurring.emptyHint" = "Добавьте аренду, связь или зарплату — CheckMoney создаст операции по расписанию.";
+"recurring.weekly" = "Еженедельно";
+"recurring.monthly" = "Ежемесячно";
+"recurring.frequency" = "Частота";
+"recurring.next" = "Следующая дата";
+
+"export.share" = "Экспорт CSV";
+"export.failed" = "Не удалось создать CSV. Попробуйте ещё раз.";
+"export.empty" = "Нечего экспортировать по текущим фильтрам.";
+
+"import.title" = "Импорт CSV";
+"import.empty" = "Файл пустой.";
+"import.noRows" = "В файле не найдено операций.";
+"import.failed" = "Не удалось импортировать файл.";
+"import.successFormat" = "Импортировано операций: %d.";
+
+"stats.daily" = "По дням";
+"stats.dailyEmpty" = "Нет трат по дням за этот период.";
+"stats.insights" = "Инсайты";
+"stats.dailyAvg" = "Среднее за день";
+"stats.largestExpense" = "Крупнейший расход";
+"stats.largestIncome" = "Крупнейший доход";
+
+"voice.batchTitle" = "Сохранить эти расходы?";
+"voice.batchSave" = "Сохранить все";
+"voice.recurringTitle" = "Создать повтор?";
+"voice.recurringSave" = "Создать";
+"voice.recurringSaved" = "Повтор сохранён";
+
+"home.pasteDraft" = "Вставить текст";
+"home.pasteDraftHint" = "Разобрать буфер обмена как голосовую фразу";
+"home.pasteEmpty" = "Буфер обмена пуст";
+
+"reminder.title" = "Напоминание";
+"reminder.hint" = "Локальный тихий nudge залогировать день. Данные никуда не уходят.";
+"reminder.enabled" = "Напоминать залогировать";
+"reminder.hourFormat" = "Около %d:00";
+"reminder.notificationTitle" = "CheckMoney";
+"reminder.notificationBody" = "Залогировать сегодня? Удержите микрофон или добавьте вручную.";
+
+"icloud.title" = "Синхронизация iCloud";
+"icloud.off" = "Только на этом iPhone — синк между устройствами выключен.";
+"icloud.prefer" = "Предпочитать iCloud, если доступен";
+"icloud.personalTeamNote" = "CloudKit нужен платный Apple Developer и capability iCloud. На Personal Team данные остаются на этом iPhone (переключатель готовит будущий платный team; после включения перезапустите приложение).";
+"icloud.restartNote" = "Перезапустите приложение после смены настройки iCloud.";

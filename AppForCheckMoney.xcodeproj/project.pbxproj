@@ -1,0 +1,1086 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* AppForCheckMoneyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* AppForCheckMoneyApp.swift */; };
+		A10000000000000000000002 /* MoneyCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* MoneyCategory.swift */; };
+		A10000000000000000000003 /* MoneyTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* MoneyTransaction.swift */; };
+		A10000000000000000000004 /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* SeedData.swift */; };
+		A10000000000000000000005 /* CategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* CategoryMatcher.swift */; };
+		A10000000000000000000014 /* KeywordSuggester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* KeywordSuggester.swift */; };
+		A10000000000000000000015 /* AppCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* AppCurrency.swift */; };
+		A10000000000000000000016 /* SymbolSuggester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* SymbolSuggester.swift */; };
+		A10000000000000000000017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001A /* SettingsView.swift */; };
+		A10000000000000000000018 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001B /* StatsView.swift */; };
+		A10000000000000000000019 /* StatsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* StatsEngine.swift */; };
+		A10000000000000000000006 /* VoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* VoiceParser.swift */; };
+		A1000000000000000000001A /* AmountWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* AmountWords.swift */; };
+		A1000000000000000000001B /* ExchangeRateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001E /* ExchangeRateStore.swift */; };
+		A10000000000000000000007 /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* SpeechRecognizer.swift */; };
+		A10000000000000000000008 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* L10n.swift */; };
+		A10000000000000000000009 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* RootTabView.swift */; };
+		A1000000000000000000000A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A /* HomeView.swift */; };
+		A1000000000000000000000B /* AddTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* AddTransactionView.swift */; };
+		A1000000000000000000000C /* CategoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000C /* CategoriesView.swift */; };
+		A1000000000000000000000D /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000D /* HistoryView.swift */; };
+		A1000000000000000000000E /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* Theme.swift */; };
+		A1000000000000000000000F /* TransactionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* TransactionRowView.swift */; };
+		A1000000000000000000002A /* QuietConfirmPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* QuietConfirmPanel.swift */; };
+		A10000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* Assets.xcassets */; };
+		A10000000000000000000011 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Localizable.strings */; };
+		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
+		A1000000000000000000001D /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
+		A1000000000000000000001E /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
+		/* Embed Watch companion into PlugIns/ with CodeSignOnCopy (no platformFilter; matches 2feee4b Available Apps). */
+		A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CheckMoneyWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A20000000000000000000001 /* CheckMoneyWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* CheckMoneyWatchApp.swift */; };
+		A20000000000000000000002 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WatchStore.swift */; };
+		A20000000000000000000003 /* WatchRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* WatchRootView.swift */; };
+		A20000000000000000000004 /* WatchHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000004 /* WatchHomeView.swift */; };
+		A20000000000000000000005 /* WatchAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* WatchAddView.swift */; };
+		A20000000000000000000006 /* WatchRecentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* WatchRecentView.swift */; };
+		A20000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000007 /* Assets.xcassets */; };
+		A20000000000000000000008 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
+		A20000000000000000000009 /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
+		A30000000000000000000001 /* CheckMoneyWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000001 /* CheckMoneyWatchWidgets.swift */; };
+		A30000000000000000000002 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* SyncModels.swift */; };
+		A30000000000000000000003 /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* LocalSyncStore.swift */; };
+		A30000000000000000000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000002 /* Assets.xcassets */; };
+		A10000000000000000000020 /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000001 /* TextNormalizer.swift */; };
+		A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* SharedCategoryMatcher.swift */; };
+		A10000000000000000000022 /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000003 /* SharedVoiceParser.swift */; };
+		A2000000000000000000000A /* TextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000001 /* TextNormalizer.swift */; };
+		A2000000000000000000000B /* SharedCategoryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* SharedCategoryMatcher.swift */; };
+		A2000000000000000000000C /* SharedVoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000003 /* SharedVoiceParser.swift */; };
+		A2000000000000000000000D /* AmountWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* AmountWords.swift */; };
+		A2000000000000000000000E /* WatchDictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000004 /* WatchDictateView.swift */; };
+		A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000005 /* WatchSpeechRecognizer.swift */; };
+
+		A10000000000000000000023 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* Speech.framework */; };
+		A10000000000000000000024 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* AVFoundation.framework */; };
+		A60000000000000000000001 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000001 /* AppSettingsStore.swift */; };
+		A60000000000000000000002 /* RecurringRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000002 /* RecurringRule.swift */; };
+		A60000000000000000000003 /* RecurringEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000003 /* RecurringEngine.swift */; };
+		A60000000000000000000004 /* CSVExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000004 /* CSVExport.swift */; };
+		A60000000000000000000005 /* AppLockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000005 /* AppLockService.swift */; };
+		A60000000000000000000006 /* WidgetSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000006 /* WidgetSnapshotStore.swift */; };
+		A60000000000000000000007 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000007 /* DataStore.swift */; };
+		A60000000000000000000008 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000008 /* OnboardingView.swift */; };
+		A60000000000000000000009 /* RecurringListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000009 /* RecurringListView.swift */; };
+		A6000000000000000000000A /* AppLockGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000000000000000000A /* AppLockGate.swift */; };
+		A6000000000000000000000B /* EditTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000000000000000000B /* EditTransactionView.swift */; };
+		A90000000000000000000001 /* CSVImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000001 /* CSVImport.swift */; };
+		A90000000000000000000002 /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000002 /* ReminderService.swift */; };
+		A90000000000000000000003 /* IncomingDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000003 /* IncomingDraftStore.swift */; };
+		A90000000000000000000004 /* AddExpenseIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000004 /* AddExpenseIntent.swift */; };
+		A70000000000000000000001 /* CheckMoneyPhoneWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C70000000000000000000001 /* CheckMoneyPhoneWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A70000000000000000000002 /* CheckMoneyPhoneWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000001 /* CheckMoneyPhoneWidgets.swift */; };
+		A80000000000000000000001 /* SharedWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000001 /* SharedWidgetSnapshot.swift */; };
+		A80000000000000000000002 /* SharedWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000001 /* SharedWidgetSnapshot.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		P10000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F10000000000000000000010 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F10000000000000000000002;
+			remoteInfo = CheckMoneyWatch;
+		};
+		P70000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F10000000000000000000010 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F70000000000000000000001;
+			remoteInfo = CheckMoneyPhoneWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		/* Xcode 26+: watchOS companion must live in PlugIns/ (spec 13), not Watch/ (spec 16). */
+		D20000000000000000000001 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1000000000000000000001F /* CheckMoneyWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D70000000000000000000001 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A70000000000000000000001 /* CheckMoneyPhoneWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		B10000000000000000000001 /* AppForCheckMoneyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppForCheckMoneyApp.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* MoneyCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyCategory.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* MoneyTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyTransaction.swift; sourceTree = "<group>"; };
+		B10000000000000000000004 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
+		B10000000000000000000005 /* CategoryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryMatcher.swift; sourceTree = "<group>"; };
+		B10000000000000000000017 /* KeywordSuggester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeywordSuggester.swift; sourceTree = "<group>"; };
+		B10000000000000000000018 /* AppCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCurrency.swift; sourceTree = "<group>"; };
+		B10000000000000000000019 /* SymbolSuggester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolSuggester.swift; sourceTree = "<group>"; };
+		B1000000000000000000001A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001B /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001C /* StatsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsEngine.swift; sourceTree = "<group>"; };
+		B10000000000000000000006 /* VoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceParser.swift; sourceTree = "<group>"; };
+		B1000000000000000000001D /* AmountWords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountWords.swift; sourceTree = "<group>"; };
+		B1000000000000000000001E /* ExchangeRateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000007 /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
+		B10000000000000000000008 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		B10000000000000000000009 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000B /* AddTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransactionView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000C /* CategoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000D /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000E /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		B1000000000000000000000F /* TransactionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRowView.swift; sourceTree = "<group>"; };
+		B10000000000000000000023 /* QuietConfirmPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietConfirmPanel.swift; sourceTree = "<group>"; };
+		B10000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B10000000000000000000012 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B10000000000000000000013 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B10000000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1000000000000000000001F /* PhoneWatchSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWatchSync.swift; sourceTree = "<group>"; };
+		B10000000000000000000020 /* SyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModels.swift; sourceTree = "<group>"; };
+		B10000000000000000000021 /* LocalSyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSyncStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000022 /* AppForCheckMoney.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppForCheckMoney.entitlements; sourceTree = "<group>"; };
+		C10000000000000000000001 /* AppForCheckMoney.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppForCheckMoney.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C10000000000000000000002 /* CheckMoneyWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CheckMoneyWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C10000000000000000000003 /* CheckMoneyWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CheckMoneyWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000001 /* CheckMoneyWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckMoneyWatchApp.swift; sourceTree = "<group>"; };
+		B20000000000000000000002 /* WatchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchStore.swift; sourceTree = "<group>"; };
+		B20000000000000000000003 /* WatchRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRootView.swift; sourceTree = "<group>"; };
+		B20000000000000000000004 /* WatchHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHomeView.swift; sourceTree = "<group>"; };
+		B20000000000000000000005 /* WatchAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAddView.swift; sourceTree = "<group>"; };
+		B20000000000000000000006 /* WatchRecentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRecentView.swift; sourceTree = "<group>"; };
+		B20000000000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B20000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B20000000000000000000009 /* CheckMoneyWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CheckMoneyWatch.entitlements; sourceTree = "<group>"; };
+		B30000000000000000000001 /* CheckMoneyWatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckMoneyWatchWidgets.swift; sourceTree = "<group>"; };
+		B30000000000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B30000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B30000000000000000000004 /* CheckMoneyWatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CheckMoneyWatchWidgets.entitlements; sourceTree = "<group>"; };
+		B40000000000000000000001 /* TextNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextNormalizer.swift; sourceTree = "<group>"; };
+		B40000000000000000000002 /* SharedCategoryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCategoryMatcher.swift; sourceTree = "<group>"; };
+		B40000000000000000000003 /* SharedVoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedVoiceParser.swift; sourceTree = "<group>"; };
+		B40000000000000000000004 /* WatchDictateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDictateView.swift; sourceTree = "<group>"; };
+		B40000000000000000000005 /* WatchSpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSpeechRecognizer.swift; sourceTree = "<group>"; };
+		B60000000000000000000001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
+		B60000000000000000000002 /* RecurringRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringRule.swift; sourceTree = "<group>"; };
+		B60000000000000000000003 /* RecurringEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringEngine.swift; sourceTree = "<group>"; };
+		B60000000000000000000004 /* CSVExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExport.swift; sourceTree = "<group>"; };
+		B60000000000000000000005 /* AppLockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockService.swift; sourceTree = "<group>"; };
+		B60000000000000000000006 /* WidgetSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotStore.swift; sourceTree = "<group>"; };
+		B60000000000000000000007 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
+		B60000000000000000000008 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		B60000000000000000000009 /* RecurringListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringListView.swift; sourceTree = "<group>"; };
+		B6000000000000000000000A /* AppLockGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockGate.swift; sourceTree = "<group>"; };
+		B6000000000000000000000B /* EditTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTransactionView.swift; sourceTree = "<group>"; };
+		B90000000000000000000001 /* CSVImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImport.swift; sourceTree = "<group>"; };
+		B90000000000000000000002 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
+		B90000000000000000000003 /* IncomingDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingDraftStore.swift; sourceTree = "<group>"; };
+		B90000000000000000000004 /* AddExpenseIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddExpenseIntent.swift; sourceTree = "<group>"; };
+		B70000000000000000000001 /* CheckMoneyPhoneWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckMoneyPhoneWidgets.swift; sourceTree = "<group>"; };
+		B80000000000000000000001 /* SharedWidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWidgetSnapshot.swift; sourceTree = "<group>"; };
+		B70000000000000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B70000000000000000000003 /* CheckMoneyPhoneWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CheckMoneyPhoneWidgets.entitlements; sourceTree = "<group>"; };
+		C70000000000000000000001 /* CheckMoneyPhoneWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CheckMoneyPhoneWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B50000000000000000000001 /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
+		B50000000000000000000002 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D10000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000023 /* Speech.framework in Frameworks */,
+				A10000000000000000000024 /* AVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D70000000000000000000011 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E10000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				E10000000000000000000002 /* AppForCheckMoney */,
+				E10000000000000000000009 /* Shared */,
+				E1000000000000000000000A /* CheckMoneyWatch */,
+				E1000000000000000000000B /* CheckMoneyWatchWidgets */,
+				E70000000000000000000001 /* CheckMoneyPhoneWidgets */,
+				E1000000000000000000000C /* Frameworks */,
+				E10000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E10000000000000000000002 /* AppForCheckMoney */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000001 /* AppForCheckMoneyApp.swift */,
+				B10000000000000000000022 /* AppForCheckMoney.entitlements */,
+				E10000000000000000000004 /* Models */,
+				E10000000000000000000005 /* Services */,
+				E10000000000000000000006 /* Views */,
+				E10000000000000000000007 /* Resources */,
+				B10000000000000000000010 /* Assets.xcassets */,
+			);
+			path = AppForCheckMoney;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C10000000000000000000001 /* AppForCheckMoney.app */,
+				C10000000000000000000002 /* CheckMoneyWatch.app */,
+				C10000000000000000000003 /* CheckMoneyWatchWidgets.appex */,
+				C70000000000000000000001 /* CheckMoneyPhoneWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000002 /* MoneyCategory.swift */,
+				B10000000000000000000003 /* MoneyTransaction.swift */,
+				B60000000000000000000002 /* RecurringRule.swift */,
+				B10000000000000000000004 /* SeedData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000005 /* CategoryMatcher.swift */,
+				B10000000000000000000017 /* KeywordSuggester.swift */,
+				B10000000000000000000019 /* SymbolSuggester.swift */,
+				B10000000000000000000018 /* AppCurrency.swift */,
+				B1000000000000000000001C /* StatsEngine.swift */,
+				B1000000000000000000001E /* ExchangeRateStore.swift */,
+				B10000000000000000000006 /* VoiceParser.swift */,
+				B10000000000000000000007 /* SpeechRecognizer.swift */,
+				B10000000000000000000008 /* L10n.swift */,
+				B1000000000000000000001F /* PhoneWatchSync.swift */,
+				B60000000000000000000001 /* AppSettingsStore.swift */,
+				B60000000000000000000003 /* RecurringEngine.swift */,
+				B60000000000000000000004 /* CSVExport.swift */,
+				B90000000000000000000001 /* CSVImport.swift */,
+				B60000000000000000000005 /* AppLockService.swift */,
+				B90000000000000000000002 /* ReminderService.swift */,
+				B90000000000000000000003 /* IncomingDraftStore.swift */,
+				B90000000000000000000004 /* AddExpenseIntent.swift */,
+				B60000000000000000000006 /* WidgetSnapshotStore.swift */,
+				B60000000000000000000007 /* DataStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000009 /* RootTabView.swift */,
+				B1000000000000000000000A /* HomeView.swift */,
+				B1000000000000000000001B /* StatsView.swift */,
+				B1000000000000000000000B /* AddTransactionView.swift */,
+				B1000000000000000000000C /* CategoriesView.swift */,
+				B1000000000000000000000D /* HistoryView.swift */,
+				B1000000000000000000001A /* SettingsView.swift */,
+				B60000000000000000000008 /* OnboardingView.swift */,
+				B60000000000000000000009 /* RecurringListView.swift */,
+				B6000000000000000000000A /* AppLockGate.swift */,
+				B6000000000000000000000B /* EditTransactionView.swift */,
+				E10000000000000000000008 /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000007 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000014 /* Info.plist */,
+				B10000000000000000000011 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000008 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B1000000000000000000000E /* Theme.swift */,
+				B1000000000000000000000F /* TransactionRowView.swift */,
+				B10000000000000000000023 /* QuietConfirmPanel.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000009 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000020 /* SyncModels.swift */,
+				B10000000000000000000021 /* LocalSyncStore.swift */,
+				B1000000000000000000001D /* AmountWords.swift */,
+				B40000000000000000000001 /* TextNormalizer.swift */,
+				B40000000000000000000002 /* SharedCategoryMatcher.swift */,
+				B40000000000000000000003 /* SharedVoiceParser.swift */,
+				B80000000000000000000001 /* SharedWidgetSnapshot.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		E1000000000000000000000A /* CheckMoneyWatch */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000001 /* CheckMoneyWatchApp.swift */,
+				B20000000000000000000002 /* WatchStore.swift */,
+				B20000000000000000000003 /* WatchRootView.swift */,
+				B40000000000000000000004 /* WatchDictateView.swift */,
+				B40000000000000000000005 /* WatchSpeechRecognizer.swift */,
+				B20000000000000000000004 /* WatchHomeView.swift */,
+				B20000000000000000000005 /* WatchAddView.swift */,
+				B20000000000000000000006 /* WatchRecentView.swift */,
+				B20000000000000000000007 /* Assets.xcassets */,
+				B20000000000000000000008 /* Info.plist */,
+				B20000000000000000000009 /* CheckMoneyWatch.entitlements */,
+			);
+			path = CheckMoneyWatch;
+			sourceTree = "<group>";
+		};
+		E1000000000000000000000B /* CheckMoneyWatchWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				B30000000000000000000001 /* CheckMoneyWatchWidgets.swift */,
+				B30000000000000000000002 /* Assets.xcassets */,
+				B30000000000000000000003 /* Info.plist */,
+				B30000000000000000000004 /* CheckMoneyWatchWidgets.entitlements */,
+			);
+			path = CheckMoneyWatchWidgets;
+			sourceTree = "<group>";
+		};
+
+		E70000000000000000000001 /* CheckMoneyPhoneWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				B70000000000000000000001 /* CheckMoneyPhoneWidgets.swift */,
+				B70000000000000000000002 /* Info.plist */,
+				B70000000000000000000003 /* CheckMoneyPhoneWidgets.entitlements */,
+			);
+			path = CheckMoneyPhoneWidgets;
+			sourceTree = "<group>";
+		};
+		E1000000000000000000000C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B50000000000000000000001 /* Speech.framework */,
+				B50000000000000000000002 /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F10000000000000000000001 /* AppForCheckMoney */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000000000000000000004 /* Build configuration list for PBXNativeTarget "AppForCheckMoney" */;
+			buildPhases = (
+				D10000000000000000000010 /* Sources */,
+				D10000000000000000000001 /* Frameworks */,
+				D10000000000000000000011 /* Resources */,
+				D70000000000000000000001 /* Embed Foundation Extensions */,
+				D20000000000000000000001 /* Embed Watch Content */,
+				D30000000000000000000001 /* Verify Watch Embed */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				P20000000000000000000001 /* PBXTargetDependency */,
+				P70000000000000000000002 /* PBXTargetDependency */,
+			);
+			name = AppForCheckMoney;
+			productName = AppForCheckMoney;
+			productReference = C10000000000000000000001 /* AppForCheckMoney.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F10000000000000000000002 /* CheckMoneyWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000000000000000000005 /* Build configuration list for PBXNativeTarget "CheckMoneyWatch" */;
+			buildPhases = (
+				D10000000000000000000012 /* Sources */,
+				D10000000000000000000002 /* Frameworks */,
+				D10000000000000000000013 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CheckMoneyWatch;
+			productName = CheckMoneyWatch;
+			productReference = C10000000000000000000002 /* CheckMoneyWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F10000000000000000000003 /* CheckMoneyWatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000000000000000000006 /* Build configuration list for PBXNativeTarget "CheckMoneyWatchWidgets" */;
+			buildPhases = (
+				D10000000000000000000014 /* Sources */,
+				D10000000000000000000003 /* Frameworks */,
+				D10000000000000000000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CheckMoneyWatchWidgets;
+			productName = CheckMoneyWatchWidgets;
+			productReference = C10000000000000000000003 /* CheckMoneyWatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		F70000000000000000000001 /* CheckMoneyPhoneWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F70000000000000000000004 /* Build configuration list for PBXNativeTarget "CheckMoneyPhoneWidgets" */;
+			buildPhases = (
+				D70000000000000000000010 /* Sources */,
+				D70000000000000000000011 /* Frameworks */,
+				D70000000000000000000012 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CheckMoneyPhoneWidgets;
+			productName = CheckMoneyPhoneWidgets;
+			productReference = C70000000000000000000001 /* CheckMoneyPhoneWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F10000000000000000000010 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					F10000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+						ProvisioningStyle = Automatic;
+					};
+					F10000000000000000000002 = {
+						CreatedOnToolsVersion = 16.0;
+						ProvisioningStyle = Automatic;
+					};
+					F10000000000000000000003 = {
+						CreatedOnToolsVersion = 16.0;
+						ProvisioningStyle = Automatic;
+					};
+					F70000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F10000000000000000000011 /* Build configuration list for PBXProject "AppForCheckMoney" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				ru,
+				Base,
+			);
+			mainGroup = E10000000000000000000001;
+			productRefGroup = E10000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F10000000000000000000001 /* AppForCheckMoney */,
+				F10000000000000000000002 /* CheckMoneyWatch */,
+				F10000000000000000000003 /* CheckMoneyWatchWidgets */,
+				F70000000000000000000001 /* CheckMoneyPhoneWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D10000000000000000000011 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000010 /* Assets.xcassets in Resources */,
+				A10000000000000000000011 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000013 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20000000000000000000007 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A30000000000000000000004 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D70000000000000000000012 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D30000000000000000000001 /* Verify Watch Embed */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Verify Watch Embed";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nAPP=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nWATCH=\"${APP}/PlugIns/CheckMoneyWatch.app\"\nPLIST=\"$WATCH/Info.plist\"\nif [ ! -d \"$WATCH\" ]; then\n  echo \"error: Watch companion missing at $WATCH\"\n  echo \"error: Available Apps stays empty / Watch-only installs self-delete (orphan) until PlugIns embed is present.\"\n  echo \"error: Use scheme AppForCheckMoney → iPhone → Run (one product + companion).\"\n  ls -la \"${APP}\" || true\n  ls -la \"${APP}/PlugIns\" 2>/dev/null || true\n  exit 1\nfi\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Watch Info.plist missing at $PLIST\"\n  exit 1\nfi\nCOMPANION=$(/usr/libexec/PlistBuddy -c 'Print :WKCompanionAppBundleIdentifier' \"$PLIST\" 2>/dev/null || true)\nINDEP=$(/usr/libexec/PlistBuddy -c 'Print :WKRunsIndependentlyOfCompanionApp' \"$PLIST\" 2>/dev/null || true)\nif [ \"$COMPANION\" != \"com.jdemchenko.AppForCheckMoney\" ]; then\n  echo \"error: WKCompanionAppBundleIdentifier must be com.jdemchenko.AppForCheckMoney (got: $COMPANION)\"\n  exit 1\nfi\nif [ \"$INDEP\" = \"true\" ]; then\n  echo \"error: WKRunsIndependentlyOfCompanionApp must be false (companion, not standalone)\"\n  exit 1\nfi\nFAMILY=$(/usr/libexec/PlistBuddy -c 'Print :UIDeviceFamily:0' \"$PLIST\" 2>/dev/null || true)\nif [ \"$FAMILY\" != \"4\" ]; then\n  echo \"error: embedded Watch Info.plist UIDeviceFamily[0] must be 4 (got: '$FAMILY') — Available Apps needs watch family\"\n  exit 1\nfi\nEXE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \"$PLIST\" 2>/dev/null || echo CheckMoneyWatch)\nEXE=\"$WATCH/$EXE_NAME\"\nif [ ! -f \"$EXE\" ]; then\n  echo \"error: Watch executable missing at $EXE — Available Apps will stay empty\"\n  ls -la \"$WATCH\" || true\n  exit 1\nfi\n# Do NOT codesign --force here: re-signing with the iPhone identity breaks watchOS companion recognition\n# (Available Apps empty; Watch-only installs get removed as orphans). Rely on CodeSignOnCopy.\nif ! /usr/bin/codesign --verify --deep --strict \"$WATCH\" 2>/dev/null; then\n  echo \"warning: embedded Watch companion codesign --verify failed (CodeSignOnCopy may still be OK for device)\"\n  /usr/bin/codesign --verify --deep --strict \"$WATCH\" || true\nfi\n# Fail closed if entitlements were stripped (no application-identifier). Do NOT codesign --force to fix this.\nAPPID=$(/usr/bin/codesign -d --entitlements :- \"$WATCH\" 2>/dev/null | plutil -extract application-identifier raw -o - - 2>/dev/null || true)\nif [ -z \"$APPID\" ]; then\n  echo \"error: embedded Watch companion has empty entitlements (no application-identifier)\"\n  echo \"error: Available Apps stays empty / Watch-only installs get purged\"\n  /usr/bin/codesign -d --entitlements :- \"$WATCH\" 2>/dev/null | plutil -p - || true\n  exit 1\nfi\nTEAM=$(/usr/bin/codesign -dvv \"$WATCH\" 2>&1 | sed -n 's/^TeamIdentifier=//p' | head -1)\nFMT=$(/usr/bin/codesign -dvv \"$WATCH\" 2>&1 | sed -n 's/^Format=//p' | head -1)\necho \"note: Watch companion OK → $WATCH\"\necho \"note: companion of $COMPANION · independent=$INDEP · UIDeviceFamily=$FAMILY · Team=$TEAM · app-id=$APPID · Format=$FMT\"\necho \"note: Available Apps only — delete any Watch-only install first, then iPhone Run\"\n/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' \"$PLIST\" 2>/dev/null || true\n/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \"$PLIST\" 2>/dev/null || true\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D10000000000000000000010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000001 /* AppForCheckMoneyApp.swift in Sources */,
+				A10000000000000000000002 /* MoneyCategory.swift in Sources */,
+				A10000000000000000000003 /* MoneyTransaction.swift in Sources */,
+				A10000000000000000000004 /* SeedData.swift in Sources */,
+				A10000000000000000000005 /* CategoryMatcher.swift in Sources */,
+				A10000000000000000000014 /* KeywordSuggester.swift in Sources */,
+				A10000000000000000000016 /* SymbolSuggester.swift in Sources */,
+				A10000000000000000000015 /* AppCurrency.swift in Sources */,
+				A10000000000000000000019 /* StatsEngine.swift in Sources */,
+				A1000000000000000000001A /* AmountWords.swift in Sources */,
+				A1000000000000000000001B /* ExchangeRateStore.swift in Sources */,
+				A10000000000000000000006 /* VoiceParser.swift in Sources */,
+				A10000000000000000000007 /* SpeechRecognizer.swift in Sources */,
+				A10000000000000000000008 /* L10n.swift in Sources */,
+				A60000000000000000000001 /* AppSettingsStore.swift in Sources */,
+				A60000000000000000000002 /* RecurringRule.swift in Sources */,
+				A60000000000000000000003 /* RecurringEngine.swift in Sources */,
+				A60000000000000000000004 /* CSVExport.swift in Sources */,
+				A90000000000000000000001 /* CSVImport.swift in Sources */,
+				A60000000000000000000005 /* AppLockService.swift in Sources */,
+				A90000000000000000000002 /* ReminderService.swift in Sources */,
+				A90000000000000000000003 /* IncomingDraftStore.swift in Sources */,
+				A90000000000000000000004 /* AddExpenseIntent.swift in Sources */,
+				A60000000000000000000006 /* WidgetSnapshotStore.swift in Sources */,
+				A60000000000000000000007 /* DataStore.swift in Sources */,
+				A60000000000000000000008 /* OnboardingView.swift in Sources */,
+				A60000000000000000000009 /* RecurringListView.swift in Sources */,
+				A6000000000000000000000A /* AppLockGate.swift in Sources */,
+				A6000000000000000000000B /* EditTransactionView.swift in Sources */,
+				A1000000000000000000001C /* PhoneWatchSync.swift in Sources */,
+				A1000000000000000000001D /* SyncModels.swift in Sources */,
+				A1000000000000000000001E /* LocalSyncStore.swift in Sources */,
+				A80000000000000000000001 /* SharedWidgetSnapshot.swift in Sources */,
+				A10000000000000000000009 /* RootTabView.swift in Sources */,
+				A1000000000000000000000A /* HomeView.swift in Sources */,
+				A10000000000000000000018 /* StatsView.swift in Sources */,
+				A1000000000000000000000B /* AddTransactionView.swift in Sources */,
+				A1000000000000000000000C /* CategoriesView.swift in Sources */,
+				A1000000000000000000000D /* HistoryView.swift in Sources */,
+				A10000000000000000000017 /* SettingsView.swift in Sources */,
+				A1000000000000000000000E /* Theme.swift in Sources */,
+				A1000000000000000000000F /* TransactionRowView.swift in Sources */,
+				A1000000000000000000002A /* QuietConfirmPanel.swift in Sources */,
+				A10000000000000000000020 /* TextNormalizer.swift in Sources */,
+				A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */,
+				A10000000000000000000022 /* SharedVoiceParser.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000012 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20000000000000000000001 /* CheckMoneyWatchApp.swift in Sources */,
+				A20000000000000000000002 /* WatchStore.swift in Sources */,
+				A20000000000000000000003 /* WatchRootView.swift in Sources */,
+				A20000000000000000000004 /* WatchHomeView.swift in Sources */,
+				A20000000000000000000005 /* WatchAddView.swift in Sources */,
+				A20000000000000000000006 /* WatchRecentView.swift in Sources */,
+				A20000000000000000000008 /* SyncModels.swift in Sources */,
+				A20000000000000000000009 /* LocalSyncStore.swift in Sources */,
+				A2000000000000000000000A /* TextNormalizer.swift in Sources */,
+				A2000000000000000000000B /* SharedCategoryMatcher.swift in Sources */,
+				A2000000000000000000000C /* SharedVoiceParser.swift in Sources */,
+				A2000000000000000000000D /* AmountWords.swift in Sources */,
+				A2000000000000000000000E /* WatchDictateView.swift in Sources */,
+				A2000000000000000000000F /* WatchSpeechRecognizer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000014 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A30000000000000000000001 /* CheckMoneyWatchWidgets.swift in Sources */,
+				A30000000000000000000002 /* SyncModels.swift in Sources */,
+				A30000000000000000000003 /* LocalSyncStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D70000000000000000000010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A70000000000000000000002 /* CheckMoneyPhoneWidgets.swift in Sources */,
+				A80000000000000000000002 /* SharedWidgetSnapshot.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		P20000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F10000000000000000000002 /* CheckMoneyWatch */;
+			targetProxy = P10000000000000000000001 /* PBXContainerItemProxy */;
+		};
+		P70000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F70000000000000000000001 /* CheckMoneyPhoneWidgets */;
+			targetProxy = P70000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		B10000000000000000000011 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B10000000000000000000012 /* en */,
+				B10000000000000000000013 /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		F10000000000000000000020 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		F10000000000000000000021 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		F10000000000000000000022 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
+				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F10000000000000000000023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AppForCheckMoney/AppForCheckMoney.entitlements;
+				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F10000000000000000000024 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "CheckMoney uses the microphone so you can dictate expenses on Apple Watch.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "CheckMoney turns your spoken amount and category into a transaction synced to iPhone.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.jdemchenko.AppForCheckMoney;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				ARCHS = "$(ARCHS_STANDARD)";
+				MARKETING_VERSION = 1.2;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		F10000000000000000000025 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatch/CheckMoneyWatch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "CheckMoney uses the microphone so you can dictate expenses on Apple Watch.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "CheckMoney turns your spoken amount and category into a transaction synced to iPhone.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.jdemchenko.AppForCheckMoney;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				ARCHS = "$(ARCHS_STANDARD)";
+				MARKETING_VERSION = 1.2;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		F10000000000000000000026 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		F10000000000000000000027 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = CheckMoneyWatchWidgets/CheckMoneyWatchWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		F70000000000000000000002 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = CheckMoneyPhoneWidgets/CheckMoneyPhoneWidgets.entitlements;
+				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F70000000000000000000003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = CheckMoneyPhoneWidgets/CheckMoneyPhoneWidgets.entitlements;
+				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3G9UZZBWW9;
+				CURRENT_PROJECT_VERSION = 26;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10000000000000000000004 /* Build configuration list for PBXNativeTarget "AppForCheckMoney" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000022 /* Debug */,
+				F10000000000000000000023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10000000000000000000005 /* Build configuration list for PBXNativeTarget "CheckMoneyWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000024 /* Debug */,
+				F10000000000000000000025 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10000000000000000000006 /* Build configuration list for PBXNativeTarget "CheckMoneyWatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000026 /* Debug */,
+				F10000000000000000000027 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10000000000000000000011 /* Build configuration list for PBXProject "AppForCheckMoney" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000020 /* Debug */,
+				F10000000000000000000021 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F70000000000000000000004 /* Build configuration list for PBXNativeTarget "CheckMoneyPhoneWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F70000000000000000000002 /* Debug */,
+				F70000000000000000000003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F10000000000000000000010 /* Project object */;
+}

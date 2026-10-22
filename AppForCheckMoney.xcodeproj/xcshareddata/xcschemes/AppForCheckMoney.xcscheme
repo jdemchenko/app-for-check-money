@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "2600"
+   version = "1.7">
+   <!--
+      PRIMARY scheme — one product: iPhone + Watch companion (связка).
+      Run destination = iPhone only. CheckMoneyWatch is built + embedded under PlugIns/
+      (buildForRunning YES) but is NOT a LaunchAction runnable — launching the Watch .app
+      on iPhone causes IXUserPresentableErrorDomain Code 6 (device family 4 vs 1).
+      After Run: Build log must show «Watch companion OK»; Watch installs via Available Apps
+      / auto-install. CheckMoneyWatch scheme = debug fallback only.
+   -->
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F10000000000000000000001"
+               BuildableName = "AppForCheckMoney.app"
+               BlueprintName = "AppForCheckMoney"
+               ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F10000000000000000000002"
+               BuildableName = "CheckMoneyWatch.app"
+               BlueprintName = "CheckMoneyWatch"
+               ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldAutocreateTestPlan = "YES">
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "F10000000000000000000001"
+            BuildableName = "AppForCheckMoney.app"
+            BlueprintName = "AppForCheckMoney"
+            ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "F10000000000000000000001"
+            BuildableName = "AppForCheckMoney.app"
+            BlueprintName = "AppForCheckMoney"
+            ReferencedContainer = "container:AppForCheckMoney.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES"
+      customArchiveName = "AppForCheckMoney">
+   </ArchiveAction>
+</Scheme>
