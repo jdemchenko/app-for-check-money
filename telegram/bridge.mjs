@@ -66,12 +66,17 @@ function isStart(text) {
 function replyText(text) {
   if (isStart(text)) {
     return (
-      "Bridge is live ✅\n\n" +
-      "Your message reached the app-for-check-money Telegram relay. " +
-      "Send any text and I will echo it back for now."
+      "Мост жив ✅\n\n" +
+      "Связь с ботом работает. Крипто-кошелёк как способ пополнения — ок.\n" +
+      "Дальше пришлю адрес депозита (одна сеть). Пока деньги не переводите."
     );
   }
-  return `Bridge echo: ${text}`;
+  // Any first contact also confirms the bridge (user may not send /start).
+  return (
+    "Мост жив ✅ Получил: " +
+    String(text).slice(0, 200) +
+    "\n\nКрипта ок. Адрес депозита пришлю следующим сообщением — пока не переводите."
+  );
 }
 
 async function handleUpdate(update) {
