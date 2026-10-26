@@ -18,6 +18,14 @@ cp .env.example .env
 npm run bridge
 ```
 
+Durable background (survives shell exit; writes pid + log under the project store):
+
+```bash
+TELEGRAM_ENV_FILE=/path/to/telegram.env ./telegram/run-bridge.sh
+# pid/log: $CURSOR_PROJECT_STORE/internal/telegram-bridge.{pid,log}
+# or attach: tmux attach -t telegram-bridge  (tail -f of the log)
+```
+
 One-shot (exit after the first handled update):
 
 ```bash
@@ -29,6 +37,8 @@ Optional: point at a secrets file instead of `.env`:
 ```bash
 TELEGRAM_ENV_FILE=/path/to/telegram.env npm run bridge
 ```
+
+Scripted Russian topics: `депозит` · `статус` · `план` · `помощь`. Unknown questions go to `internal/telegram-inbox.md`.
 
 ## Talk to the bot
 
