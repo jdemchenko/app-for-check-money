@@ -29,6 +29,9 @@ const INBOX_FILE =
 const PUBKEY_FILE =
   process.env.SOLANA_PUBKEY_FILE ||
   resolve(DEFAULT_STORE, "internal/secrets/solana-usdc-deposit.pubkey");
+const OFFSET_FILE =
+  process.env.TELEGRAM_OFFSET_FILE ||
+  resolve(DEFAULT_STORE, "internal/telegram-bridge.offset");
 
 function loadDotEnv(path) {
   if (!existsSync(path)) return;
@@ -125,6 +128,13 @@ function classify(text) {
   ) {
     return "withdraw";
   }
+  if (
+    /неверн.*(сеть|чейн)|wrong chain|другая сеть|не solana|сеть\s*eth|в eth|в bsc|в tron|polygon|arbitrum/.test(
+      t
+    )
+  ) {
+    return "wrong_chain";
+  }
   // Must-USDC / can I send SOL / other tokens — before generic deposit
   if (
     /обязательн.*usdc|именно usdc|только usdc|не usdc|не\s*usdc|вместо usdc|другой токен|другим токен|можно.*sol\b|выслать sol|отправить sol|шлю sol|sol[,?]? не|usdt|btc|eth\b|ethereum|erc-?20|bep-?20|tron|trc-?20|монета\s*sol|удобн.*\bsol\b|\bsol\b.*удоб|предпочит.*sol|хочу\s*sol|лучше\s*sol/.test(
@@ -134,13 +144,6 @@ function classify(text) {
       /(слать|отправ|высл|можно|вместо|не usdc|монет|удобн|предпочит)/.test(t))
   ) {
     return "token";
-  }
-  if (
-    /неверн.*(сеть|чейн)|wrong chain|другая сеть|не solana|в eth|в bsc|в tron|polygon|arbitrum/.test(
-      t
-    )
-  ) {
-    return "wrong_chain";
   }
   if (
     /deposit|депозит|адрес|кошелек|кошелёк|wallet|usdc|solana|куда слать|куда отправ|перевод/.test(
@@ -387,6 +390,13 @@ async function main() {
   await ensureNoWebhook();
 
   let offset = 0;
+  if (existsSync(OFFSET_FILE)) {
+    const raw = readFileSync(OFFSET_FILE, "utf8").trim();
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 0) offset = n;
+  }
+  console.log(JSON.stringify({ event: "offset_loaded", offset }));
+
   for (;;) {
     let updates;
     try {
@@ -408,6 +418,8 @@ async function main() {
     for (const u of updates) {
       offset = Math.max(offset, u.update_id + 1);
       try {
+        mkdirSync(dirname(OFFSET_FILE), { recursive: true });
+        writeFileSync(OFFSET_FILE, String(offset));
         await handleUpdate(u);
       } catch (err) {
         console.error(
