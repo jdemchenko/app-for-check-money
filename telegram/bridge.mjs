@@ -119,7 +119,7 @@ function classify(text) {
     return "help";
   }
   if (
-    /верн|вывод|withdraw|обратно|возврат|отправить.*(мне|обратно)|сможешь.*средств/.test(
+    /(?:^|[^а-яa-z])(верни|вернуть|верните|возврат|вывод|withdraw)(?:[^а-яa-z]|$)|обратно|отправить.*(мне|обратно)|сможешь.*средств/.test(
       t
     )
   ) {
@@ -127,10 +127,11 @@ function classify(text) {
   }
   // Must-USDC / can I send SOL / other tokens — before generic deposit
   if (
-    /обязательн.*usdc|именно usdc|только usdc|не usdc|не\s*usdc|вместо usdc|другой токен|другим токен|можно.*sol\b|выслать sol|отправить sol|шлю sol|sol[,?]? не|usdt|btc|eth\b|ethereum|erc-?20|bep-?20|tron|trc-?20/.test(
+    /обязательн.*usdc|именно usdc|только usdc|не usdc|не\s*usdc|вместо usdc|другой токен|другим токен|можно.*sol\b|выслать sol|отправить sol|шлю sol|sol[,?]? не|usdt|btc|eth\b|ethereum|erc-?20|bep-?20|tron|trc-?20|монета\s*sol|удобн.*\bsol\b|\bsol\b.*удоб|предпочит.*sol|хочу\s*sol|лучше\s*sol/.test(
       t
     ) ||
-    (/\bsol\b/.test(t) && /(слать|отправ|высл|можно|вместо|не usdc)/.test(t))
+    (/\bsol\b/.test(t) &&
+      /(слать|отправ|высл|можно|вместо|не usdc|монет|удобн|предпочит)/.test(t))
   ) {
     return "token";
   }
