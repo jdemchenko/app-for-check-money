@@ -91,7 +91,9 @@ function normalize(text) {
     .replace(/ё/g, "е");
 }
 
-/** @returns {"start"|"help"|"deposit"|"status"|"te2"|"withdraw"|"tx"|"unknown"} */
+/**
+ * @returns {"start"|"help"|"deposit"|"token"|"wrong_chain"|"silence"|"status"|"te2"|"withdraw"|"tx"|"unknown"}
+ */
 function classify(text) {
   const t = normalize(text);
   if (!t) return "unknown";
@@ -102,6 +104,11 @@ function classify(text) {
     t.startsWith("/start")
   ) {
     return "start";
+  }
+  if (
+    /не отвеч|почему молч|ты жив|мост.*онлайн|слышишь|алло|ау\b/.test(t)
+  ) {
+    return "silence";
   }
   if (
     /^(help|помощь|меню|commands|команды)\/?$/.test(t) ||
@@ -117,6 +124,22 @@ function classify(text) {
     )
   ) {
     return "withdraw";
+  }
+  // Must-USDC / can I send SOL / other tokens — before generic deposit
+  if (
+    /обязательн.*usdc|именно usdc|только usdc|не usdc|не\s*usdc|вместо usdc|другой токен|другим токен|можно.*sol\b|выслать sol|отправить sol|шлю sol|sol[,?]? не|usdt|btc|eth\b|ethereum|erc-?20|bep-?20|tron|trc-?20/.test(
+      t
+    ) ||
+    (/\bsol\b/.test(t) && /(слать|отправ|высл|можно|вместо|не usdc)/.test(t))
+  ) {
+    return "token";
+  }
+  if (
+    /неверн.*(сеть|чейн)|wrong chain|другая сеть|не solana|в eth|в bsc|в tron|polygon|arbitrum/.test(
+      t
+    )
+  ) {
+    return "wrong_chain";
   }
   if (
     /deposit|депозит|адрес|кошелек|кошелёк|wallet|usdc|solana|куда слать|куда отправ|перевод/.test(
@@ -154,23 +177,48 @@ function replyFor(kind, text) {
       return (
         "Мост снова онлайн ✅\n\n" +
         "Я отвечаю по делу: депозит USDC (Solana), статус, план TE-2.\n" +
-        "Команды: помощь · депозит · статус · план\n" +
+        "Команды: помощь · депозит · статус · план · возврат\n" +
         "Если писали, пока мост молчал — пришлите вопрос ещё раз."
+      );
+    case "silence":
+      return (
+        "Мост снова онлайн, пиши сюда ✅\n\n" +
+        "Иногда поллер останавливается между сессиями агента — уже перезапущен.\n" +
+        "По депозиту: только USDC в сети Solana (~$10).\n" +
+        `Адрес: ${addr}`
       );
     case "help":
       return (
         "Помощь:\n" +
         "• «депозит» / «адрес» — куда слать ~$10 USDC\n" +
+        "• «обязательно USDC?» — да, SOL/USDT/ETH не принимаем на этот адрес\n" +
         "• «статус» — ждём ли перевод\n" +
         "• «план» — легальный TE-2 на 24ч\n" +
-        "• пришлите signature транзакции после перевода\n\n" +
+        "• «верни» — возврат на ваш Solana-адрес\n" +
+        "• signature транзакции после перевода\n\n" +
         "Только легальные шаги. Без скама и чужих счетов."
+      );
+    case "token":
+      return (
+        "Да — для этого эксперимента нужен именно USDC в сети Solana.\n\n" +
+        "❌ Не отправляйте: SOL, USDT, ETH, ERC-20, BSC, Tron и др.\n" +
+        "✅ Только SPL USDC (Solana), около $10.\n\n" +
+        `Адрес:\n${addr}\n\n` +
+        "Другой токен/сеть на этот адрес = высокий риск потери. " +
+        "Если удобнее SOL — сначала сконвертируйте в USDC (Solana), потом шлите сюда."
+      );
+    case "wrong_chain":
+      return (
+        "Только сеть Solana.\n\n" +
+        "Не используйте Ethereum, BSC, Tron, Polygon и т.п. — " +
+        "неверная сеть обычно означает безвозвратную потерю.\n\n" +
+        `Адрес (Solana / USDC):\n${addr}`
       );
     case "deposit":
       return (
         "Депозит:\n" +
         "• Сеть: Solana\n" +
-        "• Токен: USDC (SPL), только Solana\n" +
+        "• Токен: именно USDC (SPL) — не SOL и не другие токены\n" +
         "• Сумма: около $10 USDC\n\n" +
         `Адрес:\n${addr}\n\n` +
         "⚠️ Неверная сеть / другой токен = потеря средств.\n" +
