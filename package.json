@@ -1,0 +1,14 @@
+{
+  "name": "app-for-check-money",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Telegram Bot API long-poll bridge for app-for-check-money",
+  "scripts": {
+    "bridge": "node telegram/bridge.mjs",
+    "bridge:once": "node telegram/bridge.mjs --once"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}
