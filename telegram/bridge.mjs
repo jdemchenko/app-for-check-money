@@ -91,7 +91,7 @@ function normalize(text) {
     .replace(/ё/g, "е");
 }
 
-/** @returns {"start"|"help"|"deposit"|"status"|"te2"|"tx"|"unknown"} */
+/** @returns {"start"|"help"|"deposit"|"status"|"te2"|"withdraw"|"tx"|"unknown"} */
 function classify(text) {
   const t = normalize(text);
   if (!t) return "unknown";
@@ -110,6 +110,13 @@ function classify(text) {
     t.includes("что ты")
   ) {
     return "help";
+  }
+  if (
+    /верн|вывод|withdraw|обратно|возврат|отправить.*(мне|обратно)|сможешь.*средств/.test(
+      t
+    )
+  ) {
+    return "withdraw";
   }
   if (
     /deposit|депозит|адрес|кошелек|кошелёк|wallet|usdc|solana|куда слать|куда отправ|перевод/.test(
@@ -186,6 +193,14 @@ function replyFor(kind, text) {
         "3) Каждая сделка — только после вашего явного согласия.\n" +
         "4) В конце: старт/финиш USDC, комиссии, P/L.\n\n" +
         "Исключено: скам, фейковые магазины, чужие аккаунты, манипуляции рынка."
+      );
+    case "withdraw":
+      return (
+        "Возврат средств: да, по вашему явному запросу в этом чате.\n\n" +
+        "Напишите «верни» + ваш Solana-адрес для USDC и сумму " +
+        "(весь остаток или часть). После подтверждения отправлю USDC " +
+        "в той же сети и пришлю signature.\n\n" +
+        "Пока депозит не пришёл — возвращать нечего."
       );
     case "tx":
       return (
