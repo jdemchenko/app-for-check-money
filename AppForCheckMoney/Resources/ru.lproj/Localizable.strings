@@ -123,6 +123,9 @@
 
 "date.today" = "Сегодня";
 "date.yesterday" = "Вчера";
+"date.dayBeforeYesterday" = "Позавчера";
+"date.morning" = "утром";
+"date.evening" = "вечером";
 
 "common.save" = "Сохранить";
 "common.cancel" = "Отмена";

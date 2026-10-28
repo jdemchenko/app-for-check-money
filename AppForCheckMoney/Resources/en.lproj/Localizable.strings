@@ -123,6 +123,9 @@
 
 "date.today" = "Today";
 "date.yesterday" = "Yesterday";
+"date.dayBeforeYesterday" = "Day before yesterday";
+"date.morning" = "morning";
+"date.evening" = "evening";
 
 "common.save" = "Save";
 "common.cancel" = "Cancel";

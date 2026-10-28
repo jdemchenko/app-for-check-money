@@ -10,9 +10,14 @@ struct VoiceDraft: Equatable {
     var categoryMatchedByKeyword: Bool
     /// Explicit foreign currency from speech (USD/EUR/…).
     /// `nil` when the user said «руб» / bare amount — use Settings **entry** currency (default BYN).
+    /// Session «в рб» stamps `.byn` for bare «руб».
     var currency: AppCurrency?
     /// Recurring cadence from speech (`weekly` / `monthly`).
     var frequency: RecurringFrequency?
+    /// Calendar day offset vs today: `0` today, `-1` yesterday.
+    var dayOffset: Int?
+    /// `morning` / `evening` from speech (optional).
+    var dayPart: String?
 
     /// Happy-path autosave: amount + keyword category, not a recurring rule.
     var isAutosaveReady: Bool {
@@ -31,7 +36,9 @@ struct VoiceDraft: Equatable {
         rawText: String,
         categoryMatchedByKeyword: Bool,
         currency: AppCurrency?,
-        frequency: RecurringFrequency? = nil
+        frequency: RecurringFrequency? = nil,
+        dayOffset: Int? = nil,
+        dayPart: String? = nil
     ) {
         self.amount = amount
         self.type = type
@@ -41,6 +48,8 @@ struct VoiceDraft: Equatable {
         self.categoryMatchedByKeyword = categoryMatchedByKeyword
         self.currency = currency
         self.frequency = frequency
+        self.dayOffset = dayOffset
+        self.dayPart = dayPart
     }
 
     init(from shared: SharedVoiceDraft) {
@@ -52,6 +61,48 @@ struct VoiceDraft: Equatable {
         categoryMatchedByKeyword = shared.categoryMatchedByKeyword
         currency = shared.currencyRaw.flatMap { AppCurrency(rawValue: $0) }
         frequency = shared.frequencyRaw.flatMap { RecurringFrequency(rawValue: $0) }
+        dayOffset = shared.dayOffset
+        dayPart = shared.dayPart
+    }
+
+    /// Resolve speech-relative date to a concrete `Date` for save.
+    func resolvedDate(now: Date = .now, calendar: Calendar = .current) -> Date {
+        var date = now
+        if let dayOffset {
+            date = calendar.date(byAdding: .day, value: dayOffset, to: calendar.startOfDay(for: now))
+                ?? now
+        }
+        switch dayPart {
+        case "morning":
+            return calendar.date(bySettingHour: 9, minute: 0, second: 0, of: date) ?? date
+        case "evening":
+            return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: date) ?? date
+        default:
+            return date
+        }
+    }
+
+    /// Short confirm-panel label: «вчера», «сегодня утром», …
+    func dateLabel() -> String? {
+        guard dayOffset != nil || dayPart != nil else { return nil }
+        let day: String
+        switch dayOffset {
+        case -2: day = L10n.string("date.dayBeforeYesterday")
+        case -1: day = L10n.string("date.yesterday")
+        case 0: day = L10n.string("date.today")
+        case .some(let n) where n < 0:
+            day = L10n.string("date.yesterday")
+        default:
+            day = L10n.string("date.today")
+        }
+        switch dayPart {
+        case "morning":
+            return day + " " + L10n.string("date.morning")
+        case "evening":
+            return day + " " + L10n.string("date.evening")
+        default:
+            return day
+        }
     }
 }
 
