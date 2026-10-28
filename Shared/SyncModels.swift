@@ -2,7 +2,7 @@ import Foundation
 
 /// Lightweight currency codes mirrored from the phone app.
 enum SharedCurrencyCode: String, Codable, CaseIterable, Identifiable {
-    case byn, rub, usd, eur
+    case byn, rub, usd, eur, gbp
     var id: String { rawValue }
 
     var displaySymbol: String {
@@ -11,6 +11,7 @@ enum SharedCurrencyCode: String, Codable, CaseIterable, Identifiable {
         case .rub: return "₽"
         case .usd: return "$"
         case .eur: return "€"
+        case .gbp: return "£"
         }
     }
 
@@ -196,6 +197,7 @@ enum SharedMoneyFormat {
         case .rub: return "\(number) ₽"
         case .usd: return "$\(number)"
         case .eur: return "\(number) €"
+        case .gbp: return "£\(number)"
         }
     }
 }

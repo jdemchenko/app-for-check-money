@@ -179,7 +179,8 @@ enum SeedData {
                 "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
                 "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
                 "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
-                "гарнир", "доставка еды", "пятёрочка", "пятерочка",
+                "гарнир", "доставка еды", "доставку еды", "доставк", "delivery",
+                "food delivery", "пятёрочка", "пятерочка",
             ],
             colorHex: "8E8E93",
             symbolName: "fork.knife"
@@ -303,7 +304,10 @@ enum SeedData {
             nameRu: "Другое",
             nameEn: "Other",
             kind: .expense,
-            keywords: ["другое", "other", "разное", "misc"],
+            keywords: [
+                "другое", "other", "разное", "misc",
+                "игрушк", "toys", "toy", "цвет", "flowers", "flower",
+            ],
             colorHex: "8E8E93",
             symbolName: "circle.fill"
         ),
@@ -326,7 +330,7 @@ enum SeedData {
             kind: .income,
             keywords: [
                 "фриланс", "freelance", "проект", "project", "клиент", "client",
-                "заказ", "contract",
+                "заказчик", "contract",
             ],
             colorHex: "8E8E93",
             symbolName: "laptopcomputer"

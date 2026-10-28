@@ -35,7 +35,7 @@ enum SharedVoiceParser {
     private static let wa = #"(?![0-9A-Za-zА-Яа-яЁё])"#
 
     private static let expenseCues = try! NSRegularExpression(
-        pattern: wb + #"(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)"# + wa,
+        pattern: wb + #"(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|заказал|заказала|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)"# + wa,
         options: [.caseInsensitive]
     )
     private static let incomeCues = try! NSRegularExpression(
@@ -46,7 +46,7 @@ enum SharedVoiceParser {
     /// Any currency *token* (amount unit or commodity mention).
     /// Includes «белорусских рублей» (бел… + руб with letters between).
     private static let currencyTokenPattern =
-        #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|белорусск(?:их|ий|ого|ом|ими)?\s+руб(?:л(?:ей|я|ь|ями)?)?|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"#
+        #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|белорусск(?:их|ий|ого|ом|ими)?\s+руб(?:л(?:ей|я|ь|ями)?)?|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|gbp|доллар(?:ов|а|ы)?|евро|фунт(?:ов|а|ы|ами|е|ом)?(?:\s+стерлинг\w*)?|pounds?|₽|\$|€|£)"#
 
     /// Currency words stripped from notes only when they were the **amount unit**.
     private static let currencyWords = try! NSRegularExpression(
@@ -102,16 +102,35 @@ enum SharedVoiceParser {
         options: []
     )
 
+    /// Currency unit after a digit — used to find amount boundaries without «и»/comma.
+    private static let amountCurrencyUnit =
+        #"(?:₽|\$|€|£|руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|доллар(?:ов|а|ы)?|евро|фунт(?:ов|а|ы|ами|е|ом)?|pounds?)"#
+
+    /// Amount+unit spans for «15 € … 30 $ …» splitting (keeps category words with each amount).
+    private static let amountSpan = try! NSRegularExpression(
+        pattern: #"(?i)\d+(?:[.,]\d{1,2})?\s*"# + amountCurrencyUnit
+            + #"|"# + amountCurrencyUnit + #"\s*\d+(?:[.,]\d{1,2})?"#,
+        options: []
+    )
+
     /// Split multi-expense utterances: «кофе 5 и такси 12», «coffee 5 and taxi 12».
     private static let multiSplit = try! NSRegularExpression(
         pattern: #"(?i)(?:,\s*|\s+и\s+|\s+and\s+)(?=(?:[^0-9]{0,40})?\d)"#,
         options: []
     )
 
-    /// Narrative clause boundaries: потом / затем / оплатил / date anchors.
+    /// Narrative clause boundaries: потом / затем / оплатил / заказал / date anchors.
     /// Use `wa` (not JS/`\b`) so Cyrillic tokens match.
     private static let narrativeSplit = try! NSRegularExpression(
-        pattern: #"(?i)(?:\s+потом\s+|\s+затем\s+|\s+после\s+(?:этого|того)\s+|(?<=[\p{L}\d.])\s+(?=оплатил[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=сегодня"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=позавчера"# + wa + #"))"#,
+        pattern: #"(?i)(?:\s+потом\s+|\s+затем\s+|\s+после\s+(?:этого|того)\s+|(?<=[\p{L}\d.])\s+(?=оплатил[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=заказал[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=утром"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вечером"# + wa + #")|(?<=[\p{L}\d.])\s+(?=сегодня"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=позавчера"# + wa + #"))"#,
+        options: []
+    )
+
+    /// Food-delivery expense cue — never freelance/income.
+    private static let foodDeliveryCue = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:доставк\w*\s+еды|заказ\w*\s+доставк\w*|food\s+delivery|delivery\s+food|доставк\w*)"#
+            + wa,
         options: []
     )
 
@@ -198,10 +217,12 @@ enum SharedVoiceParser {
         "копеек", "копейки", "копейка",
         "косметика", "cosmetics", "красота", "beauty",
         "категория", "category",
-        "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
-        "закинул", "закинула", "пополнил", "купил", "купила", "добавь", "кажется",
-        "сегодня", "это", "будет", "свой", "свою",
-        "got", "received", "spent", "paid", "bought",
+        "на", "за", "для", "и", "я", "получил", "получила", "потратил", "потратила",
+        "закинул", "закинула", "пополнил", "купил", "купила", "заказал", "заказала",
+        "добавь", "кажется",
+        "сегодня", "вчера", "позавчера", "утром", "вечером",
+        "это", "будет", "свой", "свою",
+        "got", "received", "spent", "paid", "bought", "ordered",
         // NOTE: keep «аренда квартиры», «проезд», «телефон», «долларов» OUT — descriptions
     ].map { TextNormalizer.normalize($0) })
 
@@ -218,8 +239,8 @@ enum SharedVoiceParser {
         cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
 
         let patterns = [
-            #"(?i)(\d+(?:[.,]\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)"#,
-            #"(?i)(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)\s*(\d+(?:[.,]\d{1,2})?)"#,
+            #"(?i)(\d+(?:[.,]\d{1,2})?)\s*(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?)"#,
+            #"(?i)(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?)\s*(\d+(?:[.,]\d{1,2})?)"#,
             #"(\d+(?:[.,]\d{1,2})?)"#,
         ]
         for pattern in patterns {
@@ -326,15 +347,22 @@ enum SharedVoiceParser {
     }
 
     private static func resolveCurrencyToken(_ raw: String) -> AmountCurrencyResolve {
-        let t = TextNormalizer.normalize(raw)
-            .replacingOccurrences(of: "$", with: "usd")
-            .replacingOccurrences(of: "€", with: "eur")
-            .replacingOccurrences(of: "₽", with: "rub")
-        if t.contains("dollar") || t == "usd" || t.hasPrefix("доллар") {
+        // Map symbols before normalize — TextNormalizer strips €/$/£/₽.
+        var t = raw
+            .replacingOccurrences(of: "$", with: " usd ")
+            .replacingOccurrences(of: "€", with: " eur ")
+            .replacingOccurrences(of: "£", with: " gbp ")
+            .replacingOccurrences(of: "₽", with: " rub ")
+        t = TextNormalizer.normalize(t)
+        if t.contains("dollar") || t == "usd" || t.hasPrefix("доллар") || t.split(separator: " ").contains("usd") {
             return AmountCurrencyResolve(currencyRaw: "usd")
         }
-        if t.contains("euro") || t == "eur" || t.hasPrefix("евро") {
+        if t.contains("euro") || t == "eur" || t.hasPrefix("евро") || t.split(separator: " ").contains("eur") {
             return AmountCurrencyResolve(currencyRaw: "eur")
+        }
+        if t.contains("pound") || t == "gbp" || t.hasPrefix("фунт") || t.contains("стерлинг")
+            || t.split(separator: " ").contains("gbp") {
+            return AmountCurrencyResolve(currencyRaw: "gbp")
         }
         if t == "byn" || t == "br" || t.contains("бел") || t.contains("белорус") {
             return AmountCurrencyResolve(currencyRaw: "byn")
@@ -362,12 +390,17 @@ enum SharedVoiceParser {
             pattern: #"(?i)"# + wb + #"(euros?|eur|евро|€)"# + wa,
             options: []
         )
+        let gbp = try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(pounds?|gbp|фунт(?:ов|а|ы|ами|е|ом)?(?:\s+стерлинг\w*)?|£)"# + wa,
+            options: []
+        )
         let byn = try! NSRegularExpression(
             pattern: #"(?i)"# + wb + #"(byn|br|белорусск\w*|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?)"# + wa,
             options: []
         )
         if usd.firstMatch(in: working, options: [], range: range) != nil { return "usd" }
         if eur.firstMatch(in: working, options: [], range: range) != nil { return "eur" }
+        if gbp.firstMatch(in: working, options: [], range: range) != nil { return "gbp" }
         if byn.firstMatch(in: working, options: [], range: range) != nil { return "byn" }
         return nil
     }
@@ -458,6 +491,11 @@ enum SharedVoiceParser {
 
         let amount = parseAmount(from: working)
         var type = inferType(from: working)
+        let delivery = isFoodDelivery(in: working)
+        // Delivery / оплатил+подписка are always expenses — never freelance income.
+        if delivery || subscription != nil {
+            type = "expense"
+        }
         // Explicit unit on the amount always wins; session fills bare / ambiguous only.
         var currency = inferCurrency(from: working)
         if currency == nil, let sessionCurrency {
@@ -482,6 +520,9 @@ enum SharedVoiceParser {
                 matched.kindRaw == "income" ? "income" : "expense"
             )
         }
+        if delivery || subscription != nil {
+            type = "expense"
+        }
         if type == nil { type = "expense" }
 
         // Re-score with final type preference, then unrestricted fallback.
@@ -494,6 +535,10 @@ enum SharedVoiceParser {
             categories: categories,
             preferredTypeRaw: nil
         )
+        // Food delivery must land on Еда even if a weak income keyword also hit.
+        if delivery, let food = categories.first(where: { $0.id == "food" }) {
+            matched = food
+        }
 
         let categoryMatchedByKeyword = matched != nil
         let categoryId = matched?.id
@@ -594,6 +639,12 @@ enum SharedVoiceParser {
         return nil
     }
 
+    /// «доставка еды» / «заказал доставку» — expense food, never freelance.
+    static func isFoodDelivery(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return foodDeliveryCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
     struct DateAnchor {
         var offset: Int
         var part: String?
@@ -668,8 +719,9 @@ enum SharedVoiceParser {
             }
         }
 
+        // Keep date-only clauses («утром», «вчера я») so materialize can advance anchors.
         let withAmount = expanded.filter { parseAmount(from: $0) != nil }
-        return withAmount.count >= 2 ? withAmount : [text]
+        return withAmount.count >= 2 ? expanded : [text]
     }
 
     /// Rough count of distinct amount mentions (digits or spelled) for recurring gating.
@@ -725,6 +777,10 @@ enum SharedVoiceParser {
     }
 
     static func splitMultiExpense(_ text: String) -> [String] {
+        if let spanned = splitByAmountSpans(text) {
+            return spanned
+        }
+
         let range = NSRange(text.startIndex..., in: text)
         let matches = multiSplit.matches(in: text, options: [], range: range)
         guard !matches.isEmpty else { return [text] }
@@ -744,6 +800,28 @@ enum SharedVoiceParser {
         // Keep only segments that still look like they carry an amount.
         let withAmount = parts.filter { parseAmount(from: $0) != nil }
         return withAmount.count >= 2 ? withAmount : [text]
+    }
+
+    /// «15 € за продукты 30 $ за игрушки» — split on amount+unit spans, keep category words.
+    private static func splitByAmountSpans(_ text: String) -> [String]? {
+        let range = NSRange(text.startIndex..., in: text)
+        let matches = amountSpan.matches(in: text, options: [], range: range)
+        guard matches.count >= 2 else { return nil }
+
+        var parts: [String] = []
+        for i in 0..<matches.count {
+            let startLoc = i == 0 ? 0 : matches[i].range.location
+            let endLoc = i + 1 < matches.count
+                ? matches[i + 1].range.location
+                : (text as NSString).length
+            let nsRange = NSRange(location: startLoc, length: endLoc - startLoc)
+            guard let swift = Range(nsRange, in: text) else { continue }
+            let piece = String(text[swift]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !piece.isEmpty { parts.append(piece) }
+        }
+        let withAmount = parts.filter { parseAmount(from: $0) != nil }
+        guard withAmount.count >= 2 else { return nil }
+        return withAmount
     }
 
     // MARK: - Note extraction

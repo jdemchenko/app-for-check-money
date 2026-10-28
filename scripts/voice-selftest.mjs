@@ -52,7 +52,8 @@ const SPELLED_TOKENS = new Set([
   "итого", "total",
 ]);
 
-const CURRENCY_TOKEN = "(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|белорусск(?:их|ий|ого|ом|ими)?\\s+руб(?:л(?:ей|я|ь|ями)?)?|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)";
+const CURRENCY_TOKEN = "(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|белорусск(?:их|ий|ого|ом|ими)?\\s+руб(?:л(?:ей|я|ь|ями)?)?|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|gbp|доллар(?:ов|а|ы)?|евро|фунт(?:ов|а|ы|ами|е|ом)?(?:\\s+стерлинг\\w*)?|pounds?|₽|\\$|€|£)";
+const AMOUNT_CURRENCY_UNIT = "(?:₽|\\$|€|£|руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|доллар(?:ов|а|ы)?|евро|фунт(?:ов|а|ы|ами|е|ом)?|pounds?)";
 const AMOUNT_NUMBER = "(\\d+(?:\\s+\\d{3})*(?:[.,]\\d{1,2})?)";
 const COMMODITY_CURRENCY = new RegExp(
   `${WB}(?:покупк[ауие]|купил[аи]?|bought|buying|purchase[sd]?|buy)\\s+${CURRENCY_TOKEN}${WA}`,
@@ -83,7 +84,8 @@ const CATEGORIES = [
       "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
       "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
       "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
-      "гарнир", "доставка еды", "пятёрочка", "пятерочка",
+      "гарнир", "доставка еды", "доставку еды", "доставк", "delivery",
+      "food delivery", "пятёрочка", "пятерочка",
     ],
   },
   {
@@ -186,7 +188,10 @@ const CATEGORIES = [
     nameRu: "Другое",
     nameEn: "Other",
     kind: "expense",
-    keywords: ["другое", "other", "разное", "misc"],
+    keywords: [
+      "другое", "other", "разное", "misc",
+      "игрушк", "toys", "toy", "цвет", "flowers", "flower",
+    ],
   },
   {
     id: "salary",
@@ -205,7 +210,7 @@ const CATEGORIES = [
     kind: "income",
     keywords: [
       "фриланс", "freelance", "проект", "project", "клиент", "client",
-      "заказ", "contract",
+      "заказчик", "contract",
     ],
   },
   {
@@ -243,10 +248,12 @@ const NOTE_SUPPRESS = new Set(
     "доход", "income", "перевод", "transfer", "возврат", "refund",
     "рублей", "рубль", "рубля", "ruble", "rubles", "byn", "br",
     "копеек", "копейки", "копейка",
-    "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
-    "закинул", "закинула", "пополнил", "купил", "купила", "добавь", "кажется",
-    "сегодня", "это", "будет", "свой", "свою",
-    "got", "received", "spent", "paid", "bought",
+    "на", "за", "для", "и", "я", "получил", "получила", "потратил", "потратила",
+    "закинул", "закинула", "пополнил", "купил", "купила", "заказал", "заказала",
+    "добавь", "кажется",
+    "сегодня", "вчера", "позавчера", "утром", "вечером",
+    "это", "будет", "свой", "свою",
+    "got", "received", "spent", "paid", "bought", "ordered",
   ].map(normalize)
 );
 
@@ -264,7 +271,11 @@ const INCOME_CUES = new RegExp(
   "i"
 );
 const EXPENSE_CUES = new RegExp(
-  `${WB}(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)${WA}`,
+  `${WB}(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|заказал|заказала|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)${WA}`,
+  "i"
+);
+const FOOD_DELIVERY_CUE = new RegExp(
+  `${WB}(?:доставк\\w*\\s+еды|заказ\\w*\\s+доставк\\w*|food\\s+delivery|delivery\\s+food|доставк\\w*)${WA}`,
   "i"
 );
 
@@ -392,8 +403,8 @@ function parseAmount(text) {
 
   let cleaned = text.replace(/(\d)\s+(\d{3})\b/g, "$1$2").replace(/,/g, ".");
   const patterns = [
-    /(\d+(?:\.\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)/i,
-    /(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)\s*(\d+(?:\.\d{1,2})?)/i,
+    /(\d+(?:\.\d{1,2})?)\s*(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?)/i,
+    /(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?)\s*(\d+(?:\.\d{1,2})?)/i,
     /(\d+(?:\.\d{1,2})?)/,
   ];
   for (const re of patterns) {
@@ -520,9 +531,25 @@ function extractNote(rawText, matched) {
 }
 
 function resolveCurrencyToken(raw) {
-  const t = normalize(raw).replace(/\$/g, "usd").replace(/€/g, "eur").replace(/₽/g, "rub");
-  if (t.includes("dollar") || t === "usd" || t.startsWith("доллар")) return "usd";
-  if (t.includes("euro") || t === "eur" || t.startsWith("евро")) return "eur";
+  // Map symbols before normalize — normalize() strips €/$/£/₽.
+  let t = String(raw)
+    .replace(/\$/g, " usd ")
+    .replace(/€/g, " eur ")
+    .replace(/£/g, " gbp ")
+    .replace(/₽/g, " rub ");
+  t = normalize(t);
+  const parts = new Set(t.split(/\s+/).filter(Boolean));
+  if (t.includes("dollar") || t === "usd" || t.startsWith("доллар") || parts.has("usd")) return "usd";
+  if (t.includes("euro") || t === "eur" || t.startsWith("евро") || parts.has("eur")) return "eur";
+  if (
+    t.includes("pound") ||
+    t === "gbp" ||
+    t.startsWith("фунт") ||
+    t.includes("стерлинг") ||
+    parts.has("gbp")
+  ) {
+    return "gbp";
+  }
   if (t === "byn" || t === "br" || t.includes("бел") || t.includes("белорус")) return "byn";
   // «руб» → entry default
   return null;
@@ -557,6 +584,9 @@ function inferCurrency(text) {
   let working = text.replace(COMMODITY_CURRENCY, " ");
   if (new RegExp(`${WB}(dollars?|usd|доллар(?:ов|а|ы)?|\\$)${WA}`, "i").test(working)) return "usd";
   if (new RegExp(`${WB}(euros?|eur|евро|€)${WA}`, "i").test(working)) return "eur";
+  if (new RegExp(`${WB}(pounds?|gbp|фунт(?:ов|а|ы|ами|е|ом)?(?:\\s+стерлинг\\w*)?|£)${WA}`, "i").test(working)) {
+    return "gbp";
+  }
   if (new RegExp(`${WB}(byn|br|белорусск\\w*|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?)${WA}`, "i").test(working)) return "byn";
   return null;
 }
@@ -566,8 +596,12 @@ const MONTHLY_RE =
 const WEEKLY_RE =
   new RegExp(`${WB}(every\\s+week|each\\s+week|weekly|per\\s+week|раз\\s+в\\s+недел[юи]|каждую\\s+неделю|каждый\\s+недел[юи]|еженедельно)${WA}`, "i");
 const MULTI_SPLIT = /(?:,\s*|\s+и\s+|\s+and\s+)(?=(?:[^0-9]{0,40})?\d)/gi;
+const AMOUNT_SPAN = new RegExp(
+  `\\d+(?:[.,]\\d{1,2})?\\s*${AMOUNT_CURRENCY_UNIT}|${AMOUNT_CURRENCY_UNIT}\\s*\\d+(?:[.,]\\d{1,2})?`,
+  "gi"
+);
 const NARRATIVE_SPLIT = new RegExp(
-  `(?:\\s+потом\\s+|\\s+затем\\s+|\\s+после\\s+(?:этого|того)\\s+|(?<=[\\p{L}\\d.])\\s+(?=оплатил[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=сегодня${WA})|(?<=[\\p{L}\\d.])\\s+(?=вчера${WA})|(?<=[\\p{L}\\d.])\\s+(?=позавчера${WA}))`,
+  `(?:\\s+потом\\s+|\\s+затем\\s+|\\s+после\\s+(?:этого|того)\\s+|(?<=[\\p{L}\\d.])\\s+(?=оплатил[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=заказал[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=утром${WA})|(?<=[\\p{L}\\d.])\\s+(?=вечером${WA})|(?<=[\\p{L}\\d.])\\s+(?=сегодня${WA})|(?<=[\\p{L}\\d.])\\s+(?=вчера${WA})|(?<=[\\p{L}\\d.])\\s+(?=позавчера${WA}))`,
   "giu"
 );
 const SESSION_EUR = new RegExp(
@@ -638,7 +672,25 @@ function stripRecurringCues(text) {
     .trim();
 }
 
+function splitByAmountSpans(text) {
+  AMOUNT_SPAN.lastIndex = 0;
+  const matches = [...text.matchAll(AMOUNT_SPAN)];
+  if (matches.length < 2) return null;
+  const parts = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = i === 0 ? 0 : matches[i].index;
+    const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    const piece = text.slice(start, end).trim();
+    if (piece) parts.push(piece);
+  }
+  const withAmount = parts.filter((p) => parseAmount(p) != null);
+  return withAmount.length >= 2 ? parts.filter((p) => parseAmount(p) != null) : null;
+}
+
 function splitMultiExpense(text) {
+  const spanned = splitByAmountSpans(text);
+  if (spanned) return spanned;
+
   const parts = [];
   let last = 0;
   MULTI_SPLIT.lastIndex = 0;
@@ -671,6 +723,7 @@ function splitNarrative(text) {
   if (tail) parts.push(tail);
   // Flatten: each narrative clause may still hold comma/«и» multi-amounts
   // (e.g. «продукты 30 евро, подписка 3 доллара … были вчера»).
+  // Keep date-only clauses («утром», «вчера я») so materialize can advance anchors.
   const expanded = [];
   for (const part of parts) {
     const multi = splitMultiExpense(part);
@@ -678,7 +731,7 @@ function splitNarrative(text) {
     else expanded.push(part);
   }
   const withAmount = expanded.filter((p) => parseAmount(p) != null);
-  return withAmount.length >= 2 ? withAmount : [text];
+  return withAmount.length >= 2 ? expanded : [text];
 }
 
 function countAmountMentions(text) {
@@ -695,6 +748,11 @@ function countAmountMentions(text) {
   return spelledHits;
 }
 
+function isFoodDelivery(text) {
+  FOOD_DELIVERY_CUE.lastIndex = 0;
+  return FOOD_DELIVERY_CUE.test(text);
+}
+
 function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null) {
   const session = sessionCurrency ?? detectSessionCurrency(rawText);
   const anchor = detectDateAnchor(rawText);
@@ -705,11 +763,17 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
   const working = frequency ? stripRecurringCues(rawText) : rawText;
   const amount = parseAmount(working);
   let type = inferType(working);
+  const delivery = isFoodDelivery(working) || isFoodDelivery(rawText);
+  if (delivery || subscription) type = "expense";
   let matched = autoAssign(working, type);
   if (!matched) matched = autoAssign(working, null);
   if (!type && matched) type = matched.kind === "income" ? "income" : "expense";
+  if (delivery || subscription) type = "expense";
   if (!type) type = "expense";
   matched = autoAssign(working, type) ?? autoAssign(working, null);
+  if (delivery) {
+    matched = CATEGORIES.find((c) => c.id === "food") ?? matched;
+  }
   const categoryMatchedByKeyword = Boolean(matched);
   const categoryId =
     matched?.id ??
@@ -1049,6 +1113,40 @@ const multiCases = [
       { amount: 30, currency: "eur", categoryId: "transport", dayOffset: 0 },
     ],
   },
+  {
+    name: "ivan unicode €/$/£ multi",
+    input: "Добавь 15 € за продукты 30 $ за игрушки и 15 £ за цветы",
+    expect: [
+      { amount: 15, currency: "eur", categoryId: "food", type: "expense" },
+      { amount: 30, currency: "usd", categoryId: "other-expense", type: "expense" },
+      { amount: 15, currency: "gbp", categoryId: "other-expense", type: "expense" },
+    ],
+    forbidNoteIncludes: ["£", "фунт", "gbp", "housing"],
+  },
+  {
+    name: "ivan delivery food ≠ freelance + семь долларов",
+    input:
+      "в рб моя валюта белорусский рубль вчера я оплатил подписку Apple Music семь долларов утром заказал доставку еды на 15 руб",
+    expect: [
+      {
+        amount: 7,
+        currency: "usd",
+        categoryId: "entertainment",
+        type: "expense",
+        frequency: "monthly",
+        dayOffset: -1,
+      },
+      {
+        amount: 15,
+        currency: "byn",
+        categoryId: "food",
+        type: "expense",
+        dayOffset: 0,
+        dayPart: "morning",
+      },
+    ],
+    forbidNoteIncludes: ["вчера", "утром", "я"],
+  },
 ];
 
 // Session cue unit checks (per-utterance; no cross-utterance leak).
@@ -1115,13 +1213,19 @@ for (const c of multiCases) {
     if (Object.prototype.hasOwnProperty.call(e, "frequency") && d.frequency !== e.frequency) {
       bugs.push(`[${i}] frequency got ${d.frequency} expected ${e.frequency}`);
     }
+    if (Object.prototype.hasOwnProperty.call(e, "type") && d.type !== e.type) {
+      bugs.push(`[${i}] type got ${d.type} expected ${e.type}`);
+    }
   }
   if (c.forbidNoteIncludes) {
     for (const d of drafts) {
+      const noteNorm = normalize(d.note);
+      const noteTokens = new Set(noteNorm.split(/\s+/).filter(Boolean));
       for (const bad of c.forbidNoteIncludes) {
-        if (normalize(d.note).includes(normalize(bad))) {
-          bugs.push(`note leaked companion «${bad}»: «${d.note}»`);
-        }
+        const b = normalize(bad);
+        if (!b) continue;
+        const hit = b.length <= 2 ? noteTokens.has(b) : noteNorm.includes(b);
+        if (hit) bugs.push(`note leaked «${bad}»: «${d.note}»`);
       }
     }
   }

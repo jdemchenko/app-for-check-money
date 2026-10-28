@@ -26,6 +26,7 @@ enum MoneyFormat {
         case .rub: return "\(number) ₽"
         case .usd: return "$\(number)"
         case .eur: return "\(number) €"
+        case .gbp: return "£\(number)"
         }
     }
 

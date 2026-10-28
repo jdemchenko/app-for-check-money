@@ -320,6 +320,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(rateLine(code: .usd))
                             Text(rateLine(code: .eur))
+                            Text(rateLine(code: .gbp))
                             Text(rateLine(code: .rub))
                         }
                         .font(.footnote.monospacedDigit())

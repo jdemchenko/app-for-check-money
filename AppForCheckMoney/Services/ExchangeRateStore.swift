@@ -20,6 +20,7 @@ final class ExchangeRateStore: ObservableObject {
         .usd: 3.25,
         .eur: 3.55,
         .rub: 0.036,
+        .gbp: 4.15,
     ]
 
     /// Thread-safe snapshot for `CurrencyConverter.convert` (may run off MainActor).
@@ -157,6 +158,9 @@ final class ExchangeRateStore: ObservableObject {
         }
         if out[.rub] == nil {
             out[.rub] = staticBynPerUnit[.rub]!
+        }
+        if out[.gbp] == nil {
+            out[.gbp] = staticBynPerUnit[.gbp]!
         }
         return out
     }
