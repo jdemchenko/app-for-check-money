@@ -82,6 +82,17 @@
 		A70000000000000000000002 /* CheckMoneyPhoneWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000001 /* CheckMoneyPhoneWidgets.swift */; };
 		A80000000000000000000001 /* SharedWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000001 /* SharedWidgetSnapshot.swift */; };
 		A80000000000000000000002 /* SharedWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000001 /* SharedWidgetSnapshot.swift */; };
+		AA00000000000000000001 /* MoneySpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000001 /* MoneySpace.swift */; };
+		AA00000000000000000002 /* MoneyAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000002 /* MoneyAccount.swift */; };
+		AA00000000000000000003 /* MoneyGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000003 /* MoneyGoal.swift */; };
+		AA00000000000000000004 /* MoneyDebt.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000004 /* MoneyDebt.swift */; };
+		AA00000000000000000005 /* AccountLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000005 /* AccountLedger.swift */; };
+		AA00000000000000000006 /* CashflowInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000006 /* CashflowInsights.swift */; };
+		AA00000000000000000007 /* LedgerHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000007 /* LedgerHubView.swift */; };
+		AA00000000000000000008 /* AccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000008 /* AccountsView.swift */; };
+		AA00000000000000000009 /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA00000000000000000009 /* GoalsView.swift */; };
+		AA0000000000000000000A /* DebtsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0000000000000000000A /* DebtsView.swift */; };
+		AA0000000000000000000B /* SpacesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0000000000000000000B /* SpacesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -283,6 +294,10 @@
 				B10000000000000000000002 /* MoneyCategory.swift */,
 				B10000000000000000000003 /* MoneyTransaction.swift */,
 				B60000000000000000000002 /* RecurringRule.swift */,
+				BA00000000000000000001 /* MoneySpace.swift */,
+				BA00000000000000000002 /* MoneyAccount.swift */,
+				BA00000000000000000003 /* MoneyGoal.swift */,
+				BA00000000000000000004 /* MoneyDebt.swift */,
 				B10000000000000000000004 /* SeedData.swift */,
 			);
 			path = Models;
@@ -296,6 +311,8 @@
 				B10000000000000000000019 /* SymbolSuggester.swift */,
 				B10000000000000000000018 /* AppCurrency.swift */,
 				B1000000000000000000001C /* StatsEngine.swift */,
+				BA00000000000000000005 /* AccountLedger.swift */,
+				BA00000000000000000006 /* CashflowInsights.swift */,
 				B1000000000000000000001E /* ExchangeRateStore.swift */,
 				B10000000000000000000006 /* VoiceParser.swift */,
 				B10000000000000000000007 /* SpeechRecognizer.swift */,
@@ -325,6 +342,11 @@
 				B1000000000000000000000C /* CategoriesView.swift */,
 				B1000000000000000000000D /* HistoryView.swift */,
 				B1000000000000000000001A /* SettingsView.swift */,
+				BA00000000000000000007 /* LedgerHubView.swift */,
+				BA00000000000000000008 /* AccountsView.swift */,
+				BA00000000000000000009 /* GoalsView.swift */,
+				BA0000000000000000000A /* DebtsView.swift */,
+				BA0000000000000000000B /* SpacesView.swift */,
 				B60000000000000000000008 /* OnboardingView.swift */,
 				B60000000000000000000009 /* RecurringListView.swift */,
 				B6000000000000000000000A /* AppLockGate.swift */,
@@ -772,7 +794,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -784,7 +806,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -807,7 +829,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -819,7 +841,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -840,7 +862,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -854,7 +876,7 @@
 					"@executable_path/Frameworks",
 				);
 				ARCHS = "$(ARCHS_STANDARD)";
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -877,7 +899,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -891,7 +913,7 @@
 					"@executable_path/Frameworks",
 				);
 				ARCHS = "$(ARCHS_STANDARD)";
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -914,7 +936,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -923,7 +945,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -945,7 +967,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -954,7 +976,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.watchkitapp.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -977,7 +999,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -987,7 +1009,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -1009,7 +1031,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -1019,7 +1041,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jdemchenko.AppForCheckMoney.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

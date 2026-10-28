@@ -253,6 +253,10 @@ struct StatsView: View {
                             emphasizeExpense: false
                         )
                     }
+
+                    ForEach(CashflowInsights.lines(from: snapshot)) { line in
+                        insightRow(title: line.title, value: line.detail)
+                    }
                 }
             }
         }

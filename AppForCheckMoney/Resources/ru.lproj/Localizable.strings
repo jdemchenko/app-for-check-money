@@ -123,6 +123,9 @@
 
 "date.today" = "Сегодня";
 "date.yesterday" = "Вчера";
+"date.dayBeforeYesterday" = "Позавчера";
+"date.morning" = "утром";
+"date.evening" = "вечером";
 
 "common.save" = "Сохранить";
 "common.cancel" = "Отмена";
@@ -211,3 +214,85 @@
 "icloud.prefer" = "Предпочитать iCloud, если доступен";
 "icloud.personalTeamNote" = "CloudKit нужен платный Apple Developer и capability iCloud. На Personal Team данные остаются на этом iPhone (переключатель готовит будущий платный team; после включения перезапустите приложение).";
 "icloud.restartNote" = "Перезапустите приложение после смены настройки iCloud.";
+
+"home.monthCashflow" = "Кэшфлоу месяца";
+
+"ledger.title" = "Счета и цели";
+"ledger.open" = "Открыть счета, цели, долги";
+"ledger.totalBalance" = "Всего (с FX)";
+"ledger.fxNote" = "Курсы live/кэш; офлайн — запасной курс.";
+
+"accounts.title" = "Счета";
+"accounts.list" = "Ваши счета";
+"accounts.add" = "Новый счёт";
+"accounts.name" = "Название";
+"accounts.opening" = "Начальный баланс";
+"accounts.create" = "Создать счёт";
+"accounts.countFormat" = "%d активных";
+"account.cashBYN" = "Наличные BYN";
+
+"budget.accounts" = "Бюджеты по счетам";
+"budget.accountsHint" = "Месячный лимит трат со счёта (в валюте общего бюджета).";
+
+"goals.title" = "Цели";
+"goals.add" = "Новая цель";
+"goals.name" = "Название";
+"goals.target" = "Сумма цели";
+"goals.create" = "Создать цель";
+"goals.countFormat" = "%d целей";
+"goals.markDone" = "Отметить выполненной";
+
+"debt.title" = "Долги";
+"debt.add" = "Новый долг";
+"debt.person" = "Кто";
+"debt.amount" = "Сумма";
+"debt.direction" = "Направление";
+"debt.create" = "Добавить";
+"debt.iOwe" = "Я должен";
+"debt.owedToMe" = "Мне должны";
+"debt.settle" = "Погасить";
+"debt.settled" = "Погашено";
+"debt.showSettled" = "Показать погашенные";
+"debt.openFormat" = "%d открытых";
+
+"space.title" = "Пространства";
+"space.yours" = "Ваши пространства";
+"space.private" = "Личное";
+"space.shared" = "Общее";
+"space.privateDefaultName" = "Личное";
+"space.familyPlaceholder" = "Семья (локально)";
+"space.invite" = "Пригласить";
+"space.inviteBody" = "Настоящий семейный синк и приглашения нужен платный Apple Developer + iCloud. Сейчас — локальная оболочка без выгрузки.";
+"space.createSharedPlaceholder" = "Создать общее (локально)";
+"space.sharedLocalOnly" = "Локальный черновик — без CloudKit на Personal Team.";
+"space.syncTitle" = "Синхронизация";
+"space.syncBody" = "Данные по умолчанию только на устройстве. Общая выгрузка — только если вы явно включите iCloud на платном team.";
+"space.developerNeeded" = "Нужен Apple Developer / iCloud для мультиустройства и инвайтов.";
+
+"privacy.title" = "Конфиденциальность";
+"privacy.body" = "Честно: что локально, а что опционально.";
+"privacy.local" = "Книга расходов хранится на этом iPhone (SwiftData). Без рекламы.";
+"privacy.optionalSync" = "iCloud / семейный синк — только по желанию и только с платным Developer team.";
+"privacy.noAds" = "Нет рекламы и трекеров. Курсы FX качаются с myfin.by только для отображения сумм.";
+
+"shortcuts.title" = "Siri, виджет, Shortcuts";
+"shortcuts.body" = "Как быстро логировать без открытия всего приложения.";
+"shortcuts.siri" = "Siri / App Intents: «Добавь расход в CheckMoney».";
+"shortcuts.backTap" = "Back Tap: Настройки → Универсальный доступ → Касание → Касание сзади → Shortcuts → Add expense.";
+"shortcuts.actionButton" = "Action Button (iPhone 15 Pro+): Shortcuts → Add expense.";
+"shortcuts.applePay" = "Apple Pay / банк: Shortcuts Automation на уведомление → Log expense from text (без платных entitlements).";
+"shortcuts.widget" = "Виджет Home Screen: баланс месяца, сегодня, бюджет, 7-дневный sparkline (Keychain, Personal Team).";
+
+"insights.burnRate" = "Доля трат от дохода";
+"insights.burnRateDetail" = "%d%% дохода ушло в расходы";
+"insights.spendUp" = "Траты выросли";
+"insights.spendDown" = "Траты снизились";
+"insights.spendDeltaDetail" = "%d%% · %@";
+"insights.dailyAvg" = "Среднее в день";
+"insights.topCategory" = "Доминирующая категория";
+"insights.topCategoryDetail" = "%@ · %d%%";
+"insights.negativeCashflow" = "Отрицательный кэшфлоу";
+
+"reminder.recurringTitle" = "Скоро платёж";
+"reminder.recurringBody" = "Завтра: %@ · %@";
+

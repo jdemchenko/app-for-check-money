@@ -4,7 +4,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 > This repository is an **independent** iOS app. It is not related to Fitil.
 
-**Launch candidate:** marketing **1.2**, build **26** — optimized for **iOS 26** Liquid Glass (dual-path fallback to iOS 18+). See agent-store `docs/ios26-ready.md`.
+**Launch candidate:** marketing **1.3**, build **27** — optimized for **iOS 26** Liquid Glass (dual-path fallback to iOS 18+). See agent-store `docs/ios26-ready.md`.
 
 ## Features
 
@@ -15,11 +15,14 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 - **App Intents / Siri** — «Add expense» + «Log expense from text» (Shortcuts; no paid team)
 - **Share / paste** — URL scheme `checkmoney://draft?text=…`, open CSV/text documents, Home **Paste text draft**
 - **Categories** — seeded defaults; keyword auto-assign (RU/EN); custom categories; built-ins locked delete
-- **Screens** — Home (balance + monthly + category budget bars + floating glass mic + recent), Stats (quiet insights), History (search / edit / CSV import+export), Categories
-- **Budget** — optional monthly spend limit + **per-category** monthly limits
-- **Recurring** — weekly/monthly rules auto-post when due
+- **Screens** — Home (FX ledger total + month cashflow + budget bars + glass mic), Stats (cashflow insights), History (search / account filter / CSV), Categories, Ledger hub (accounts / goals / debts / spaces)
+- **Accounts** — multi-currency wallets; live/cached FX totals; txs belong to an account
+- **Goals & debts** — goals linked to accounts; I-owe / owed-to-me with settle
+- **Budget** — monthly + **per-category** + **per-account** limits
+- **Recurring** — weekly/monthly rules auto-post when due; day-before local reminder
 - **App lock** — Face ID / Touch ID / device passcode gate
 - **Daily reminder** — optional local notification (Settings)
+- **Privacy** — on-device ledger; honest Settings copy; shared sync needs paid Developer / iCloud (local spaces shell meanwhile)
 - **Onboarding** — one screen (hold-to-talk + BYN default)
 - **iPhone widget** — today / balance / budget / 7-day bars via Keychain Sharing
 - **iCloud** — best-effort toggle; CloudKit requires paid team

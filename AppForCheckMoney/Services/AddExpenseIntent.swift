@@ -82,6 +82,14 @@ struct AddExpenseIntent: AppIntent {
         context.insert(tx)
         try context.save()
 
+        // Donate so Siri Suggestions / Shortcuts can resurface the action (no paid entitlement).
+        let activity = NSUserActivity(activityType: "com.checkmoney.addExpense")
+        activity.title = "Add expense"
+        activity.isEligibleForSearch = true
+        activity.isEligibleForPrediction = true
+        activity.suggestedInvocationPhrase = "Add expense in CheckMoney"
+        activity.becomeCurrent()
+
         let label = MoneyFormat.currency(tx.amount, code: currency)
         return .result(dialog: IntentDialog(stringLiteral: label))
     }

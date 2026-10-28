@@ -9,6 +9,7 @@ struct SettingsView: View {
     @Query(sort: \MoneyCategory.sortOrder) private var categories: [MoneyCategory]
 
     @State private var showRecurring = false
+    @State private var showLedger = false
     @State private var budgetText: String = ""
     @State private var categoryBudgetTexts: [String: String] = [:]
 
@@ -28,10 +29,13 @@ struct SettingsView: View {
                         selection: $currencySettings.entryCurrency
                     )
 
+                    ledgerLinkBlock
                     budgetBlock
                     categoryBudgetBlock
                     reminderBlock
                     securityBlock
+                    privacyBlock
+                    shortcutsBlock
                     recurringBlock
                     iCloudBlock
                     ratesBlock
@@ -67,6 +71,80 @@ struct SettingsView: View {
                 RecurringListView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showLedger) {
+                LedgerHubView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+    }
+
+    private var ledgerLinkBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("ledger.title"))
+            Button {
+                showLedger = true
+            } label: {
+                HStack {
+                    Text(L10n.string("ledger.open"))
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .themeTertiary()
+                }
+                .padding(14)
+                .background { SettingsRowSurface() }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var privacyBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("privacy.title"))
+            Text(L10n.string("privacy.body"))
+                .font(.footnote)
+                .themeSecondary()
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.string("privacy.local"))
+                        .font(.subheadline.weight(.medium))
+                    Text(L10n.string("privacy.optionalSync"))
+                        .font(.caption)
+                        .themeTertiary()
+                    Text(L10n.string("privacy.noAds"))
+                        .font(.caption)
+                        .themeTertiary()
+                }
+            }
+        }
+    }
+
+    private var shortcutsBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            QuietSectionLabel(text: L10n.string("shortcuts.title"))
+            Text(L10n.string("shortcuts.body"))
+                .font(.footnote)
+                .themeSecondary()
+            GlassPanel(padding: 14, corner: AppTheme.cornerMedium) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.string("shortcuts.siri"))
+                        .font(.subheadline)
+                    Text(L10n.string("shortcuts.backTap"))
+                        .font(.caption)
+                        .themeTertiary()
+                    Text(L10n.string("shortcuts.actionButton"))
+                        .font(.caption)
+                        .themeTertiary()
+                    Text(L10n.string("shortcuts.applePay"))
+                        .font(.caption)
+                        .themeTertiary()
+                    Text(L10n.string("shortcuts.widget"))
+                        .font(.caption)
+                        .themeTertiary()
+                }
             }
         }
     }

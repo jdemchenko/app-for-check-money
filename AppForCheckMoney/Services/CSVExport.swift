@@ -26,19 +26,21 @@ enum CSVExport {
         df.formatOptions = [.withFullDate]
 
         var lines: [String] = [
-            "date,type,amount,currency,category,payment,note,id"
+            "date,type,amount,currency,category,account,payment,note,id"
         ]
         for tx in filtered {
             let cat = catMap[tx.categoryId]?.displayName() ?? tx.categoryId
             let note = (tx.note ?? "")
                 .replacingOccurrences(of: "\"", with: "\"\"")
             let payment = tx.paymentMethod == .unspecified ? "" : tx.paymentMethod.rawValue
+            let account = tx.accountId.isEmpty ? AccountIDs.cashBYN : tx.accountId
             let row = [
                 df.string(from: tx.date),
                 tx.type.rawValue,
                 String(format: "%.2f", tx.amount),
                 tx.currency.code,
                 escape(cat),
+                escape(account),
                 payment,
                 "\"\(note)\"",
                 tx.id,

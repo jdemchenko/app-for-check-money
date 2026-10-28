@@ -11,6 +11,7 @@ struct AppForCheckMoneyApp: App {
         } catch {
             container = try! ModelContainer(
                 for: MoneyTransaction.self, MoneyCategory.self, RecurringRule.self,
+                    MoneyAccount.self, MoneyGoal.self, MoneyDebt.self, MoneySpace.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
         }
@@ -43,6 +44,8 @@ private struct AppRootHost: View {
     @EnvironmentObject private var settings: AppSettingsStore
 
     @Query private var transactions: [MoneyTransaction]
+    @Query private var recurringRules: [RecurringRule]
+    @Query(sort: \MoneyAccount.sortOrder) private var accounts: [MoneyAccount]
     @ObservedObject private var currencySettings = CurrencySettings.shared
 
     @State private var unlocked = false
@@ -65,12 +68,14 @@ private struct AppRootHost: View {
         }
         .onAppear {
             if !settings.lockEnabled { unlocked = true }
+            SeedData.ensureLedgerDefaults(in: modelContext)
             Task { @MainActor in
                 PhoneWatchSync.shared.start(modelContext: modelContext)
                 await ReminderService.apply(
                     enabled: settings.reminderEnabled,
                     hour: settings.reminderHour
                 )
+                await ReminderService.scheduleRecurringDayBefore(rules: recurringRules)
             }
             publishWidget()
         }
@@ -82,10 +87,16 @@ private struct AppRootHost: View {
             case .active:
                 _ = RecurringEngine.applyDue(in: modelContext)
                 PhoneWatchSync.shared.refreshAfterForeground()
+                Task {
+                    await ReminderService.scheduleRecurringDayBefore(rules: recurringRules)
+                }
                 publishWidget()
             default:
                 break
             }
+        }
+        .onChange(of: recurringRules.count) { _, _ in
+            Task { await ReminderService.scheduleRecurringDayBefore(rules: recurringRules) }
         }
         .onChange(of: settings.lockEnabled) { _, enabled in
             unlocked = !enabled
@@ -99,7 +110,8 @@ private struct AppRootHost: View {
         WidgetSnapshotStore.publish(
             transactions: transactions,
             displayCurrency: currencySettings.displayCurrency,
-            settings: settings
+            settings: settings,
+            accounts: accounts
         )
     }
 }

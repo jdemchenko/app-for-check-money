@@ -45,7 +45,10 @@ struct RootTabView: View {
     RootTabView()
         .environmentObject(AppSettingsStore.shared)
         .modelContainer(
-            for: [MoneyTransaction.self, MoneyCategory.self, RecurringRule.self],
+            for: [
+                MoneyTransaction.self, MoneyCategory.self, RecurringRule.self,
+                MoneyAccount.self, MoneyGoal.self, MoneyDebt.self, MoneySpace.self,
+            ],
             inMemory: true
         )
 }

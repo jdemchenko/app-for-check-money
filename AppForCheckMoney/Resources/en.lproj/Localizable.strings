@@ -123,6 +123,9 @@
 
 "date.today" = "Today";
 "date.yesterday" = "Yesterday";
+"date.dayBeforeYesterday" = "Day before yesterday";
+"date.morning" = "morning";
+"date.evening" = "evening";
 
 "common.save" = "Save";
 "common.cancel" = "Cancel";
@@ -211,3 +214,85 @@
 "icloud.prefer" = "Prefer iCloud when available";
 "icloud.personalTeamNote" = "CloudKit needs a paid Apple Developer team and iCloud capability. On Personal Team, data stays on this iPhone (toggle prepares a future paid-team setup; restart after enabling).";
 "icloud.restartNote" = "Restart the app after changing iCloud preference.";
+
+"home.monthCashflow" = "Month cashflow";
+
+"ledger.title" = "Accounts & goals";
+"ledger.open" = "Open accounts, goals, debts";
+"ledger.totalBalance" = "Total (FX)";
+"ledger.fxNote" = "Live/cached rates; offline uses a static fallback.";
+
+"accounts.title" = "Accounts";
+"accounts.list" = "Your accounts";
+"accounts.add" = "New account";
+"accounts.name" = "Name";
+"accounts.opening" = "Opening balance";
+"accounts.create" = "Create account";
+"accounts.countFormat" = "%d active";
+"account.cashBYN" = "Cash BYN";
+
+"budget.accounts" = "Account budgets";
+"budget.accountsHint" = "Monthly spend cap per account (in the shared budget currency).";
+
+"goals.title" = "Goals";
+"goals.add" = "New goal";
+"goals.name" = "Name";
+"goals.target" = "Target amount";
+"goals.create" = "Create goal";
+"goals.countFormat" = "%d goals";
+"goals.markDone" = "Mark done";
+
+"debt.title" = "Debts";
+"debt.add" = "New debt";
+"debt.person" = "Person";
+"debt.amount" = "Amount";
+"debt.direction" = "Direction";
+"debt.create" = "Add";
+"debt.iOwe" = "I owe";
+"debt.owedToMe" = "Owed to me";
+"debt.settle" = "Settle";
+"debt.settled" = "Settled";
+"debt.showSettled" = "Show settled";
+"debt.openFormat" = "%d open";
+
+"space.title" = "Spaces";
+"space.yours" = "Your spaces";
+"space.private" = "Private";
+"space.shared" = "Shared";
+"space.privateDefaultName" = "Private";
+"space.familyPlaceholder" = "Family (local)";
+"space.invite" = "Invite";
+"space.inviteBody" = "True family sync and invites need a paid Apple Developer account + iCloud. This is a local shell with no upload.";
+"space.createSharedPlaceholder" = "Create shared (local)";
+"space.sharedLocalOnly" = "Local draft — no CloudKit on Personal Team.";
+"space.syncTitle" = "Sync";
+"space.syncBody" = "Data stays on-device by default. Shared upload only if you opt into iCloud on a paid team.";
+"space.developerNeeded" = "Apple Developer / iCloud required for multi-device and invites.";
+
+"privacy.title" = "Privacy";
+"privacy.body" = "Honest about what is local vs optional.";
+"privacy.local" = "Your ledger lives on this iPhone (SwiftData). No ads.";
+"privacy.optionalSync" = "iCloud / family sync is opt-in and needs a paid Developer team.";
+"privacy.noAds" = "No ads or trackers. FX rates fetch from myfin.by for display totals only.";
+
+"shortcuts.title" = "Siri, widget, Shortcuts";
+"shortcuts.body" = "Fast logging without opening the full app.";
+"shortcuts.siri" = "Siri / App Intents: “Add expense in CheckMoney”.";
+"shortcuts.backTap" = "Back Tap: Settings → Accessibility → Touch → Back Tap → Shortcuts → Add expense.";
+"shortcuts.actionButton" = "Action Button (iPhone 15 Pro+): Shortcuts → Add expense.";
+"shortcuts.applePay" = "Apple Pay / bank: Shortcuts Automation on notification → Log expense from text (no paid entitlements).";
+"shortcuts.widget" = "Home Screen widget: month balance, today, budget, 7-day sparkline (Keychain, Personal Team).";
+
+"insights.burnRate" = "Spend vs income";
+"insights.burnRateDetail" = "%d%% of income spent";
+"insights.spendUp" = "Spending up";
+"insights.spendDown" = "Spending down";
+"insights.spendDeltaDetail" = "%d%% · %@";
+"insights.dailyAvg" = "Daily average";
+"insights.topCategory" = "Dominant category";
+"insights.topCategoryDetail" = "%@ · %d%%";
+"insights.negativeCashflow" = "Negative cashflow";
+
+"reminder.recurringTitle" = "Payment coming up";
+"reminder.recurringBody" = "Tomorrow: %@ · %@";
+

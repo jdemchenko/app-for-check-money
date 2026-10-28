@@ -44,10 +44,42 @@ enum SeedData {
             for (index, item) in defaults.enumerated() {
                 context.insert(makeCategory(from: item, sortOrder: index))
             }
-            try? context.save()
-            return
+        } else {
+            refreshDefaultKeywords(in: context)
         }
-        refreshDefaultKeywords(in: context)
+        ensureLedgerDefaults(in: context)
+        try? context.save()
+    }
+
+    /// Private space + default BYN cash account (idempotent).
+    static func ensureLedgerDefaults(in context: ModelContext) {
+        let spaces = (try? context.fetch(FetchDescriptor<MoneySpace>())) ?? []
+        if spaces.first(where: { $0.id == SpaceIDs.privateDefault }) == nil {
+            context.insert(MoneySpace(
+                id: SpaceIDs.privateDefault,
+                name: L10n.string("space.privateDefaultName"),
+                kind: .privateSpace
+            ))
+        }
+
+        let accounts = (try? context.fetch(FetchDescriptor<MoneyAccount>())) ?? []
+        if accounts.first(where: { $0.id == AccountIDs.cashBYN }) == nil {
+            context.insert(MoneyAccount(
+                id: AccountIDs.cashBYN,
+                name: L10n.string("account.cashBYN"),
+                currency: .byn,
+                spaceId: SpaceIDs.privateDefault,
+                sortOrder: 0,
+                symbolName: "banknote"
+            ))
+        }
+
+        // Stamp legacy txs missing accountId onto default cash.
+        let txs = (try? context.fetch(FetchDescriptor<MoneyTransaction>())) ?? []
+        for tx in txs where tx.accountId.isEmpty {
+            tx.accountId = AccountIDs.cashBYN
+            if tx.spaceId.isEmpty { tx.spaceId = SpaceIDs.privateDefault }
+        }
     }
 
     /// Updates keywords / names / symbols for seeded defaults without wiping custom categories.
@@ -142,7 +174,7 @@ enum SeedData {
             nameEn: "Food",
             kind: .expense,
             keywords: [
-                "еда", "food", "кофе", "coffee", "обед", "lunch", "ужин", "dinner",
+                "еда", "food", "кофе", "coffee", "кофейн", "обед", "lunch", "ужин", "dinner",
                 "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe",
                 "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
                 "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
@@ -161,8 +193,9 @@ enum SeedData {
                 "транспорт", "transport", "такси", "taxi", "метро", "metro", "subway",
                 "автобус", "bus", "бензин", "gas", "fuel", "топливо", "заправка",
                 "азс", "azs", "gas station", "petrol", "diesel", "дизель",
-                "uber", "яндекс", "yandex", "парковка", "parking", "поезд", "train",
-                "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare",
+                "uber", "яндекс такси", "яндекс го", "yandex go", "yandex taxi",
+                "парковка", "parking", "поезд", "train",
+                "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare", "carsharing",
                 "проезд", "fare",
             ],
             colorHex: "8E8E93",
@@ -203,8 +236,10 @@ enum SeedData {
             keywords: [
                 "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
                 "movie", "movies", "театр", "theater", "theatre", "игры", "games",
-                "подписка", "subscription", "netflix", "spotify", "концерт",
-                "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
+                "подписк", "subscription", "netflix", "spotify",
+                "яндекс music", "yandex music", "яндекс музык", "apple music",
+                "youtube premium", "youtube music",
+                "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
             ],
             colorHex: "8E8E93",
             symbolName: "film.fill"
