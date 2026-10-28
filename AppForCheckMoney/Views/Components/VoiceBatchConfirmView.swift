@@ -186,23 +186,36 @@ struct VoiceBatchConfirmView: View {
         let native = draft.amount ?? 0
         let displayAmount = CurrencyConverter.convert(native, from: nativeCode, to: displayCurrency)
         let type = draft.type ?? .expense
-        let title = cat?.displayName() ?? L10n.string("category.unknown")
+        let brandTitle = draft.subscriptionBrandTitle
+        let title = brandTitle
+            ?? cat?.displayName()
+            ?? L10n.string("category.unknown")
         let note = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
         let subtitle: String = {
             var parts: [String] = []
-            if !note.isEmpty { parts.append(note) }
-            if draft.isRecurring {
+            if let brandTitle {
+                if let catName = cat?.displayName(), catName != brandTitle {
+                    parts.append(catName)
+                }
                 parts.append(draft.frequency?.title ?? L10n.string("recurring.monthly"))
+            } else {
+                if !note.isEmpty { parts.append(note) }
+                if draft.isRecurring {
+                    parts.append(draft.frequency?.title ?? L10n.string("recurring.monthly"))
+                }
             }
             if let account = wallet {
                 parts.append(account.name)
             }
             return parts.joined(separator: " · ")
         }()
+        let glyphSymbol = draft.subscriptionBrandSymbol
+            ?? cat?.symbolName
+            ?? "circle.fill"
 
         return HStack(alignment: .center, spacing: 12) {
             CategoryGlyph(
-                symbolName: cat?.symbolName ?? "circle.fill",
+                symbolName: glyphSymbol,
                 colorHex: cat?.colorHex ?? "8E8E93",
                 size: 36
             )

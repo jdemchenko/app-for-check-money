@@ -237,14 +237,26 @@ enum SeedData {
             keywords: [
                 "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
                 "movie", "movies", "театр", "theater", "theatre", "игры", "games",
-                "подписк", "subscription", "netflix", "spotify",
-                "яндекс music", "yandex music", "яндекс музык", "apple music",
-                "эпл мьюзик", "эппл мьюзик", "эпл music",
-                "youtube premium", "youtube music",
                 "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
             ],
             colorHex: "8E8E93",
             symbolName: "film.fill"
+        ),
+        .init(
+            id: "subscriptions",
+            nameRu: "Подписки",
+            nameEn: "Subscriptions",
+            kind: .expense,
+            keywords: [
+                "подписк", "subscription", "subscriptions",
+                "netflix", "spotify",
+                "яндекс music", "yandex music", "яндекс музык", "яндекс plus", "яндекс плюс",
+                "yandex plus", "apple music", "apple",
+                "эпл мьюзик", "эппл мьюзик", "эпл music",
+                "youtube premium", "youtube music", "ютюб премиум", "ютуб премиум",
+            ],
+            colorHex: "8E8E93",
+            symbolName: "rectangle.stack.fill.badge.plus"
         ),
         .init(
             id: "telecom",

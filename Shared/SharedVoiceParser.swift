@@ -18,6 +18,8 @@ struct SharedVoiceDraft: Equatable {
     var dayOffset: Int?
     /// Optional part of day from speech: `morning` / `evening`.
     var dayPart: String?
+    /// Detected subscription brand id (`apple_music`, `spotify`, …) for confirm UI.
+    var subscriptionBrandRaw: String?
 
     /// Happy-path autosave: amount + keyword category, not recurring.
     var isAutosaveReady: Bool {
@@ -163,13 +165,46 @@ enum SharedVoiceParser {
 
     private static let subscriptionCue = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\s*music|yandex\s*music|яндекс\s*музык\w*|apple\s*music|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music|youtube\s*premium|youtube\s*music)"#
+            + #"(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\s*(?:music|plus|плюс|музык\w*)|yandex\s*(?:music|plus)|apple\s*music|\bapple\b|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music|youtube\s*premium|youtube\s*music)"#
             + wa,
         options: []
     )
 
+    /// Brand detectors — longer / more specific first.
+    private static let subscriptionBrands: [(id: String, pattern: NSRegularExpression)] = [
+        ("apple_music", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:apple\s*music|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music)"# + wa, options: []
+        )),
+        ("youtube_premium", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:youtube\s*premium|youtube\s*music|ютюб\s*премиум|ютуб\s*премиум)"# + wa, options: []
+        )),
+        ("yandex_music", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:яндекс\s*music|yandex\s*music|яндекс\s*музык\w*)"# + wa, options: []
+        )),
+        ("yandex_plus", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:яндекс\s*(?:plus|плюс)|yandex\s*plus)"# + wa, options: []
+        )),
+        ("netflix", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"netflix"# + wa, options: []
+        )),
+        ("spotify", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"spotify"# + wa, options: []
+        )),
+        ("apple_music", try! NSRegularExpression(
+            // Bare «Apple» near подписк* — last resort after Music-specific patterns.
+            pattern: #"(?i)"# + wb + #"apple"# + wa, options: []
+        )),
+    ]
+
     private static let dateYesterday = try! NSRegularExpression(
         pattern: #"(?i)"# + wb + #"вчера"# + wa, options: []
+    )
+    /// «вечером вчерашнего дня» / «вчерашний вечер».
+    private static let dateYesterdayGenitive = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:вечером\s+вчерашнего(?:\s+дня)?|утром\s+вчерашнего(?:\s+дня)?|вчерашн(?:его|ий|яя|ее|им)\s+(?:дня|день|вечер\w*|утр\w*))"#
+            + wa,
+        options: []
     )
     private static let dateDayBefore = try! NSRegularExpression(
         pattern: #"(?i)"# + wb + #"позавчера"# + wa, options: []
@@ -221,8 +256,10 @@ enum SharedVoiceParser {
         "закинул", "закинула", "пополнил", "купил", "купила", "заказал", "заказала",
         "добавь", "кажется",
         "сегодня", "вчера", "позавчера", "утром", "вечером",
+        "вчерашнего", "вчерашний", "дня", "день",
         "это", "будет", "свой", "свою",
         "got", "received", "spent", "paid", "bought", "ordered",
+        "зашёл", "зашла", "зашел",
         // NOTE: keep «аренда квартиры», «проезд», «телефон», «долларов» OUT — descriptions
     ].map { TextNormalizer.normalize($0) })
 
@@ -485,7 +522,8 @@ enum SharedVoiceParser {
         dayOffset: Int?,
         dayPart: String?
     ) -> SharedVoiceDraft {
-        let subscription = detectSubscription(in: rawText)
+        let brand = detectSubscriptionBrand(in: rawText)
+        let subscription = detectSubscription(in: rawText) ?? (brand != nil ? "monthly" : nil)
         let frequency = detectFrequency(in: rawText) ?? subscription
         let working = frequency != nil ? stripRecurringCues(rawText) : rawText
 
@@ -539,16 +577,30 @@ enum SharedVoiceParser {
         if delivery, let food = categories.first(where: { $0.id == "food" }) {
             matched = food
         }
+        // Subscription brands → Подписки. Bare «подписка» without a brand keeps other categories.
+        if brand != nil {
+            if let subs = categories.first(where: { $0.id == "subscriptions" }) {
+                matched = subs
+            } else if let entertainment = categories.first(where: { $0.id == "entertainment" }) {
+                matched = entertainment
+            }
+        }
 
         let categoryMatchedByKeyword = matched != nil
         let categoryId = matched?.id
             ?? SharedCategoryMatcher.categories(forRaw: type!, in: categories).first?.id
 
-        let note = extractNote(
+        var note = extractNote(
             from: working,
             matchedCategory: matched,
             allCategories: categories
         )
+        if let brand, note.isEmpty || note.count < 3 {
+            note = SubscriptionBrand.displayName(for: brand)
+        } else if let brand {
+            // Prefer clean brand label over leftover «подписку долларов …».
+            note = SubscriptionBrand.displayName(for: brand)
+        }
 
         return SharedVoiceDraft(
             amount: amount,
@@ -560,7 +612,8 @@ enum SharedVoiceParser {
             currencyRaw: currency,
             frequencyRaw: frequency,
             dayOffset: dayOffset,
-            dayPart: dayPart
+            dayPart: dayPart,
+            subscriptionBrandRaw: brand
         )
     }
 
@@ -577,16 +630,24 @@ enum SharedVoiceParser {
         var activePart: String? = nil
         var drafts: [SharedVoiceDraft] = []
 
-        // Seed from preamble before the first segment if the full text starts with a date.
-        if let preamble = detectDateAnchor(in: fullText) {
+        // Seed day from full text only when an explicit day word is present (вчера/сегодня/…).
+        if let preamble = detectDateAnchor(in: fullText), preamble.dayExplicit {
             activeOffset = preamble.offset
             activePart = preamble.part
         }
 
         for segment in segments {
             if let anchor = detectDateAnchor(in: segment) {
-                activeOffset = anchor.offset
-                activePart = anchor.part
+                if anchor.dayExplicit, let offset = anchor.offset {
+                    activeOffset = offset
+                } else if activeOffset == nil, let offset = anchor.offset {
+                    // Bare «утром»/«вечером» → today only when no day is active yet.
+                    activeOffset = offset
+                }
+                // Bare day-part after «вчера» keeps yesterday and only updates morning/evening.
+                if let part = anchor.part {
+                    activePart = part
+                }
             }
             var draft = parse(
                 rawText: segment,
@@ -596,9 +657,19 @@ enum SharedVoiceParser {
                 dayPart: activePart
             )
             guard let amount = draft.amount, amount > 0 else { continue }
-            // Prefer segment text as raw; keep subscription frequency if detected.
+            // Prefer segment text as raw; keep subscription frequency / brand if detected.
             if draft.frequencyRaw == nil, let sub = detectSubscription(in: segment) {
                 draft.frequencyRaw = sub
+            }
+            if draft.subscriptionBrandRaw == nil,
+               let brand = detectSubscriptionBrand(in: segment) {
+                draft.subscriptionBrandRaw = brand
+                draft.frequencyRaw = draft.frequencyRaw ?? "monthly"
+                draft.note = SubscriptionBrand.displayName(for: brand)
+                if let subs = categories.first(where: { $0.id == "subscriptions" }) {
+                    draft.categoryId = subs.id
+                    draft.categoryMatchedByKeyword = true
+                }
             }
             drafts.append(draft)
         }
@@ -636,6 +707,20 @@ enum SharedVoiceParser {
         if subscriptionCue.firstMatch(in: text, options: [], range: range) != nil {
             return "monthly"
         }
+        if detectSubscriptionBrand(in: text) != nil {
+            return "monthly"
+        }
+        return nil
+    }
+
+    /// Brand id for confirm UI logos (`apple_music`, `spotify`, …).
+    static func detectSubscriptionBrand(in text: String) -> String? {
+        let range = NSRange(text.startIndex..., in: text)
+        for brand in subscriptionBrands {
+            if brand.pattern.firstMatch(in: text, options: [], range: range) != nil {
+                return brand.id
+            }
+        }
         return nil
     }
 
@@ -646,8 +731,11 @@ enum SharedVoiceParser {
     }
 
     struct DateAnchor {
-        var offset: Int
+        /// Calendar day offset; `nil` when only a day-part was spoken.
+        var offset: Int?
         var part: String?
+        /// True when вчера/сегодня/позавчера/вчерашнего was explicit (not bare утром).
+        var dayExplicit: Bool
     }
 
     static func detectDateAnchor(in text: String) -> DateAnchor? {
@@ -659,20 +747,57 @@ enum SharedVoiceParser {
             part = "evening"
         }
 
+        // «вечером вчерашнего дня» before bare «вчера» / «вечером».
+        if dateYesterdayGenitive.firstMatch(in: text, options: [], range: range) != nil {
+            if part == nil {
+                if text.range(of: #"вечер"#, options: [.regularExpression, .caseInsensitive]) != nil {
+                    part = "evening"
+                } else if text.range(of: #"утр"#, options: [.regularExpression, .caseInsensitive]) != nil {
+                    part = "morning"
+                }
+            }
+            return DateAnchor(offset: -1, part: part, dayExplicit: true)
+        }
         if dateDayBefore.firstMatch(in: text, options: [], range: range) != nil {
-            return DateAnchor(offset: -2, part: part)
+            return DateAnchor(offset: -2, part: part, dayExplicit: true)
         }
         if dateYesterday.firstMatch(in: text, options: [], range: range) != nil {
-            return DateAnchor(offset: -1, part: part)
+            return DateAnchor(offset: -1, part: part, dayExplicit: true)
         }
         if dateToday.firstMatch(in: text, options: [], range: range) != nil {
-            return DateAnchor(offset: 0, part: part)
+            return DateAnchor(offset: 0, part: part, dayExplicit: true)
         }
-        // Bare «утром» / «вечером» without сегодня still implies today.
+        // Bare «утром» / «вечером» — day-part only; materialize keeps prior day when set.
         if part != nil {
-            return DateAnchor(offset: 0, part: part)
+            return DateAnchor(offset: 0, part: part, dayExplicit: false)
         }
         return nil
+    }
+
+    /// Display names + SF Symbols for subscription brands.
+    enum SubscriptionBrand {
+        static func displayName(for id: String) -> String {
+            switch id {
+            case "apple_music": return "Apple Music"
+            case "yandex_music": return "Yandex Music"
+            case "yandex_plus": return "Yandex Plus"
+            case "spotify": return "Spotify"
+            case "netflix": return "Netflix"
+            case "youtube_premium": return "YouTube Premium"
+            default: return id
+            }
+        }
+
+        static func symbolName(for id: String) -> String {
+            switch id {
+            case "apple_music": return "applelogo"
+            case "yandex_music", "yandex_plus": return "music.note.list"
+            case "spotify": return "music.note"
+            case "netflix": return "play.tv"
+            case "youtube_premium": return "play.rectangle.fill"
+            default: return "rectangle.stack.fill.badge.plus"
+            }
+        }
     }
 
     static func splitNarrative(_ text: String) -> [String] {
@@ -777,29 +902,41 @@ enum SharedVoiceParser {
     }
 
     static func splitMultiExpense(_ text: String) -> [String] {
+        // Prefer comma/«и» first so «30 евро, подписка 3 доллара» keeps brand with the 3.
+        let range = NSRange(text.startIndex..., in: text)
+        let matches = multiSplit.matches(in: text, options: [], range: range)
+        if !matches.isEmpty {
+            var parts: [String] = []
+            var start = text.startIndex
+            for match in matches {
+                guard let cut = Range(match.range, in: text) else { continue }
+                let piece = String(text[start..<cut.lowerBound])
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !piece.isEmpty { parts.append(piece) }
+                start = cut.upperBound
+            }
+            let tail = String(text[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !tail.isEmpty { parts.append(tail) }
+
+            let withAmount = parts.filter { parseAmount(from: $0) != nil }
+            if withAmount.count >= 2 {
+                var expanded: [String] = []
+                for part in withAmount {
+                    if let spanned = splitByAmountSpans(part) {
+                        expanded.append(contentsOf: spanned)
+                    } else {
+                        expanded.append(part)
+                    }
+                }
+                let ok = expanded.filter { parseAmount(from: $0) != nil }
+                return ok.count >= 2 ? ok : withAmount
+            }
+        }
+
         if let spanned = splitByAmountSpans(text) {
             return spanned
         }
-
-        let range = NSRange(text.startIndex..., in: text)
-        let matches = multiSplit.matches(in: text, options: [], range: range)
-        guard !matches.isEmpty else { return [text] }
-
-        var parts: [String] = []
-        var start = text.startIndex
-        for match in matches {
-            guard let cut = Range(match.range, in: text) else { continue }
-            let piece = String(text[start..<cut.lowerBound])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            if !piece.isEmpty { parts.append(piece) }
-            start = cut.upperBound
-        }
-        let tail = String(text[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
-        if !tail.isEmpty { parts.append(tail) }
-
-        // Keep only segments that still look like they carry an amount.
-        let withAmount = parts.filter { parseAmount(from: $0) != nil }
-        return withAmount.count >= 2 ? withAmount : [text]
+        return [text]
     }
 
     /// «15 € за продукты 30 $ за игрушки» — split on amount+unit spans, keep category words.
@@ -1163,7 +1300,7 @@ extension SharedVoiceParser {
             if ivan[0].amount != 15 || ivan[0].currencyRaw != "byn" || ivan[0].categoryId != "food" || ivan[0].dayOffset != -1 {
                 failures.append("ivan[0] coffee: \(ivan[0])")
             }
-            if ivan[1].amount != 3 || ivan[1].currencyRaw != "usd" || ivan[1].categoryId != "entertainment" || ivan[1].frequencyRaw != "monthly" {
+            if ivan[1].amount != 3 || ivan[1].currencyRaw != "usd" || ivan[1].categoryId != "subscriptions" || ivan[1].frequencyRaw != "monthly" {
                 failures.append("ivan[1] yandex: \(ivan[1])")
             }
             if ivan[2].amount != 40 || ivan[2].currencyRaw != "byn" || ivan[2].categoryId != "food" || ivan[2].dayOffset != -1 {

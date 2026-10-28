@@ -133,11 +133,21 @@ const CATEGORIES = [
     keywords: [
       "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
       "movie", "movies", "театр", "theater", "theatre", "игры", "games",
-      "подписк", "subscription", "netflix", "spotify",
-      "яндекс music", "yandex music", "яндекс музык", "apple music",
-      "эпл мьюзик", "эппл мьюзик", "эпл music",
-      "youtube premium", "youtube music",
       "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
+    ],
+  },
+  {
+    id: "subscriptions",
+    nameRu: "Подписки",
+    nameEn: "Subscriptions",
+    kind: "expense",
+    keywords: [
+      "подписк", "subscription", "subscriptions",
+      "netflix", "spotify",
+      "яндекс music", "yandex music", "яндекс музык", "яндекс plus", "яндекс плюс",
+      "yandex plus", "apple music", "apple",
+      "эпл мьюзик", "эппл мьюзик", "эпл music",
+      "youtube premium", "youtube music", "ютюб премиум", "ютуб премиум",
     ],
   },
   {
@@ -252,8 +262,10 @@ const NOTE_SUPPRESS = new Set(
     "закинул", "закинула", "пополнил", "купил", "купила", "заказал", "заказала",
     "добавь", "кажется",
     "сегодня", "вчера", "позавчера", "утром", "вечером",
+    "вчерашнего", "вчерашний", "дня", "день",
     "это", "будет", "свой", "свою",
     "got", "received", "spent", "paid", "bought", "ordered",
+    "зашёл", "зашла", "зашел",
   ].map(normalize)
 );
 
@@ -621,9 +633,37 @@ const COMPANION_STRIP = new RegExp(
   "giu"
 );
 const SUBSCRIPTION_CUE = new RegExp(
-  `${WB}(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\\s*music|yandex\\s*music|яндекс\\s*музык\\w*|apple\\s*music|эпл\\s*мьюзик|эппл\\s*мьюзик|эпл\\s*music|youtube\\s*premium|youtube\\s*music)${WA}`,
+  `${WB}(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\\s*(?:music|plus|плюс|музык\\w*)|yandex\\s*(?:music|plus)|apple\\s*music|\\bapple\\b|эпл\\s*мьюзик|эппл\\s*мьюзик|эпл\\s*music|youtube\\s*premium|youtube\\s*music)${WA}`,
   "i"
 );
+const SUBSCRIPTION_BRANDS = [
+  {
+    id: "apple_music",
+    re: new RegExp(`${WB}(?:apple\\s*music|эпл\\s*мьюзик|эппл\\s*мьюзик|эпл\\s*music)${WA}`, "i"),
+    name: "Apple Music",
+  },
+  {
+    id: "youtube_premium",
+    re: new RegExp(
+      `${WB}(?:youtube\\s*premium|youtube\\s*music|ютюб\\s*премиум|ютуб\\s*премиум)${WA}`,
+      "i"
+    ),
+    name: "YouTube Premium",
+  },
+  {
+    id: "yandex_music",
+    re: new RegExp(`${WB}(?:яндекс\\s*music|yandex\\s*music|яндекс\\s*музык\\w*)${WA}`, "i"),
+    name: "Yandex Music",
+  },
+  {
+    id: "yandex_plus",
+    re: new RegExp(`${WB}(?:яндекс\\s*(?:plus|плюс)|yandex\\s*plus)${WA}`, "i"),
+    name: "Yandex Plus",
+  },
+  { id: "netflix", re: new RegExp(`${WB}netflix${WA}`, "i"), name: "Netflix" },
+  { id: "spotify", re: new RegExp(`${WB}spotify${WA}`, "i"), name: "Spotify" },
+  { id: "apple_music", re: new RegExp(`${WB}apple${WA}`, "i"), name: "Apple Music" },
+];
 
 function detectFrequency(text) {
   MONTHLY_RE.lastIndex = 0;
@@ -633,9 +673,18 @@ function detectFrequency(text) {
   return null;
 }
 
+function detectSubscriptionBrand(text) {
+  for (const brand of SUBSCRIPTION_BRANDS) {
+    brand.re.lastIndex = 0;
+    if (brand.re.test(text)) return brand;
+  }
+  return null;
+}
+
 function detectSubscription(text) {
   SUBSCRIPTION_CUE.lastIndex = 0;
   if (SUBSCRIPTION_CUE.test(text)) return "monthly";
+  if (detectSubscriptionBrand(text)) return "monthly";
   return null;
 }
 
@@ -657,10 +706,29 @@ function detectDateAnchor(text) {
   let part = null;
   if (new RegExp(`${WB}(?:утром|с\\s+утра|morning)${WA}`, "i").test(text)) part = "morning";
   else if (new RegExp(`${WB}(?:вечером|evening|tonight)${WA}`, "i").test(text)) part = "evening";
-  if (new RegExp(`${WB}позавчера${WA}`, "i").test(text)) return { offset: -2, part };
-  if (new RegExp(`${WB}вчера${WA}`, "i").test(text)) return { offset: -1, part };
-  if (new RegExp(`${WB}сегодня${WA}`, "i").test(text)) return { offset: 0, part };
-  if (part) return { offset: 0, part };
+
+  const yesterdayGen = new RegExp(
+    `${WB}(?:вечером\\s+вчерашнего(?:\\s+дня)?|утром\\s+вчерашнего(?:\\s+дня)?|вчерашн(?:его|ий|яя|ее|им)\\s+(?:дня|день|вечер\\w*|утр\\w*))${WA}`,
+    "i"
+  );
+  if (yesterdayGen.test(text)) {
+    if (!part) {
+      if (/вечер/i.test(text)) part = "evening";
+      else if (/утр/i.test(text)) part = "morning";
+    }
+    return { offset: -1, part, dayExplicit: true };
+  }
+  if (new RegExp(`${WB}позавчера${WA}`, "i").test(text)) {
+    return { offset: -2, part, dayExplicit: true };
+  }
+  if (new RegExp(`${WB}вчера${WA}`, "i").test(text)) {
+    return { offset: -1, part, dayExplicit: true };
+  }
+  if (new RegExp(`${WB}сегодня${WA}`, "i").test(text)) {
+    return { offset: 0, part, dayExplicit: true };
+  }
+  // Bare «утром» / «вечером» — day-part only; keep prior day when set.
+  if (part) return { offset: 0, part, dayExplicit: false };
   return null;
 }
 
@@ -688,9 +756,7 @@ function splitByAmountSpans(text) {
 }
 
 function splitMultiExpense(text) {
-  const spanned = splitByAmountSpans(text);
-  if (spanned) return spanned;
-
+  // Prefer comma/«и» first so «30 евро, подписка 3 доллара» keeps brand with the 3.
   const parts = [];
   let last = 0;
   MULTI_SPLIT.lastIndex = 0;
@@ -702,8 +768,24 @@ function splitMultiExpense(text) {
   }
   const tail = text.slice(last).trim();
   if (tail) parts.push(tail);
-  const withAmount = parts.filter((p) => parseAmount(p) != null);
-  return withAmount.length >= 2 ? withAmount : [text];
+  let withAmount = parts.filter((p) => parseAmount(p) != null);
+  if (withAmount.length >= 2) {
+    // Further split each clause on bare amount+unit runs («15 € … 30 $»).
+    const expanded = [];
+    for (const part of withAmount.length >= 2 ? parts : [text]) {
+      if (parseAmount(part) == null && withAmount.length >= 2) continue;
+      const spanned = splitByAmountSpans(part);
+      if (spanned) expanded.push(...spanned);
+      else if (parseAmount(part) != null) expanded.push(part);
+    }
+    const ok = expanded.filter((p) => parseAmount(p) != null);
+    if (ok.length >= 2) return ok;
+    return withAmount;
+  }
+
+  const spanned = splitByAmountSpans(text);
+  if (spanned) return spanned;
+  return [text];
 }
 
 function splitNarrative(text) {
@@ -758,7 +840,8 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
   const anchor = detectDateAnchor(rawText);
   const offset = dayOffset ?? anchor?.offset ?? null;
   const part = dayPart ?? anchor?.part ?? null;
-  const subscription = detectSubscription(rawText);
+  const brand = detectSubscriptionBrand(rawText);
+  const subscription = detectSubscription(rawText) ?? (brand ? "monthly" : null);
   const frequency = detectFrequency(rawText) ?? subscription;
   const working = frequency ? stripRecurringCues(rawText) : rawText;
   const amount = parseAmount(working);
@@ -774,11 +857,18 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
   if (delivery) {
     matched = CATEGORIES.find((c) => c.id === "food") ?? matched;
   }
+  if (brand) {
+    matched =
+      CATEGORIES.find((c) => c.id === "subscriptions") ??
+      CATEGORIES.find((c) => c.id === "entertainment") ??
+      matched;
+  }
   const categoryMatchedByKeyword = Boolean(matched);
   const categoryId =
     matched?.id ??
     CATEGORIES.find((c) => c.kind === type || c.kind === "both")?.id;
-  const note = extractNote(working, matched);
+  let note = extractNote(working, matched);
+  if (brand) note = brand.name;
   let currency = inferCurrency(working);
   if (currency == null && session != null) currency = session;
   return {
@@ -791,6 +881,7 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
     frequency,
     dayOffset: offset,
     dayPart: part,
+    subscriptionBrand: brand?.id ?? null,
     isAutosaveReady: Boolean(
       !frequency && amount && amount > 0 && categoryMatchedByKeyword && categoryId
     ),
@@ -798,20 +889,39 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
 }
 
 function materializeSegments(segments, fullText, sessionCurrency) {
-  let activeOffset = detectDateAnchor(fullText)?.offset ?? null;
-  let activePart = detectDateAnchor(fullText)?.part ?? null;
+  let activeOffset = null;
+  let activePart = null;
+  const preamble = detectDateAnchor(fullText);
+  if (preamble?.dayExplicit) {
+    activeOffset = preamble.offset;
+    activePart = preamble.part;
+  }
   const drafts = [];
   for (const segment of segments) {
     const anchor = detectDateAnchor(segment);
     if (anchor) {
-      activeOffset = anchor.offset;
-      activePart = anchor.part;
+      if (anchor.dayExplicit && anchor.offset != null) {
+        activeOffset = anchor.offset;
+      } else if (activeOffset == null && anchor.offset != null) {
+        activeOffset = anchor.offset;
+      }
+      if (anchor.part) activePart = anchor.part;
     }
     const draft = parse(segment, sessionCurrency, activeOffset, activePart);
     if (!(draft.amount && draft.amount > 0)) continue;
     if (!draft.frequency) {
       const sub = detectSubscription(segment);
       if (sub) draft.frequency = sub;
+    }
+    if (!draft.subscriptionBrand) {
+      const brand = detectSubscriptionBrand(segment);
+      if (brand) {
+        draft.subscriptionBrand = brand.id;
+        draft.frequency = draft.frequency ?? "monthly";
+        draft.note = brand.name;
+        draft.categoryId = "subscriptions";
+        draft.categoryMatchedByKeyword = true;
+      }
     }
     drafts.push(draft);
   }
@@ -967,7 +1077,13 @@ const cases = [
   {
     name: "recurring Netflix every month",
     input: "Netflix 10 dollars every month",
-    expect: { amount: 10, currency: "usd", frequency: "monthly", autosave: false },
+    expect: {
+      amount: 10,
+      currency: "usd",
+      categoryId: "subscriptions",
+      frequency: "monthly",
+      autosave: false,
+    },
   },
   {
     name: "recurring RU каждый месяц",
@@ -1055,9 +1171,10 @@ const multiCases = [
       {
         amount: 3,
         currency: "usd",
-        categoryId: "entertainment",
+        categoryId: "subscriptions",
         dayOffset: -1,
         frequency: "monthly",
+        subscriptionBrand: "yandex_music",
       },
       { amount: 40, currency: "byn", categoryId: "food", dayOffset: -1 },
       {
@@ -1092,8 +1209,9 @@ const multiCases = [
       {
         amount: 3,
         currency: "usd",
-        categoryId: "entertainment",
+        categoryId: "subscriptions",
         frequency: "monthly",
+        subscriptionBrand: "yandex_music",
       },
     ],
   },
@@ -1106,9 +1224,10 @@ const multiCases = [
       {
         amount: 3,
         currency: "usd",
-        categoryId: "entertainment",
+        categoryId: "subscriptions",
         dayOffset: -1,
         frequency: "monthly",
+        subscriptionBrand: "apple_music",
       },
       { amount: 30, currency: "eur", categoryId: "transport", dayOffset: 0 },
     ],
@@ -1126,15 +1245,16 @@ const multiCases = [
   {
     name: "ivan delivery food ≠ freelance + семь долларов",
     input:
-      "в рб моя валюта белорусский рубль вчера я оплатил подписку Apple Music семь долларов утром заказал доставку еды на 15 руб",
+      "в рб моя валюта белорусский рубль вчера я оплатил подписку Apple Music семь долларов сегодня утром заказал доставку еды на 15 руб",
     expect: [
       {
         amount: 7,
         currency: "usd",
-        categoryId: "entertainment",
+        categoryId: "subscriptions",
         type: "expense",
         frequency: "monthly",
         dayOffset: -1,
+        subscriptionBrand: "apple_music",
       },
       {
         amount: 15,
@@ -1146,6 +1266,49 @@ const multiCases = [
       },
     ],
     forbidNoteIncludes: ["вчера", "утром", "я"],
+  },
+  {
+    name: "ivan вечером вчерашнего дня + carshare + delivery",
+    input:
+      "в рб моя валюта белорусский рубль Вчера я купил на 30 руб продукты утром потом оплатил подписку семь долларов Apple Music и вечером вчерашнего дня зашёл в кофейню потратил 17 руб. сегодня ездил на Каршеринг потратил 30 руб и заказал доставку еды на 15 руб",
+    expect: [
+      {
+        amount: 30,
+        currency: "byn",
+        categoryId: "food",
+        dayOffset: -1,
+        dayPart: "morning",
+      },
+      {
+        amount: 7,
+        currency: "usd",
+        categoryId: "subscriptions",
+        frequency: "monthly",
+        dayOffset: -1,
+        subscriptionBrand: "apple_music",
+      },
+      {
+        amount: 17,
+        currency: "byn",
+        categoryId: "food",
+        dayOffset: -1,
+        dayPart: "evening",
+      },
+      {
+        amount: 30,
+        currency: "byn",
+        categoryId: "transport",
+        dayOffset: 0,
+      },
+      {
+        amount: 15,
+        currency: "byn",
+        categoryId: "food",
+        dayOffset: 0,
+        type: "expense",
+      },
+    ],
+    forbidNoteIncludes: ["housing", "вчерашнего", "дня"],
   },
 ];
 
@@ -1215,6 +1378,14 @@ for (const c of multiCases) {
     }
     if (Object.prototype.hasOwnProperty.call(e, "type") && d.type !== e.type) {
       bugs.push(`[${i}] type got ${d.type} expected ${e.type}`);
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(e, "subscriptionBrand") &&
+      d.subscriptionBrand !== e.subscriptionBrand
+    ) {
+      bugs.push(
+        `[${i}] brand got ${d.subscriptionBrand} expected ${e.subscriptionBrand}`
+      );
     }
   }
   if (c.forbidNoteIncludes) {
