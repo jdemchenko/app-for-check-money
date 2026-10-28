@@ -238,6 +238,7 @@ enum SeedData {
                 "movie", "movies", "театр", "theater", "theatre", "игры", "games",
                 "подписк", "subscription", "netflix", "spotify",
                 "яндекс music", "yandex music", "яндекс музык", "apple music",
+                "эпл мьюзик", "эппл мьюзик", "эпл music",
                 "youtube premium", "youtube music",
                 "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
             ],

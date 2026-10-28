@@ -13,6 +13,8 @@ function normalize(text) {
 /** Unicode-safe token edges (JS \\b breaks on Cyrillic). */
 const WB = "(?<![0-9A-Za-zА-Яа-яЁё])";
 const WA = "(?![0-9A-Za-zА-Яа-яЁё])";
+/** JS `\w` is ASCII-only — use this after Cyrillic stems (бел…, европ…). */
+const WL = "[0-9A-Za-zА-Яа-яЁё_]*";
 
 const ONES = {
   ноль: 0, один: 1, одна: 1, два: 2, две: 2, три: 3, четыре: 4,
@@ -131,6 +133,7 @@ const CATEGORIES = [
       "movie", "movies", "театр", "theater", "theatre", "игры", "games",
       "подписк", "subscription", "netflix", "spotify",
       "яндекс music", "yandex music", "яндекс музык", "apple music",
+      "эпл мьюзик", "эппл мьюзик", "эпл music",
       "youtube premium", "youtube music",
       "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
     ],
@@ -567,8 +570,16 @@ const NARRATIVE_SPLIT = new RegExp(
   `(?:\\s+потом\\s+|\\s+затем\\s+|\\s+после\\s+(?:этого|того)\\s+|(?<=[\\p{L}\\d.])\\s+(?=оплатил[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=сегодня${WA})|(?<=[\\p{L}\\d.])\\s+(?=вчера${WA})|(?<=[\\p{L}\\d.])\\s+(?=позавчера${WA}))`,
   "giu"
 );
-const SESSION_CURRENCY_CUE = new RegExp(
-  `${WB}(?:в\\s+рб|рб|белорусск\\w*|бел\\.?\\s*руб|byn|br|моя\\s+валюта)${WA}`,
+const SESSION_EUR = new RegExp(
+  `${WB}(?:моя\\s+валюта\\s+евро|валюта\\s+евро|в\\s+европ${WL}|в\\s+еврозоне|europe|eurozone)${WA}`,
+  "i"
+);
+const SESSION_USD = new RegExp(
+  `${WB}(?:моя\\s+валюта\\s+(?:доллар${WL}|usd)|валюта\\s+(?:доллар${WL}|usd)|в\\s+сша)${WA}`,
+  "i"
+);
+const SESSION_BYN = new RegExp(
+  `${WB}(?:моя\\s+валюта\\s+(?:бел${WL}|byn|br|руб${WL})|валюта\\s+(?:бел${WL}|byn|br)|в\\s+рб|белорусск${WL}|бел\\.?\\s*руб|\\bbyn\\b|\\bbr\\b)${WA}`,
   "i"
 );
 const COMPANION_STRIP = new RegExp(
@@ -576,7 +587,7 @@ const COMPANION_STRIP = new RegExp(
   "giu"
 );
 const SUBSCRIPTION_CUE = new RegExp(
-  `${WB}(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\\s*music|yandex\\s*music|яндекс\\s*музык\\w*|apple\\s*music|youtube\\s*premium|youtube\\s*music)${WA}`,
+  `${WB}(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\\s*music|yandex\\s*music|яндекс\\s*музык\\w*|apple\\s*music|эпл\\s*мьюзик|эппл\\s*мьюзик|эпл\\s*music|youtube\\s*premium|youtube\\s*music)${WA}`,
   "i"
 );
 
@@ -595,8 +606,13 @@ function detectSubscription(text) {
 }
 
 function detectSessionCurrency(text) {
-  SESSION_CURRENCY_CUE.lastIndex = 0;
-  return SESSION_CURRENCY_CUE.test(text) ? "byn" : null;
+  SESSION_EUR.lastIndex = 0;
+  SESSION_USD.lastIndex = 0;
+  SESSION_BYN.lastIndex = 0;
+  if (SESSION_EUR.test(text)) return "eur";
+  if (SESSION_USD.test(text)) return "usd";
+  if (SESSION_BYN.test(text)) return "byn";
+  return null;
 }
 
 function stripCompanions(text) {
@@ -653,7 +669,15 @@ function splitNarrative(text) {
   if (!found) return splitMultiExpense(text);
   const tail = text.slice(last).trim();
   if (tail) parts.push(tail);
-  const withAmount = parts.filter((p) => parseAmount(p) != null);
+  // Flatten: each narrative clause may still hold comma/«и» multi-amounts
+  // (e.g. «продукты 30 евро, подписка 3 доллара … были вчера»).
+  const expanded = [];
+  for (const part of parts) {
+    const multi = splitMultiExpense(part);
+    if (multi.length >= 2) expanded.push(...multi);
+    else expanded.push(part);
+  }
+  const withAmount = expanded.filter((p) => parseAmount(p) != null);
   return withAmount.length >= 2 ? withAmount : [text];
 }
 
@@ -1009,7 +1033,57 @@ const multiCases = [
       },
     ],
   },
+  {
+    name: "ivan europe EUR session + explicit USD",
+    input:
+      "нахожусь в европе и моя валюта евро: продукты 30 евро, подписка 3 доллара эпл мьюзик были вчера и сегодня 30 евро на такси",
+    expect: [
+      { amount: 30, currency: "eur", categoryId: "food", dayOffset: -1 },
+      {
+        amount: 3,
+        currency: "usd",
+        categoryId: "entertainment",
+        dayOffset: -1,
+        frequency: "monthly",
+      },
+      { amount: 30, currency: "eur", categoryId: "transport", dayOffset: 0 },
+    ],
+  },
 ];
+
+// Session cue unit checks (per-utterance; no cross-utterance leak).
+{
+  const bugs = [];
+  if (detectSessionCurrency("моя валюта белорусский рубль") !== "byn") {
+    bugs.push("BYN cue");
+  }
+  if (detectSessionCurrency("нахожусь в европе и моя валюта евро") !== "eur") {
+    bugs.push("EUR cue");
+  }
+  if (detectSessionCurrency("моя валюта евро") !== "eur") {
+    bugs.push("валюта евро");
+  }
+  // Bare «моя валюта» must NOT stamp BYN.
+  if (detectSessionCurrency("моя валюта") !== null) {
+    bugs.push("bare моя валюта must be null");
+  }
+  // Sequence: prior BYN utterance must not affect next EUR parse (per-utterance extract).
+  const bynDrafts = parseMany(
+    "в рб моя валюта белорусский рубль кофе 10 руб"
+  );
+  const eurDrafts = parseMany(
+    "нахожусь в европе и моя валюта евро продукты 30 евро"
+  );
+  if (bynDrafts[0]?.currency !== "byn") bugs.push("seq BYN");
+  if (eurDrafts[0]?.currency !== "eur") {
+    bugs.push(`seq EUR got ${eurDrafts[0]?.currency}`);
+  }
+  const ok = bugs.length === 0;
+  if (!ok) failed += 1;
+  results.push({ name: "session currency cues + no leak", ok, bugs });
+  console.log(`${ok ? "PASS" : "FAIL"}  session currency cues + no leak`);
+  if (!ok) for (const b of bugs) console.log(`      - ${b}`);
+}
 
 let multiChecked = 0;
 for (const c of multiCases) {

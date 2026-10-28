@@ -194,6 +194,7 @@
 
 "voice.batchTitle" = "Сохранить эти расходы?";
 "voice.batchSave" = "Сохранить все";
+"voice.batchSummary" = "%d записи, %@";
 "voice.recurringTitle" = "Создать повтор?";
 "voice.recurringSave" = "Создать";
 "voice.recurringSaved" = "Повтор сохранён";

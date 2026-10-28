@@ -115,9 +115,22 @@ enum SharedVoiceParser {
         options: []
     )
 
-    private static let sessionCurrencyCue = try! NSRegularExpression(
+    /// Session cues — matched **in order** (EUR / USD before BYN). Bare «моя валюта» alone is NOT BYN.
+    private static let sessionEUR = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:в\s+рб|рб|белорусск\w*|бел\.?\s*руб|byn|br|моя\s+валюта)"#
+            + #"(?:моя\s+валюта\s+евро|валюта\s+евро|в\s+европ\w*|в\s+еврозоне|europe|eurozone|(?:default|entry)\s+eur)"#
+            + wa,
+        options: []
+    )
+    private static let sessionUSD = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:моя\s+валюта\s+(?:доллар\w*|usd)|валюта\s+(?:доллар\w*|usd)|в\s+сша|in\s+the\s+usa|(?:default|entry)\s+usd)"#
+            + wa,
+        options: []
+    )
+    private static let sessionBYN = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:моя\s+валюта\s+(?:бел\w*|byn|br|руб\w*)|валюта\s+(?:бел\w*|byn|br)|в\s+рб|белорусск\w*|бел\.?\s*руб|byn\b|br\b)"#
             + wa,
         options: []
     )
@@ -131,7 +144,7 @@ enum SharedVoiceParser {
 
     private static let subscriptionCue = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\s*music|yandex\s*music|яндекс\s*музык\w*|apple\s*music|youtube\s*premium|youtube\s*music)"#
+            + #"(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\s*music|yandex\s*music|яндекс\s*музык\w*|apple\s*music|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music|youtube\s*premium|youtube\s*music)"#
             + wa,
         options: []
     )
@@ -445,9 +458,9 @@ enum SharedVoiceParser {
 
         let amount = parseAmount(from: working)
         var type = inferType(from: working)
+        // Explicit unit on the amount always wins; session fills bare / ambiguous only.
         var currency = inferCurrency(from: working)
-        // Session «в рб» stamps BYN when the unit was bare «руб» / missing.
-        if currency == nil, sessionCurrency != nil {
+        if currency == nil, let sessionCurrency {
             currency = sessionCurrency
         }
 
@@ -547,9 +560,17 @@ enum SharedVoiceParser {
         return drafts
     }
 
+    /// Per-utterance session default. Explicit amount units always win later in `parse`.
+    /// Priority: EUR → USD → BYN. Never treat bare «моя валюта» as BYN.
     static func detectSessionCurrency(in text: String) -> String? {
         let range = NSRange(text.startIndex..., in: text)
-        if sessionCurrencyCue.firstMatch(in: text, options: [], range: range) != nil {
+        if sessionEUR.firstMatch(in: text, options: [], range: range) != nil {
+            return "eur"
+        }
+        if sessionUSD.firstMatch(in: text, options: [], range: range) != nil {
+            return "usd"
+        }
+        if sessionBYN.firstMatch(in: text, options: [], range: range) != nil {
             return "byn"
         }
         return nil
@@ -635,7 +656,19 @@ enum SharedVoiceParser {
         let tail = String(text[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
         if !tail.isEmpty { parts.append(tail) }
 
-        let withAmount = parts.filter { parseAmount(from: $0) != nil }
+        // Flatten: each narrative clause may still hold comma/«и» multi-amounts
+        // (e.g. «продукты 30 евро, подписка 3 доллара … были вчера»).
+        var expanded: [String] = []
+        for part in parts {
+            let multi = splitMultiExpense(part)
+            if multi.count >= 2 {
+                expanded.append(contentsOf: multi)
+            } else {
+                expanded.append(part)
+            }
+        }
+
+        let withAmount = expanded.filter { parseAmount(from: $0) != nil }
         return withAmount.count >= 2 ? withAmount : [text]
     }
 

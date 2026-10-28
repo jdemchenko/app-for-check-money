@@ -17,6 +17,7 @@ struct HomeView: View {
     @StateObject private var speech = SpeechRecognizer()
     @State private var pendingDraft: VoiceDraft?
     @State private var pendingBatch: [VoiceDraft]?
+    @State private var pendingBatchPhrase: String = ""
     @State private var pendingRecurring: VoiceDraft?
     @State private var overrideCategoryId: String?
     @State private var statusMessage: String?
@@ -208,35 +209,21 @@ struct HomeView: View {
 
     @ViewBuilder
     private func batchConfirmOverlay(_ batch: [VoiceDraft]) -> some View {
-        let lines = batch.map { draft -> String in
-            let code = draft.currency ?? currencySettings.entryCurrency
-            let amount = MoneyFormat.currency(draft.amount ?? 0, code: code)
-            let cat = categories.first { $0.id == draft.categoryId }?.displayName() ?? "—"
-            var parts: [String] = []
-            if let date = draft.dateLabel() { parts.append(date) }
-            parts.append(amount)
-            parts.append(code.code)
-            parts.append(cat)
-            if draft.isRecurring {
-                parts.append(draft.frequency?.title ?? L10n.string("recurring.monthly"))
+        VoiceBatchConfirmView(
+            phrase: pendingBatchPhrase.isEmpty
+                ? batch.map(\.rawText).joined(separator: " · ")
+                : pendingBatchPhrase,
+            drafts: batch,
+            categories: categories,
+            accounts: accounts,
+            displayCurrency: displayCurrency,
+            entryCurrency: currencySettings.entryCurrency,
+            onConfirm: { saveBatch(batch) },
+            onCancel: {
+                pendingBatch = nil
+                pendingBatchPhrase = ""
             }
-            if !draft.note.isEmpty { parts.append(draft.note) }
-            return parts.joined(separator: " · ")
-        }.joined(separator: "\n")
-
-        ZStack {
-            Color.black.opacity(0.28)
-                .ignoresSafeArea()
-                .onTapGesture { pendingBatch = nil }
-            QuietConfirmPanel(
-                title: L10n.string("voice.batchTitle"),
-                message: lines,
-                confirmTitle: L10n.string("voice.batchSave"),
-                confirmDestructive: false,
-                onConfirm: { saveBatch(batch) },
-                onCancel: { pendingBatch = nil }
-            )
-        }
+        )
         .transition(.opacity)
         .zIndex(10)
     }
@@ -605,6 +592,7 @@ struct HomeView: View {
         }
 
         if drafts.count >= 2 {
+            pendingBatchPhrase = trimmed
             pendingBatch = drafts
             speech.clearTranscript()
             return
@@ -708,6 +696,7 @@ struct HomeView: View {
         try? modelContext.save()
         PhoneWatchSync.shared.pushSnapshot()
         pendingBatch = nil
+        pendingBatchPhrase = ""
         speech.clearTranscript()
         if let lastExpense {
             presentQuietFeedback(for: lastExpense)
