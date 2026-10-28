@@ -89,27 +89,29 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: AppTheme.spaceSection) {
-                    balanceHero
+                    // First viewport: brand + balance + one CTA (hold-to-talk). No dashboard dump.
+                    firstViewport
                     if let quietFeedback {
                         Text(quietFeedback)
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .themeSecondary()
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                             .accessibilityLabel(quietFeedback)
                     }
-                    quickMic
+                    secondaryGlance
                     recentBlock
                 }
-                .animation(.easeOut(duration: 0.28), value: quietFeedback)
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 32)
+                .animation(AppTheme.springSoft, value: quietFeedback)
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.top, 4)
+                .padding(.bottom, 40)
             }
             .liquidScreen()
-            .navigationTitle(L10n.string("app.name"))
-            .navigationBarTitleDisplayMode(.large)
+            // Brand lives in the first viewport hero — keep nav chrome quiet.
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
@@ -268,29 +270,44 @@ struct HomeView: View {
 
     // MARK: - Sections
 
-    private var balanceHero: some View {
-        GlassPanel(padding: 22) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(L10n.string("home.balance"))
-                    .font(.footnote.weight(.medium))
-                    .themeSecondary()
+    /// Brand-forward balance + hold-to-talk. No card chrome in the hero.
+    private var firstViewport: some View {
+        VStack(alignment: .leading, spacing: AppTheme.spaceItem) {
+            Text(L10n.string("app.name"))
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.primary)
+                .accessibilityAddTraits(.isHeader)
 
-                Text(MoneyFormat.currency(balance, code: displayCurrency))
-                    .font(.system(size: 42, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary)
-                    .minimumScaleFactor(0.55)
-                    .lineLimit(1)
-                    .contentTransition(.numericText())
+            Text(MoneyFormat.currency(balance, code: displayCurrency))
+                .font(.system(size: 48, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+                .contentTransition(.numericText())
+                .padding(.top, 2)
 
-                Text(
-                    L10n.string("home.monthCashflow")
-                        + " "
-                        + MoneyFormat.currency(monthCashflow, code: displayCurrency)
-                )
-                    .font(.caption2)
-                    .themeTertiary()
+            Text(
+                L10n.string("home.monthCashflow")
+                    + " · "
+                    + MoneyFormat.currency(monthCashflow, code: displayCurrency)
+            )
+            .font(.subheadline)
+            .themeTertiary()
 
-                HStack(spacing: 16) {
+            quickMic
+                .frame(maxWidth: .infinity)
+                .padding(.top, AppTheme.spaceItem)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 4)
+        .padding(.bottom, 8)
+    }
+
+    /// Below-fold glance: income/expense, today, budgets — one quiet panel, not hero clutter.
+    private var secondaryGlance: some View {
+        GlassPanel(padding: 18) {
+            VStack(alignment: .leading, spacing: AppTheme.spaceItem) {
+                HStack(spacing: 20) {
                     Label {
                         Text(MoneyFormat.currency(income, code: displayCurrency))
                             .font(.subheadline.weight(.medium).monospacedDigit())
@@ -306,13 +323,12 @@ struct HomeView: View {
                         Image(systemName: "arrow.up.right")
                     }
                     .foregroundStyle(AppTheme.expense)
+
+                    Spacer(minLength: 0)
                 }
                 .font(.footnote)
-                .padding(.top, 2)
 
-                // Quiet “today” strip — Spendee/Money Lover glance without extra cards.
                 if todayExpense > 0 {
-                    Divider().opacity(colorScheme == .dark ? 0.22 : 0.14).padding(.vertical, 2)
                     HStack {
                         Text(L10n.string("home.today"))
                             .font(.caption.weight(.medium))
@@ -329,7 +345,6 @@ struct HomeView: View {
                     let spent = monthBudgetSpent
                     let limit = settings.budgetAmount
                     let progress = min(1, max(0, spent / limit))
-                    Divider().opacity(colorScheme == .dark ? 0.22 : 0.14).padding(.vertical, 2)
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text(L10n.string("budget.title"))
@@ -348,27 +363,26 @@ struct HomeView: View {
                         }
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                AppTheme.continuousRect(AppTheme.radiusControl)
+                                AppTheme.continuousRect(3)
                                     .fill(AppTheme.trackFill(colorScheme))
-                                AppTheme.continuousRect(AppTheme.radiusControl)
+                                AppTheme.continuousRect(3)
                                     .fill(AppTheme.trackValue(colorScheme, emphasized: progress >= 1))
                                     .frame(width: max(4, geo.size.width * progress))
                             }
                         }
-                        .frame(height: 5)
-                        .clipShape(AppTheme.continuousRect(AppTheme.radiusControl))
+                        .frame(height: 4)
+                        .clipShape(AppTheme.continuousRect(3))
                         .accessibilityLabel(L10n.string("budget.title"))
                         .accessibilityValue("\(Int((progress * 100).rounded()))%")
                     }
                 }
 
                 if !activeCategoryBudgetRows.isEmpty {
-                    Divider().opacity(colorScheme == .dark ? 0.22 : 0.14).padding(.vertical, 2)
                     VStack(alignment: .leading, spacing: 8) {
                         Text(L10n.string("budget.categories"))
                             .font(.caption.weight(.medium))
                             .themeSecondary()
-                        ForEach(activeCategoryBudgetRows, id: \.id) { row in
+                        ForEach(activeCategoryBudgetRows.prefix(3), id: \.id) { row in
                             HStack {
                                 Text(row.name)
                                     .font(.caption)
@@ -387,15 +401,15 @@ struct HomeView: View {
                             }
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
-                                    AppTheme.continuousRect(AppTheme.radiusControl)
+                                    AppTheme.continuousRect(2)
                                         .fill(AppTheme.trackFill(colorScheme))
-                                    AppTheme.continuousRect(AppTheme.radiusControl)
+                                    AppTheme.continuousRect(2)
                                         .fill(AppTheme.trackValue(colorScheme, emphasized: row.progress >= 1))
                                         .frame(width: max(4, geo.size.width * row.progress))
                                 }
                             }
                             .frame(height: 3)
-                            .clipShape(AppTheme.continuousRect(AppTheme.radiusControl))
+                            .clipShape(AppTheme.continuousRect(2))
                         }
                     }
                 }
@@ -434,18 +448,18 @@ struct HomeView: View {
             .reduce(0) { $0 + $1.amountIn(settings.budgetCurrency) }
     }
 
-    /// Hold to talk — press starts listening, release stops and saves.
+    /// Hold to talk — the single primary CTA in the first viewport.
     private var quickMic: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
             Image(systemName: speech.isListening ? "waveform" : "mic.fill")
                 .font(.system(size: 34, weight: .medium))
-                .foregroundStyle(.primary)
+                .foregroundStyle(speech.isListening ? AppTheme.accent : Color.primary)
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.pulse, isActive: speech.isListening)
                 .quietInteractiveGlassCircle(listening: speech.isListening)
-                .scaleEffect(isHoldingMic || speech.isListening ? 1.06 : 1.0)
-                .animation(.spring(response: 0.28, dampingFraction: 0.72), value: isHoldingMic)
-                .animation(.spring(response: 0.28, dampingFraction: 0.72), value: speech.isListening)
+                .scaleEffect(isHoldingMic || speech.isListening ? 1.05 : 1.0)
+                .animation(AppTheme.springSnappy, value: isHoldingMic)
+                .animation(AppTheme.springSnappy, value: speech.isListening)
                 // Use weight-based impact (iOS 17+). Avoid `.impact(flexibility:)` /
                 // `SensoryFeedback.Flexibility` — those require a newer SDK than iOS 18.
                 .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: isHoldingMic)
@@ -465,7 +479,7 @@ struct HomeView: View {
                     ? L10n.string("voice.listening")
                     : L10n.string("home.quickEntry")
             )
-            .font(.headline)
+            .font(.subheadline.weight(.semibold))
 
             Text(
                 speech.isListening
@@ -473,28 +487,32 @@ struct HomeView: View {
                     : L10n.string("home.quickEntryHint")
             )
             .font(.footnote)
-            .foregroundStyle(.secondary)
+            .themeTertiary()
             .multilineTextAlignment(.center)
             .frame(maxWidth: 280)
 
             if case .unavailable(let message) = speech.status {
                 Text(message)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .themeTertiary()
                     .multilineTextAlignment(.center)
             } else if case .failed(let message) = speech.status {
                 Text(message)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .themeTertiary()
             } else if speech.isListening, !speech.transcript.isEmpty {
                 Text("“\(speech.transcript)”")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .themeSecondary()
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background {
                         AppTheme.continuousRect(AppTheme.radiusControl)
-                            .fill(.thinMaterial)
+                            .fill(.ultraThinMaterial)
+                            .overlay {
+                                AppTheme.continuousRect(AppTheme.radiusControl)
+                                    .strokeBorder(AppTheme.hairline(colorScheme), lineWidth: AppTheme.borderWidth)
+                            }
                     }
             }
 
@@ -503,7 +521,7 @@ struct HomeView: View {
             } label: {
                 Text(L10n.string("home.pasteDraft"))
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .themeTertiary()
             }
             .buttonStyle(.plain)
             .accessibilityHint(L10n.string("home.pasteDraftHint"))
@@ -539,7 +557,7 @@ struct HomeView: View {
                         selectedTab = .history
                     }
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppTheme.accent)
                 }
             }
 

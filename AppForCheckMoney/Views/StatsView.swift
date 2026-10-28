@@ -62,8 +62,9 @@ struct StatsView: View {
                         .themeTertiary()
                         .padding(.horizontal, 4)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.vertical, 16)
+                .animation(AppTheme.springSoft, value: period)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("tab.stats"))
@@ -73,8 +74,8 @@ struct StatsView: View {
     }
 
     private var totalsCard: some View {
-        GlassPanel(padding: 22) {
-            VStack(alignment: .leading, spacing: 14) {
+        GlassPanel(padding: 20) {
+            VStack(alignment: .leading, spacing: AppTheme.spaceItem) {
                 Text(L10n.string("stats.overview"))
                     .font(.footnote.weight(.medium))
                     .themeSecondary()

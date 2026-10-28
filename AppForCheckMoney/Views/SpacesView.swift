@@ -54,7 +54,8 @@ struct SpacesView: View {
                         .font(.caption2)
                         .themeTertiary()
                 }
-                .padding(20)
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.vertical, 16)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("space.title"))

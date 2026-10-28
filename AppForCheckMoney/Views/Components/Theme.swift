@@ -1,99 +1,95 @@
 import SwiftUI
 
-// MARK: - Design tokens (iOS continuous corner language)
+// MARK: - Design tokens (HIG / quiet Liquid Glass)
 
 enum AppTheme {
-    /// Controls, chips, text fields, selectable cells — iOS continuous control feel.
-    static let radiusControl: CGFloat = 14
-    /// Cards, list containers, glass panels — system grouped-surface scale.
-    static let radiusPanel: CGFloat = 22
+    /// Controls, chips, text fields — continuous iOS control radius.
+    static let radiusControl: CGFloat = 12
+    /// Panels / sheets — soft continuous surface (not pill-y).
+    static let radiusPanel: CGFloat = 20
 
-    /// Back-compat aliases used by older call sites (all map into the two-token set).
     static let cornerSmall: CGFloat = radiusControl
     static let cornerMedium: CGFloat = radiusPanel
     static let cornerLarge: CGFloat = radiusPanel
 
-    static let spaceSection: CGFloat = 24
-    static let spaceItem: CGFloat = 12
+    /// Ample vertical rhythm between major sections.
+    static let spaceSection: CGFloat = 32
+    static let spaceItem: CGFloat = 14
+    static let spaceTight: CGFloat = 8
     static let touchMin: CGFloat = 44
+    /// Horizontal page inset.
+    static let pageInset: CGFloat = 22
 
-    /// Soft ink accent — readable without marketing neon.
-    static let accent = Color(hex: "1C1C1E")
-    /// Functional, low-chroma cues (Wallet/Revolut-adjacent; not candy).
-    static let income = Color(hex: "1F7A36")
-    static let expense = Color(hex: "C0322A")
+    /// Single accent — muted slate-teal (not purple, not neon).
+    static let accent = Color(hex: "3A6B6E")
+    /// Functional cues only — low chroma.
+    static let income = Color(hex: "2A6B45")
+    static let expense = Color(hex: "B03A35")
     static let positive = income
     static let negative = expense
 
-    // MARK: Scheme-aware readability (light focus)
+    /// Crisp 1px border language.
+    static let borderWidth: CGFloat = 1.0
 
-    /// Grouped canvas — system Settings gray in light; true black in dark.
+    /// Quiet spring for press / listen / sheet content.
+    static var springSnappy: Animation {
+        .spring(response: 0.32, dampingFraction: 0.78)
+    }
+    static var springSoft: Animation {
+        .spring(response: 0.42, dampingFraction: 0.86)
+    }
+
+    // MARK: Scheme-aware surfaces
+
     static func canvas(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? .black : Color(hex: "F2F2F7")
+        scheme == .dark ? Color(hex: "000000") : Color(hex: "F2F2F7")
     }
 
-    /// Elevated surface (panels) — near-white in light for contrast vs canvas.
     static func elevatedFill(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "1C1C1E").opacity(0.72) : Color.white.opacity(0.94)
+        scheme == .dark ? Color(hex: "1C1C1E").opacity(0.78) : Color.white.opacity(0.92)
     }
 
-    /// Section / secondary labels — stronger than system `.secondary` on glass (light).
     static func labelSecondary(_ scheme: ColorScheme) -> Color {
         scheme == .dark ? Color.secondary : Color(hex: "3A3A3C")
     }
 
-    /// Tertiary / captions — still quieter, but not muddy gray-on-gray in light.
     static func labelTertiary(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.secondary.opacity(0.85) : Color(hex: "636366")
+        scheme == .dark ? Color.secondary.opacity(0.82) : Color(hex: "636366")
     }
 
-    /// Hairline separators and field rings.
     static func hairline(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.14) : Color.black.opacity(0.10)
+        scheme == .dark ? Color.white.opacity(0.16) : Color.black.opacity(0.10)
     }
 
-    /// Selected chip / control ring.
     static func selectionStroke(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.primary.opacity(0.36) : Color.black.opacity(0.28)
+        scheme == .dark ? AppTheme.accent.opacity(0.55) : AppTheme.accent.opacity(0.70)
     }
 
-    /// Track fills (budget / category bars).
     static func trackFill(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.primary.opacity(0.10) : Color.black.opacity(0.07)
+        scheme == .dark ? Color.primary.opacity(0.10) : Color.black.opacity(0.06)
     }
 
     static func trackValue(_ scheme: ColorScheme, emphasized: Bool = false) -> Color {
-        if scheme == .dark {
-            return Color.primary.opacity(emphasized ? 0.50 : 0.32)
-        }
-        return Color.black.opacity(emphasized ? 0.42 : 0.28)
+        if emphasized { return AppTheme.expense.opacity(scheme == .dark ? 0.75 : 0.85) }
+        return AppTheme.accent.opacity(scheme == .dark ? 0.55 : 0.65)
     }
 
+    /// Subtle rim — no heavy multi-stop glow.
     static func glassStroke(_ scheme: ColorScheme) -> LinearGradient {
         if scheme == .dark {
             return LinearGradient(
-                colors: [
-                    Color.white.opacity(0.36),
-                    Color.white.opacity(0.08),
-                    Color.primary.opacity(0.06),
-                ],
+                colors: [Color.white.opacity(0.22), Color.white.opacity(0.06)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         }
-        // Light: darker rim so panels read on F2F2F7 (Wallet-style clarity).
         return LinearGradient(
-            colors: [
-                Color.white.opacity(0.95),
-                Color.black.opacity(0.06),
-                Color.black.opacity(0.10),
-            ],
+            colors: [Color.white.opacity(0.90), Color.black.opacity(0.08)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
     }
 
-    /// Shared continuous rounded rect for any interactive / surface chrome.
     static func continuousRect(_ radius: CGFloat = radiusControl) -> RoundedRectangle {
         RoundedRectangle(cornerRadius: radius, style: .continuous)
     }
@@ -131,38 +127,25 @@ struct AtmosphereBackground: View {
     var body: some View {
         ZStack {
             AppTheme.canvas(scheme)
-            // Quiet depth only — avoid muddy gray washes that flatten body text.
+            // One soft wash — depth without muddy clutter.
             RadialGradient(
                 colors: [
-                    Color(hex: scheme == .dark ? "8E8E93" : "AEAEB2")
-                        .opacity(scheme == .dark ? 0.14 : 0.07),
+                    AppTheme.accent.opacity(scheme == .dark ? 0.10 : 0.05),
                     .clear,
                 ],
-                center: UnitPoint(x: 0.12, y: -0.02),
-                startRadius: 8,
-                endRadius: 340
-            )
-            RadialGradient(
-                colors: [
-                    Color(hex: scheme == .dark ? "636366" : "C7C7CC")
-                        .opacity(scheme == .dark ? 0.10 : 0.05),
-                    .clear,
-                ],
-                center: UnitPoint(x: 0.92, y: 0.28),
-                startRadius: 16,
-                endRadius: 280
+                center: UnitPoint(x: 0.15, y: -0.05),
+                startRadius: 4,
+                endRadius: 380
             )
         }
         .ignoresSafeArea()
     }
 }
 
-// MARK: - Glass surfaces (iOS 26 Liquid Glass + dual-path fallback)
+// MARK: - Glass surfaces (iOS 26 Liquid Glass + dual-path)
 
-/// Quiet content panels / controls — prefers system Liquid Glass on iOS 26.
 struct GlassPanel<Content: View>: View {
-    var padding: CGFloat = 18
-    /// Always `radiusPanel` — callers may pass legacy corner args; ignored for uniformity.
+    var padding: CGFloat = 20
     var corner: CGFloat = AppTheme.radiusPanel
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -184,15 +167,11 @@ struct GlassPanel<Content: View>: View {
                         .fill(panelFill)
                         .overlay {
                             shape.strokeBorder(
-                                AppTheme.glassStroke(scheme),
-                                lineWidth: scheme == .dark ? 0.6 : 0.8
+                                AppTheme.hairline(scheme),
+                                lineWidth: AppTheme.borderWidth
                             )
                         }
-                        .shadow(
-                            color: .black.opacity(scheme == .dark ? 0.28 : 0.07),
-                            radius: scheme == .dark ? 16 : 12,
-                            y: scheme == .dark ? 6 : 4
-                        )
+                        // No heavy drop shadow — hairline only.
                 }
         }
     }
@@ -201,7 +180,6 @@ struct GlassPanel<Content: View>: View {
         if scheme == .dark {
             AnyShapeStyle(.ultraThinMaterial)
         } else {
-            // Light: opaque-enough white so labels aren’t gray-on-gray through material.
             AnyShapeStyle(AppTheme.elevatedFill(scheme))
         }
     }
@@ -224,7 +202,7 @@ struct GlassFieldBackground: ViewModifier {
                 shape
                     .fill(scheme == .dark ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(Color.white))
                     .overlay {
-                        shape.strokeBorder(AppTheme.hairline(scheme), lineWidth: 0.7)
+                        shape.strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
                     }
             }
         }
@@ -241,17 +219,14 @@ extension View {
             .scrollContentBackground(.hidden)
     }
 
-    /// Selectable chip / category cell chrome — always `radiusControl`.
     func glassChip(selected: Bool) -> some View {
         modifier(GlassChipBackground(selected: selected))
     }
 
-    /// Hold-to-talk / primary floating control — interactive Liquid Glass on iOS 26.
     func quietInteractiveGlassCircle(listening: Bool = false) -> some View {
         modifier(QuietInteractiveGlassCircle(listening: listening))
     }
 
-    /// Compact confirm / chrome surface with dual-path glass.
     func quietGlassSurface(corner: CGFloat, interactive: Bool = false) -> some View {
         modifier(QuietGlassSurface(corner: corner, interactive: interactive))
     }
@@ -265,29 +240,42 @@ private struct QuietInteractiveGlassCircle: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *), !reduceTransparency {
             content
-                .frame(width: 108, height: 108)
+                .frame(width: 112, height: 112)
                 .glassEffect(.regular.interactive(), in: Circle())
                 .overlay {
                     Circle()
-                        .fill(Color.primary.opacity(listening ? 0.10 : 0.04))
+                        .fill(AppTheme.accent.opacity(listening ? 0.14 : 0.04))
+                }
+                .overlay {
+                    Circle()
+                        .strokeBorder(
+                            listening
+                                ? AppTheme.accent.opacity(0.45)
+                                : AppTheme.hairline(scheme),
+                            lineWidth: AppTheme.borderWidth
+                        )
                 }
         } else {
             content
                 .background {
                     Circle()
                         .fill(.ultraThinMaterial)
-                        .frame(width: 108, height: 108)
+                        .frame(width: 112, height: 112)
                         .overlay {
                             Circle()
-                                .fill(Color.primary.opacity(listening ? 0.12 : 0.06))
+                                .fill(AppTheme.accent.opacity(listening ? 0.14 : 0.05))
                         }
                         .overlay {
                             Circle()
-                                .strokeBorder(AppTheme.glassStroke(scheme), lineWidth: 1)
+                                .strokeBorder(
+                                    listening
+                                        ? AppTheme.accent.opacity(0.40)
+                                        : AppTheme.hairline(scheme),
+                                    lineWidth: AppTheme.borderWidth
+                                )
                         }
-                        .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
                 }
-                .frame(width: 108, height: 108)
+                .frame(width: 112, height: 112)
         }
     }
 }
@@ -295,6 +283,7 @@ private struct QuietInteractiveGlassCircle: ViewModifier {
 private struct QuietGlassSurface: ViewModifier {
     var corner: CGFloat
     var interactive: Bool
+    @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     func body(content: Content) -> some View {
@@ -307,7 +296,11 @@ private struct QuietGlassSurface: ViewModifier {
             }
         } else {
             content.background {
-                shape.fill(.ultraThinMaterial)
+                shape
+                    .fill(.ultraThinMaterial)
+                    .overlay {
+                        shape.strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
+                    }
             }
         }
     }
@@ -328,10 +321,8 @@ private struct GlassChipBackground: ViewModifier {
                 )
                 .overlay {
                     shape.strokeBorder(
-                        selected
-                            ? AppTheme.selectionStroke(scheme)
-                            : Color.clear,
-                        lineWidth: selected ? 1.0 : 0
+                        selected ? AppTheme.selectionStroke(scheme) : Color.clear,
+                        lineWidth: selected ? AppTheme.borderWidth : 0
                     )
                 }
         } else {
@@ -344,17 +335,15 @@ private struct GlassChipBackground: ViewModifier {
                                 selected
                                     ? AppTheme.selectionStroke(scheme)
                                     : AppTheme.hairline(scheme),
-                                lineWidth: selected ? 1.1 : 0.7
+                                lineWidth: AppTheme.borderWidth
                             )
-                            .overlay {
-                                shape.fill(
-                                    selected
-                                        ? (scheme == .dark
-                                            ? Color.primary.opacity(0.08)
-                                            : Color.black.opacity(0.04))
-                                        : Color.clear
-                                )
-                            }
+                        }
+                        .overlay {
+                            shape.fill(
+                                selected
+                                    ? AppTheme.accent.opacity(scheme == .dark ? 0.12 : 0.08)
+                                    : Color.clear
+                            )
                         }
                 }
         }
@@ -364,7 +353,7 @@ private struct GlassChipBackground: ViewModifier {
         if scheme == .dark {
             AnyShapeStyle(.thinMaterial)
         } else {
-            AnyShapeStyle(Color.white.opacity(selected ? 1 : 0.88))
+            AnyShapeStyle(Color.white.opacity(selected ? 1 : 0.90))
         }
     }
 }
@@ -415,9 +404,9 @@ private struct GlassActionChrome: ViewModifier {
                     .fill(scheme == .dark ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(Color.white))
                     .overlay {
                         shape.strokeBorder(
-                            (isDestructive ? AppTheme.expense : Color.primary)
-                                .opacity(scheme == .dark ? 0.18 : 0.14),
-                            lineWidth: 0.8
+                            (isDestructive ? AppTheme.expense : AppTheme.accent)
+                                .opacity(scheme == .dark ? 0.35 : 0.28),
+                            lineWidth: AppTheme.borderWidth
                         )
                     }
             }
@@ -432,18 +421,14 @@ struct CategoryGlyph: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let tint = Color(hex: colorHex)
         ZStack {
             Circle()
                 .fill(scheme == .dark ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.white))
                 .overlay {
-                    Circle().fill(tint.opacity(scheme == .dark ? 0.14 : 0.16))
+                    Circle().fill(AppTheme.accent.opacity(scheme == .dark ? 0.12 : 0.10))
                 }
                 .overlay {
-                    Circle().strokeBorder(
-                        scheme == .dark ? Color.white.opacity(0.28) : AppTheme.hairline(scheme),
-                        lineWidth: 0.7
-                    )
+                    Circle().strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
                 }
                 .frame(width: size, height: size)
             Image(systemName: symbolName)
@@ -463,10 +448,10 @@ struct QuietSectionLabel: View {
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(AppTheme.labelSecondary(scheme))
             .textCase(nil)
+            .tracking(0.2)
     }
 }
 
-/// Inset list row chrome — white in light (readable), material in dark.
 struct ListRowGlassBackground: View {
     @Environment(\.colorScheme) private var scheme
 
@@ -478,10 +463,8 @@ struct ListRowGlassBackground: View {
                     : AnyShapeStyle(Color.white.opacity(0.94))
             )
             .overlay {
-                if scheme != .dark {
-                    AppTheme.continuousRect(AppTheme.radiusControl)
-                        .strokeBorder(AppTheme.hairline(scheme), lineWidth: 0.5)
-                }
+                AppTheme.continuousRect(AppTheme.radiusControl)
+                    .strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
             }
             .padding(.vertical, 2)
     }

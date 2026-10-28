@@ -40,7 +40,8 @@ struct SettingsView: View {
                     iCloudBlock
                     ratesBlock
                 }
-                .padding(20)
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.vertical, 16)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("settings.title"))
@@ -414,7 +415,7 @@ private struct SettingsRowSurface: View {
             .overlay {
                 if scheme != .dark {
                     AppTheme.continuousRect(AppTheme.cornerMedium)
-                        .strokeBorder(AppTheme.hairline(scheme), lineWidth: 0.6)
+                        .strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
                 }
             }
     }

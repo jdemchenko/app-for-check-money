@@ -8,19 +8,23 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.2)
+            AtmosphereBackground()
+                .opacity(0.92)
+            Color.black.opacity(colorScheme == .dark ? 0.35 : 0.12)
                 .ignoresSafeArea()
-                .background(.ultraThinMaterial)
 
-            VStack(alignment: .leading, spacing: 22) {
-                Text(L10n.string("app.name"))
-                    .font(.largeTitle.weight(.bold))
+            VStack(alignment: .leading, spacing: AppTheme.spaceSection) {
+                VStack(alignment: .leading, spacing: AppTheme.spaceTight) {
+                    Text(L10n.string("app.name"))
+                        .font(.largeTitle.weight(.bold))
+                        .foregroundStyle(.primary)
 
-                Text(L10n.string("onboarding.headline"))
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    Text(L10n.string("onboarding.headline"))
+                        .font(.title3.weight(.medium))
+                        .themeSecondary()
+                }
 
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: AppTheme.spaceItem) {
                     tipRow(
                         symbol: "mic.fill",
                         title: L10n.string("onboarding.voiceTitle"),
@@ -33,22 +37,23 @@ struct OnboardingView: View {
                     )
                 }
 
-                QuietSectionLabel(text: L10n.string("settings.entryCurrency"))
-                Picker(L10n.string("settings.entryCurrency"), selection: $currencySettings.entryCurrency) {
-                    ForEach(AppCurrency.allCases) { code in
-                        Text(code.code).tag(code)
+                VStack(alignment: .leading, spacing: AppTheme.spaceTight) {
+                    QuietSectionLabel(text: L10n.string("settings.entryCurrency"))
+                    Picker(L10n.string("settings.entryCurrency"), selection: $currencySettings.entryCurrency) {
+                        ForEach(AppCurrency.allCases) { code in
+                            Text(code.code).tag(code)
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-                .onAppear {
-                    // Default BYN for new installs.
-                    if !UserDefaults.standard.bool(forKey: "settings.onboarding.currencyTouched") {
-                        currencySettings.entryCurrency = .byn
-                        currencySettings.displayCurrency = .byn
+                    .pickerStyle(.segmented)
+                    .onAppear {
+                        if !UserDefaults.standard.bool(forKey: "settings.onboarding.currencyTouched") {
+                            currencySettings.entryCurrency = .byn
+                            currencySettings.displayCurrency = .byn
+                        }
                     }
-                }
-                .onChange(of: currencySettings.entryCurrency) { _, _ in
-                    UserDefaults.standard.set(true, forKey: "settings.onboarding.currencyTouched")
+                    .onChange(of: currencySettings.entryCurrency) { _, _ in
+                        UserDefaults.standard.set(true, forKey: "settings.onboarding.currencyTouched")
+                    }
                 }
 
                 GlassActionButton(title: L10n.string("onboarding.continue")) {
@@ -58,14 +63,15 @@ struct OnboardingView: View {
             .padding(28)
             .frame(maxWidth: 400)
             .background {
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                AppTheme.continuousRect(AppTheme.radiusPanel)
                     .fill(.ultraThinMaterial)
                     .overlay {
-                        RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                            .strokeBorder(AppTheme.glassStroke(colorScheme), lineWidth: 1)
+                        AppTheme.continuousRect(AppTheme.radiusPanel)
+                            .strokeBorder(AppTheme.hairline(colorScheme), lineWidth: AppTheme.borderWidth)
                     }
             }
-            .padding(24)
+            .padding(AppTheme.pageInset)
+            .transition(.opacity.combined(with: .scale(scale: 0.98)))
         }
     }
 
@@ -73,14 +79,14 @@ struct OnboardingView: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: symbol)
                 .font(.body.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppTheme.accent)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                 Text(body)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .themeTertiary()
             }
         }
     }
