@@ -79,13 +79,16 @@ const CATEGORIES = [
     nameEn: "Food",
     kind: "expense",
     keywords: [
-      "еда", "food", "кофе", "coffee", "кофейн", "обед", "lunch", "ужин", "dinner",
+      "еда", "еды", "еду", "едой", "food",
+      "кофе", "coffee", "кофейн", "кофейня", "кофейню",
+      "обед", "lunch", "ужин", "dinner",
       "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe",
       "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
       "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
       "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
-      "гарнир", "доставка еды", "доставку еды", "доставк", "delivery",
-      "food delivery", "пятёрочка", "пятерочка",
+      "гарнир", "доставка еды", "доставку еды", "доставка", "доставку",
+      "доставк", "delivery", "food delivery", "food order", "заказ еды",
+      "пятёрочка", "пятерочка",
     ],
   },
   {
@@ -265,7 +268,9 @@ const NOTE_SUPPRESS = new Set(
     "вчерашнего", "вчерашний", "дня", "день",
     "это", "будет", "свой", "свою",
     "got", "received", "spent", "paid", "bought", "ordered",
-    "зашёл", "зашла", "зашел",
+    "зашёл", "зашла", "зашел", "зашли", "мы", "попил", "попила",
+    "ездил", "ездила", "в",
+    "доставка", "доставку", "доставк", "еды", "еду", "едой", "delivery",
   ].map(normalize)
 );
 
@@ -286,9 +291,17 @@ const EXPENSE_CUES = new RegExp(
   `${WB}(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|заказал|заказала|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)${WA}`,
   "i"
 );
+/** ASCII `\w` misses Cyrillic endings — use an explicit letter class. */
+const LETTER = "[а-яёА-ЯЁa-zA-Z]";
 const FOOD_DELIVERY_CUE = new RegExp(
-  `${WB}(?:доставк\\w*\\s+еды|заказ\\w*\\s+доставк\\w*|food\\s+delivery|delivery\\s+food|доставк\\w*)${WA}`,
+  `${WB}(?:доставк${LETTER}*\\s+ед${LETTER}*|ед${LETTER}*\\s+доставк${LETTER}*|заказ${LETTER}*\\s+(?:доставк${LETTER}*|ед${LETTER}*)|order(?:ed)?\\s+food|food\\s+order|food\\s+delivery|delivery\\s+food|доставк${LETTER}*)${WA}`,
   "i"
+);
+const NOTE_NARRATIVE_FILLER = new RegExp(
+  `${WB}(?:мы\\s+)?(?:зашли|зашёл|зашел|зашла|зайти)\\s+в${WA}` +
+    `|${WB}(?:мы\\s+)?(?:зашли|зашёл|зашел|зашла)${WA}` +
+    `|${WB}(?:потратил${LETTER}*|потрачено|ездил${LETTER}*|попил${LETTER}*|купил${LETTER}*|оплатил${LETTER}*)${WA}`,
+  "gi"
 );
 
 function autoAssign(text, preferredType = null) {
@@ -468,14 +481,28 @@ function stripAmountsAndCurrency(text) {
 function stripKeyword(keyword, text) {
   const k = keyword.trim();
   if (!k) return text;
-  const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
-  const re = new RegExp(`${WB}${escaped}${WA}`, "gi");
+  // ё/е interchangeable so normalized suppress tokens hit spoken «зашёл».
+  const flexible = [...k]
+    .map((ch) => {
+      if (ch === "е" || ch === "ё") return "[её]";
+      if (ch === "Е" || ch === "Ё") return "[ЕЁ]";
+      if (/\s/.test(ch)) return "\\s+";
+      return ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    })
+    .join("");
+  const re = new RegExp(`${WB}${flexible}${WA}`, "gi");
   return text.replace(re, " ");
+}
+
+function stripFiller(text) {
+  NOTE_NARRATIVE_FILLER.lastIndex = 0;
+  return text.replace(NOTE_NARRATIVE_FILLER, " ");
 }
 
 function finalizeNote(text, matched) {
   let s = stripAmountsAndCurrency(text);
   s = s.replace(INCOME_CUES, " ").replace(EXPENSE_CUES, " ");
+  s = stripFiller(s);
   if (matched) {
     s = stripKeyword(matched.nameRu, s);
     s = stripKeyword(matched.nameEn, s);
@@ -487,6 +514,7 @@ function finalizeNote(text, matched) {
   for (const token of [...NOTE_SUPPRESS].sort((a, b) => b.length - a.length)) {
     s = stripKeyword(token, s);
   }
+  s = stripFiller(s);
   s = cleanNoteFragment(s);
   const normalized = normalize(s);
   if (!normalized) return "";
@@ -532,6 +560,7 @@ function extractNote(rawText, matched) {
   for (const re of NOTE_COMMANDS) working = working.replace(re, " ");
   working = stripAmountsAndCurrency(working);
   working = working.replace(INCOME_CUES, " ").replace(EXPENSE_CUES, " ");
+  working = stripFiller(working);
   if (matched) {
     working = stripKeyword(matched.nameRu, working);
     working = stripKeyword(matched.nameEn, working);
@@ -539,6 +568,7 @@ function extractNote(rawText, matched) {
   for (const token of [...NOTE_SUPPRESS].sort((a, b) => b.length - a.length)) {
     working = stripKeyword(token, working);
   }
+  working = stripFiller(working);
   return finalizeNote(working, matched);
 }
 
@@ -629,7 +659,7 @@ const SESSION_BYN = new RegExp(
   "i"
 );
 const COMPANION_STRIP = new RegExp(
-  `${WB}(?:вместе\\s+)?с\\s+[А-ЯЁ][а-яёА-Яа-яЁё]{1,40}${WA}`,
+  `${WB}(?:вместе\\s+)?с\\s+[А-ЯЁа-яё][а-яёА-Яа-яЁё]{1,40}${WA}`,
   "giu"
 );
 const SUBSCRIPTION_CUE = new RegExp(
@@ -856,6 +886,11 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
   matched = autoAssign(working, type) ?? autoAssign(working, null);
   if (delivery) {
     matched = CATEGORIES.find((c) => c.id === "food") ?? matched;
+  } else if (
+    matched?.id === "housing" &&
+    (isFoodDelivery(working) || /доставк|еды|еду|заказ/i.test(working))
+  ) {
+    matched = CATEGORIES.find((c) => c.id === "food") ?? matched;
   }
   if (brand) {
     matched =
@@ -864,9 +899,11 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
       matched;
   }
   const categoryMatchedByKeyword = Boolean(matched);
-  const categoryId =
-    matched?.id ??
-    CATEGORIES.find((c) => c.kind === type || c.kind === "both")?.id;
+  // Blind fallback is housing (sort 0) — never use it when delivery cues are present.
+  const categoryId = delivery
+    ? matched?.id ?? CATEGORIES.find((c) => c.id === "food")?.id
+    : matched?.id ??
+      CATEGORIES.find((c) => c.kind === type || c.kind === "both")?.id;
   let note = extractNote(working, matched);
   if (brand) note = brand.name;
   let currency = inferCurrency(working);
@@ -1293,6 +1330,8 @@ const multiCases = [
         categoryId: "food",
         dayOffset: -1,
         dayPart: "evening",
+        // Short venue note only — no «мы зашли» / «потратил» filler.
+        note: "кофейню",
       },
       {
         amount: 30,
@@ -1306,11 +1345,53 @@ const multiCases = [
         categoryId: "food",
         dayOffset: 0,
         type: "expense",
+        note: "",
       },
     ],
-    forbidNoteIncludes: ["housing", "вчерашнего", "дня"],
+    forbidNoteIncludes: [
+      "housing",
+      "вчерашнего",
+      "дня",
+      "зашёл",
+      "зашел",
+      "зашли",
+      "потратил",
+      "мы",
+      "ездил",
+      "Ульяной",
+      "ульяной",
+    ],
   },
 ];
+
+// Delivery cue + filler unit checks (Cyrillic endings; note strip).
+{
+  const bugs = [];
+  if (!isFoodDelivery("заказал доставку еды на 15 руб")) {
+    bugs.push("isFoodDelivery Cyrillic доставку");
+  }
+  if (!isFoodDelivery("доставка еды")) bugs.push("isFoodDelivery доставка еды");
+  if (!isFoodDelivery("food order")) bugs.push("isFoodDelivery food order");
+  const cafe = parse("вечером вчерашнего дня зашёл в кофейню потратил 17 руб");
+  if (cafe.categoryId !== "food") bugs.push(`cafe cat ${cafe.categoryId}`);
+  if (normalize(cafe.note) !== normalize("кофейню")) {
+    bugs.push(`cafe note «${cafe.note}» expected «кофейню»`);
+  }
+  for (const bad of ["зашёл", "зашел", "потратил", "мы зашли"]) {
+    if (normalize(cafe.note).includes(normalize(bad))) {
+      bugs.push(`cafe note still has «${bad}»`);
+    }
+  }
+  const del = parse("заказал доставку еды на 15 руб");
+  if (del.categoryId !== "food") bugs.push(`delivery cat ${del.categoryId} ≠ food`);
+  if (normalize(del.note) !== "") bugs.push(`delivery note «${del.note}» not short`);
+  // Blind-fallback trap: without delivery force, empty keywords → housing.
+  const ok = bugs.length === 0;
+  if (!ok) failed += 1;
+  results.push({ name: "delivery/filler unit checks", ok, bugs });
+  console.log(`${ok ? "PASS" : "FAIL"}  delivery/filler unit checks`);
+  if (!ok) for (const b of bugs) console.log(`      - ${b}`);
+}
 
 // Session cue unit checks (per-utterance; no cross-utterance leak).
 {
@@ -1386,6 +1467,9 @@ for (const c of multiCases) {
       bugs.push(
         `[${i}] brand got ${d.subscriptionBrand} expected ${e.subscriptionBrand}`
       );
+    }
+    if (Object.prototype.hasOwnProperty.call(e, "note") && normalize(d.note) !== normalize(e.note)) {
+      bugs.push(`[${i}] note got «${d.note}» expected «${e.note}»`);
     }
   }
   if (c.forbidNoteIncludes) {

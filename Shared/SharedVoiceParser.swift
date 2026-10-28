@@ -128,10 +128,24 @@ enum SharedVoiceParser {
         options: []
     )
 
-    /// Food-delivery expense cue — never freelance/income.
+    /// Letters for stems — NSRegularExpression `\w` is ASCII-only, so Cyrillic endings need this.
+    private static let letter = #"[а-яёА-ЯЁa-zA-Z]"#
+
+    /// Food-delivery / food-order cue — always Еда, never housing/freelance.
+    /// Must match «доставку еды» / «заказал доставку» (Cyrillic endings).
     private static let foodDeliveryCue = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:доставк\w*\s+еды|заказ\w*\s+доставк\w*|food\s+delivery|delivery\s+food|доставк\w*)"#
+            + #"(?:доставк\#(letter)*\s+ед\#(letter)*|ед\#(letter)*\s+доставк\#(letter)*|заказ\#(letter)*\s+(?:доставк\#(letter)*|ед\#(letter)*)|order(?:ed)?\s+food|food\s+order|food\s+delivery|delivery\s+food|доставк\#(letter)*)"#
+            + wa,
+        options: []
+    )
+
+    /// Narrative filler stripped from notes («мы зашли», «потратил», …).
+    private static let noteNarrativeFiller = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:мы\s+)?(?:зашли|зашёл|зашел|зашла|зайти)\s+в"#
+            + #"|"# + wb + #"(?:мы\s+)?(?:зашли|зашёл|зашел|зашла)"#
+            + #"|"# + wb + #"(?:потратил\#(letter)*|потрачено|ездил\#(letter)*|попил\#(letter)*|купил\#(letter)*|оплатил\#(letter)*)"#
             + wa,
         options: []
     )
@@ -158,7 +172,7 @@ enum SharedVoiceParser {
 
     private static let companionStrip = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:вместе\s+)?с\s+[А-ЯЁ][а-яёА-Яа-яЁё]{1,40}"#
+            + #"(?:вместе\s+)?с\s+[А-ЯЁа-яё][а-яёА-Яа-яЁё]{1,40}"#
             + wa,
         options: []
     )
@@ -259,7 +273,10 @@ enum SharedVoiceParser {
         "вчерашнего", "вчерашний", "дня", "день",
         "это", "будет", "свой", "свою",
         "got", "received", "spent", "paid", "bought", "ordered",
-        "зашёл", "зашла", "зашел",
+        "зашёл", "зашла", "зашел", "зашли", "мы", "попил", "попила",
+        "ездил", "ездила", "в",
+        // Delivery stems — category signal, not a stored note
+        "доставка", "доставку", "доставк", "еды", "еду", "едой", "delivery",
         // NOTE: keep «аренда квартиры», «проезд», «телефон», «долларов» OUT — descriptions
     ].map { TextNormalizer.normalize($0) })
 
@@ -529,7 +546,7 @@ enum SharedVoiceParser {
 
         let amount = parseAmount(from: working)
         var type = inferType(from: working)
-        let delivery = isFoodDelivery(in: working)
+        let delivery = isFoodDelivery(in: working) || isFoodDelivery(in: rawText)
         // Delivery / оплатил+подписка are always expenses — never freelance income.
         if delivery || subscription != nil {
             type = "expense"
@@ -573,8 +590,15 @@ enum SharedVoiceParser {
             categories: categories,
             preferredTypeRaw: nil
         )
-        // Food delivery must land on Еда even if a weak income keyword also hit.
+        // Food delivery / food-order always beats housing (and any other miss).
         if delivery, let food = categories.first(where: { $0.id == "food" }) {
+            matched = food
+        } else if matched?.id == "housing",
+                  (isFoodDelivery(in: working) || working.range(
+                    of: #"доставк|еды|еду|заказ"#,
+                    options: [.regularExpression, .caseInsensitive]
+                  ) != nil),
+                  let food = categories.first(where: { $0.id == "food" }) {
             matched = food
         }
         // Subscription brands → Подписки. Bare «подписка» without a brand keeps other categories.
@@ -587,8 +611,14 @@ enum SharedVoiceParser {
         }
 
         let categoryMatchedByKeyword = matched != nil
-        let categoryId = matched?.id
-            ?? SharedCategoryMatcher.categories(forRaw: type!, in: categories).first?.id
+        // Blind fallback is housing (sort 0) — never use it when delivery cues are present.
+        let categoryId: String? = {
+            if delivery {
+                return matched?.id ?? categories.first(where: { $0.id == "food" })?.id
+            }
+            return matched?.id
+                ?? SharedCategoryMatcher.categories(forRaw: type!, in: categories).first?.id
+        }()
 
         var note = extractNote(
             from: working,
@@ -1111,12 +1141,19 @@ enum SharedVoiceParser {
     }
 
     private static func stripFiller(_ text: String) -> String {
-        fillerWords.stringByReplacingMatches(
+        var working = fillerWords.stringByReplacingMatches(
             in: text,
             options: [],
             range: NSRange(text.startIndex..., in: text),
             withTemplate: " "
         )
+        working = noteNarrativeFiller.stringByReplacingMatches(
+            in: working,
+            options: [],
+            range: NSRange(working.startIndex..., in: working),
+            withTemplate: " "
+        )
+        return working
     }
 
     private static func stripSuppressTokens(_ text: String) -> String {
@@ -1130,8 +1167,15 @@ enum SharedVoiceParser {
     private static func stripKeyword(_ keyword: String, from text: String) -> String {
         let k = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !k.isEmpty else { return text }
-        let escaped = NSRegularExpression.escapedPattern(for: k)
-        let flexible = escaped.replacingOccurrences(of: #"\s+"#, with: #"\s+"#, options: .regularExpression)
+        // ё/е interchangeable so normalized suppress tokens hit spoken «зашёл».
+        let flexible = k.map { ch -> String in
+            switch ch {
+            case "е", "ё": return "[её]"
+            case "Е", "Ё": return "[ЕЁ]"
+            case " ": return #"\s+"#
+            default: return NSRegularExpression.escapedPattern(for: String(ch))
+            }
+        }.joined()
         let pattern = #"(?i)(?<![0-9A-Za-zА-Яа-яЁё])\#(flexible)(?![0-9A-Za-zА-Яа-яЁё])"#
         return text.replacingOccurrences(of: pattern, with: " ", options: .regularExpression)
     }
