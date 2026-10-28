@@ -180,14 +180,20 @@ struct HomeView: View {
 
     @ViewBuilder
     private func batchConfirmOverlay(_ batch: [VoiceDraft]) -> some View {
-        let lines = batch.map { draft in
-            let amount = MoneyFormat.currency(
-                draft.amount ?? 0,
-                code: draft.currency ?? currencySettings.entryCurrency
-            )
+        let lines = batch.map { draft -> String in
+            let code = draft.currency ?? currencySettings.entryCurrency
+            let amount = MoneyFormat.currency(draft.amount ?? 0, code: code)
             let cat = categories.first { $0.id == draft.categoryId }?.displayName() ?? "—"
-            let note = draft.note.isEmpty ? cat : draft.note
-            return "\(amount) · \(note)"
+            var parts: [String] = []
+            if let date = draft.dateLabel() { parts.append(date) }
+            parts.append(amount)
+            parts.append(code.code)
+            parts.append(cat)
+            if draft.isRecurring {
+                parts.append(draft.frequency?.title ?? L10n.string("recurring.monthly"))
+            }
+            if !draft.note.isEmpty { parts.append(draft.note) }
+            return parts.joined(separator: " · ")
         }.joined(separator: "\n")
 
         ZStack {
@@ -597,7 +603,7 @@ struct HomeView: View {
             type: draft.type ?? .expense,
             categoryId: categoryId,
             note: draft.note.isEmpty ? nil : draft.note,
-            date: .now,
+            date: draft.resolvedDate(),
             source: .voice,
             currency: draft.currency ?? currencySettings.entryCurrency
         )
@@ -621,17 +627,35 @@ struct HomeView: View {
             let categoryId = draft.categoryId
                 ?? CategoryMatcher.categories(for: draft.type ?? .expense, in: categories).first?.id
             guard let categoryId else { continue }
+            let currency = draft.currency ?? currencySettings.entryCurrency
             let tx = MoneyTransaction(
                 amount: amount,
                 type: draft.type ?? .expense,
                 categoryId: categoryId,
                 note: draft.note.isEmpty ? nil : draft.note,
-                date: .now,
+                date: draft.resolvedDate(),
                 source: .voice,
-                currency: draft.currency ?? currencySettings.entryCurrency
+                currency: currency
             )
             modelContext.insert(tx)
             if tx.type == .expense { lastExpense = tx }
+            // Subscription clause → also draft a RecurringRule (on-device).
+            if let frequency = draft.frequency {
+                let rule = RecurringRule(
+                    amount: amount,
+                    type: draft.type ?? .expense,
+                    categoryId: categoryId,
+                    note: draft.note.isEmpty ? nil : draft.note,
+                    currency: currency,
+                    frequency: frequency,
+                    nextFireDate: Calendar.current.date(
+                        byAdding: frequency == .weekly ? .day : .month,
+                        value: 1,
+                        to: draft.resolvedDate()
+                    ) ?? draft.resolvedDate()
+                )
+                modelContext.insert(rule)
+            }
         }
         try? modelContext.save()
         PhoneWatchSync.shared.pushSnapshot()

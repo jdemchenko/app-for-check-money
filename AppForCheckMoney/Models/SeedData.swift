@@ -142,7 +142,7 @@ enum SeedData {
             nameEn: "Food",
             kind: .expense,
             keywords: [
-                "еда", "food", "кофе", "coffee", "обед", "lunch", "ужин", "dinner",
+                "еда", "food", "кофе", "coffee", "кофейн", "обед", "lunch", "ужин", "dinner",
                 "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe",
                 "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
                 "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
@@ -161,8 +161,9 @@ enum SeedData {
                 "транспорт", "transport", "такси", "taxi", "метро", "metro", "subway",
                 "автобус", "bus", "бензин", "gas", "fuel", "топливо", "заправка",
                 "азс", "azs", "gas station", "petrol", "diesel", "дизель",
-                "uber", "яндекс", "yandex", "парковка", "parking", "поезд", "train",
-                "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare",
+                "uber", "яндекс такси", "яндекс го", "yandex go", "yandex taxi",
+                "парковка", "parking", "поезд", "train",
+                "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare", "carsharing",
                 "проезд", "fare",
             ],
             colorHex: "8E8E93",
@@ -203,8 +204,10 @@ enum SeedData {
             keywords: [
                 "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
                 "movie", "movies", "театр", "theater", "theatre", "игры", "games",
-                "подписка", "subscription", "netflix", "spotify", "концерт",
-                "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
+                "подписк", "subscription", "netflix", "spotify",
+                "яндекс music", "yandex music", "яндекс музык", "apple music",
+                "youtube premium", "youtube music",
+                "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
             ],
             colorHex: "8E8E93",
             symbolName: "film.fill"

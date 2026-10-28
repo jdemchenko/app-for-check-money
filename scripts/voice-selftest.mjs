@@ -50,7 +50,7 @@ const SPELLED_TOKENS = new Set([
   "итого", "total",
 ]);
 
-const CURRENCY_TOKEN = "(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)";
+const CURRENCY_TOKEN = "(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|белорусск(?:их|ий|ого|ом|ими)?\\s+руб(?:л(?:ей|я|ь|ями)?)?|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\\$|€)";
 const AMOUNT_NUMBER = "(\\d+(?:\\s+\\d{3})*(?:[.,]\\d{1,2})?)";
 const COMMODITY_CURRENCY = new RegExp(
   `${WB}(?:покупк[ауие]|купил[аи]?|bought|buying|purchase[sd]?|buy)\\s+${CURRENCY_TOKEN}${WA}`,
@@ -76,7 +76,7 @@ const CATEGORIES = [
     nameEn: "Food",
     kind: "expense",
     keywords: [
-      "еда", "food", "кофе", "coffee", "обед", "lunch", "ужин", "dinner",
+      "еда", "food", "кофе", "coffee", "кофейн", "обед", "lunch", "ужин", "dinner",
       "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe",
       "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
       "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
@@ -93,8 +93,9 @@ const CATEGORIES = [
       "транспорт", "transport", "такси", "taxi", "метро", "metro", "subway",
       "автобус", "bus", "бензин", "gas", "fuel", "топливо", "заправка",
       "азс", "azs", "gas station", "petrol", "diesel", "дизель",
-      "uber", "яндекс", "yandex", "парковка", "parking", "поезд", "train",
-      "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare",
+      "uber", "яндекс такси", "яндекс го", "yandex go", "yandex taxi",
+      "парковка", "parking", "поезд", "train",
+      "трамвай", "tram", "самокат", "scooter", "каршеринг", "carshare", "carsharing",
       "проезд", "fare",
     ],
   },
@@ -128,8 +129,10 @@ const CATEGORIES = [
     keywords: [
       "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
       "movie", "movies", "театр", "theater", "theatre", "игры", "games",
-      "подписка", "subscription", "netflix", "spotify", "концерт",
-      "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
+      "подписк", "subscription", "netflix", "spotify",
+      "яндекс music", "yandex music", "яндекс музык", "apple music",
+      "youtube premium", "youtube music",
+      "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
     ],
   },
   {
@@ -517,7 +520,7 @@ function resolveCurrencyToken(raw) {
   const t = normalize(raw).replace(/\$/g, "usd").replace(/€/g, "eur").replace(/₽/g, "rub");
   if (t.includes("dollar") || t === "usd" || t.startsWith("доллар")) return "usd";
   if (t.includes("euro") || t === "eur" || t.startsWith("евро")) return "eur";
-  if (t === "byn" || t === "br" || t.includes("бел")) return "byn";
+  if (t === "byn" || t === "br" || t.includes("бел") || t.includes("белорус")) return "byn";
   // «руб» → entry default
   return null;
 }
@@ -551,7 +554,7 @@ function inferCurrency(text) {
   let working = text.replace(COMMODITY_CURRENCY, " ");
   if (new RegExp(`${WB}(dollars?|usd|доллар(?:ов|а|ы)?|\\$)${WA}`, "i").test(working)) return "usd";
   if (new RegExp(`${WB}(euros?|eur|евро|€)${WA}`, "i").test(working)) return "eur";
-  if (new RegExp(`${WB}(byn|br|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?)${WA}`, "i").test(working)) return "byn";
+  if (new RegExp(`${WB}(byn|br|белорусск\\w*|бел(?:\\.?\\s*)?руб(?:л(?:ей|я|ь)?)?)${WA}`, "i").test(working)) return "byn";
   return null;
 }
 
@@ -560,10 +563,54 @@ const MONTHLY_RE =
 const WEEKLY_RE =
   new RegExp(`${WB}(every\\s+week|each\\s+week|weekly|per\\s+week|раз\\s+в\\s+недел[юи]|каждую\\s+неделю|каждый\\s+недел[юи]|еженедельно)${WA}`, "i");
 const MULTI_SPLIT = /(?:,\s*|\s+и\s+|\s+and\s+)(?=(?:[^0-9]{0,40})?\d)/gi;
+const NARRATIVE_SPLIT = new RegExp(
+  `(?:\\s+потом\\s+|\\s+затем\\s+|\\s+после\\s+(?:этого|того)\\s+|(?<=[\\p{L}\\d.])\\s+(?=оплатил[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=сегодня${WA})|(?<=[\\p{L}\\d.])\\s+(?=вчера${WA})|(?<=[\\p{L}\\d.])\\s+(?=позавчера${WA}))`,
+  "giu"
+);
+const SESSION_CURRENCY_CUE = new RegExp(
+  `${WB}(?:в\\s+рб|рб|белорусск\\w*|бел\\.?\\s*руб|byn|br|моя\\s+валюта)${WA}`,
+  "i"
+);
+const COMPANION_STRIP = new RegExp(
+  `${WB}(?:вместе\\s+)?с\\s+[А-ЯЁ][а-яёА-Яа-яЁё]{1,40}${WA}`,
+  "giu"
+);
+const SUBSCRIPTION_CUE = new RegExp(
+  `${WB}(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\\s*music|yandex\\s*music|яндекс\\s*музык\\w*|apple\\s*music|youtube\\s*premium|youtube\\s*music)${WA}`,
+  "i"
+);
 
 function detectFrequency(text) {
+  MONTHLY_RE.lastIndex = 0;
+  WEEKLY_RE.lastIndex = 0;
   if (MONTHLY_RE.test(text)) return "monthly";
   if (WEEKLY_RE.test(text)) return "weekly";
+  return null;
+}
+
+function detectSubscription(text) {
+  SUBSCRIPTION_CUE.lastIndex = 0;
+  if (SUBSCRIPTION_CUE.test(text)) return "monthly";
+  return null;
+}
+
+function detectSessionCurrency(text) {
+  SESSION_CURRENCY_CUE.lastIndex = 0;
+  return SESSION_CURRENCY_CUE.test(text) ? "byn" : null;
+}
+
+function stripCompanions(text) {
+  return text.replace(COMPANION_STRIP, " ").replace(/\s{2,}/g, " ").trim();
+}
+
+function detectDateAnchor(text) {
+  let part = null;
+  if (new RegExp(`${WB}(?:утром|с\\s+утра|morning)${WA}`, "i").test(text)) part = "morning";
+  else if (new RegExp(`${WB}(?:вечером|evening|tonight)${WA}`, "i").test(text)) part = "evening";
+  if (new RegExp(`${WB}позавчера${WA}`, "i").test(text)) return { offset: -2, part };
+  if (new RegExp(`${WB}вчера${WA}`, "i").test(text)) return { offset: -1, part };
+  if (new RegExp(`${WB}сегодня${WA}`, "i").test(text)) return { offset: 0, part };
+  if (part) return { offset: 0, part };
   return null;
 }
 
@@ -591,8 +638,46 @@ function splitMultiExpense(text) {
   return withAmount.length >= 2 ? withAmount : [text];
 }
 
-function parse(rawText) {
-  const frequency = detectFrequency(rawText);
+function splitNarrative(text) {
+  const parts = [];
+  let last = 0;
+  NARRATIVE_SPLIT.lastIndex = 0;
+  let m;
+  let found = false;
+  while ((m = NARRATIVE_SPLIT.exec(text)) !== null) {
+    found = true;
+    const piece = text.slice(last, m.index).trim();
+    if (piece) parts.push(piece);
+    last = m.index + m[0].length;
+  }
+  if (!found) return splitMultiExpense(text);
+  const tail = text.slice(last).trim();
+  if (tail) parts.push(tail);
+  const withAmount = parts.filter((p) => parseAmount(p) != null);
+  return withAmount.length >= 2 ? withAmount : [text];
+}
+
+function countAmountMentions(text) {
+  const digitCount = (text.match(/\d+(?:[.,]\d{1,2})?/g) || []).length;
+  const spelledOnes = [
+    "один", "одна", "два", "две", "три", "четыре", "пять", "шесть", "семь",
+    "восемь", "девять", "десять", "one", "two", "three", "four", "five",
+  ];
+  let spelledHits = 0;
+  for (const word of spelledOnes) {
+    if (new RegExp(`${WB}${word}${WA}`, "i").test(text)) spelledHits += 1;
+  }
+  if (digitCount > 0) return digitCount + spelledHits;
+  return spelledHits;
+}
+
+function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null) {
+  const session = sessionCurrency ?? detectSessionCurrency(rawText);
+  const anchor = detectDateAnchor(rawText);
+  const offset = dayOffset ?? anchor?.offset ?? null;
+  const part = dayPart ?? anchor?.part ?? null;
+  const subscription = detectSubscription(rawText);
+  const frequency = detectFrequency(rawText) ?? subscription;
   const working = frequency ? stripRecurringCues(rawText) : rawText;
   const amount = parseAmount(working);
   let type = inferType(working);
@@ -606,7 +691,8 @@ function parse(rawText) {
     matched?.id ??
     CATEGORIES.find((c) => c.kind === type || c.kind === "both")?.id;
   const note = extractNote(working, matched);
-  const currency = inferCurrency(working);
+  let currency = inferCurrency(working);
+  if (currency == null && session != null) currency = session;
   return {
     amount,
     type,
@@ -615,26 +701,64 @@ function parse(rawText) {
     categoryMatchedByKeyword,
     currency,
     frequency,
+    dayOffset: offset,
+    dayPart: part,
     isAutosaveReady: Boolean(
       !frequency && amount && amount > 0 && categoryMatchedByKeyword && categoryId
     ),
   };
 }
 
+function materializeSegments(segments, fullText, sessionCurrency) {
+  let activeOffset = detectDateAnchor(fullText)?.offset ?? null;
+  let activePart = detectDateAnchor(fullText)?.part ?? null;
+  const drafts = [];
+  for (const segment of segments) {
+    const anchor = detectDateAnchor(segment);
+    if (anchor) {
+      activeOffset = anchor.offset;
+      activePart = anchor.part;
+    }
+    const draft = parse(segment, sessionCurrency, activeOffset, activePart);
+    if (!(draft.amount && draft.amount > 0)) continue;
+    if (!draft.frequency) {
+      const sub = detectSubscription(segment);
+      if (sub) draft.frequency = sub;
+    }
+    drafts.push(draft);
+  }
+  return drafts;
+}
+
 function parseMany(rawText) {
   const trimmed = String(rawText).trim();
   if (!trimmed) return [];
-  const frequency = detectFrequency(trimmed);
-  if (frequency) {
-    const draft = parse(trimmed);
-    return [draft];
+  const sessionCurrency = detectSessionCurrency(trimmed);
+  const cleaned = stripCompanions(trimmed);
+  const amountCount = countAmountMentions(cleaned);
+
+  if (amountCount <= 1) {
+    const frequency = detectFrequency(cleaned) ?? detectSubscription(cleaned);
+    if (frequency) {
+      const draft = parse(cleaned, sessionCurrency);
+      draft.frequency = frequency;
+      return [draft];
+    }
   }
-  const segments = splitMultiExpense(trimmed);
-  if (segments.length >= 2) {
-    const drafts = segments.map(parse).filter((d) => d.amount && d.amount > 0);
+
+  const narrative = splitNarrative(cleaned);
+  if (narrative.length >= 2) {
+    const drafts = materializeSegments(narrative, cleaned, sessionCurrency);
     if (drafts.length >= 2) return drafts;
   }
-  return [parse(trimmed)];
+
+  const simple = splitMultiExpense(cleaned);
+  if (simple.length >= 2) {
+    const drafts = materializeSegments(simple, cleaned, sessionCurrency);
+    if (drafts.length >= 2) return drafts;
+  }
+
+  return [parse(cleaned, sessionCurrency)];
 }
 
 function applyManualOverride(draft, newCategoryId) {
@@ -825,24 +949,122 @@ for (const c of cases) {
   }
 }
 
-const multi = parseMany("кофе 5 и такси 12");
-{
+const multiCases = [
+  {
+    name: "multi coffee+taxi",
+    input: "кофе 5 и такси 12",
+    expect: [
+      { amount: 5, categoryId: "food" },
+      { amount: 12, categoryId: "transport" },
+    ],
+  },
+  {
+    name: "ivan narrative BYN/USD/dates/subscription",
+    input:
+      "Слушай я в рб моя валюта белорусский рубль и вчера я купил на 15 белорусских рублей кофе зашёл в кофейню попил оплатил подписку Яндекс Music три доллара потом я сходил за продуктами с Ульяной и купили мы продукты на 40 руб. сегодня утром я ездил на Каршеринг потратил 18 руб.",
+    expect: [
+      { amount: 15, currency: "byn", categoryId: "food", dayOffset: -1 },
+      {
+        amount: 3,
+        currency: "usd",
+        categoryId: "entertainment",
+        dayOffset: -1,
+        frequency: "monthly",
+      },
+      { amount: 40, currency: "byn", categoryId: "food", dayOffset: -1 },
+      {
+        amount: 18,
+        currency: "byn",
+        categoryId: "transport",
+        dayOffset: 0,
+        dayPart: "morning",
+      },
+    ],
+    forbidNoteIncludes: ["ульяной", "ульяна"],
+  },
+  {
+    name: "ivan variant потом/затем + сегодня вечером",
+    input:
+      "вчера кофе 10 руб потом продукты 25 руб затем сегодня вечером каршеринг 12 руб",
+    expect: [
+      { amount: 10, categoryId: "food", dayOffset: -1 },
+      { amount: 25, categoryId: "food", dayOffset: -1 },
+      {
+        amount: 12,
+        categoryId: "transport",
+        dayOffset: 0,
+        dayPart: "evening",
+      },
+    ],
+  },
+  {
+    name: "subscription alone → recurring monthly",
+    input: "оплатил подписку Яндекс Music три доллара",
+    expect: [
+      {
+        amount: 3,
+        currency: "usd",
+        categoryId: "entertainment",
+        frequency: "monthly",
+      },
+    ],
+  },
+];
+
+let multiChecked = 0;
+for (const c of multiCases) {
+  multiChecked += 1;
+  const drafts = parseMany(c.input);
   const bugs = [];
-  if (multi.length !== 2) bugs.push(`count ${multi.length}`);
-  else {
-    if (multi[0].amount !== 5) bugs.push("amount0");
-    if (multi[1].amount !== 12) bugs.push("amount1");
-    if (multi[0].categoryId !== "food") bugs.push("cat0");
-    if (multi[1].categoryId !== "transport") bugs.push("cat1");
+  if (drafts.length !== c.expect.length) {
+    bugs.push(`count ${drafts.length} expected ${c.expect.length}`);
+  }
+  const n = Math.min(drafts.length, c.expect.length);
+  for (let i = 0; i < n; i++) {
+    const d = drafts[i];
+    const e = c.expect[i];
+    if (e.amount !== undefined && d.amount !== e.amount) {
+      bugs.push(`[${i}] amount got ${d.amount} expected ${e.amount}`);
+    }
+    if (e.categoryId && d.categoryId !== e.categoryId) {
+      bugs.push(`[${i}] category got ${d.categoryId} expected ${e.categoryId}`);
+    }
+    if (Object.prototype.hasOwnProperty.call(e, "currency") && d.currency !== e.currency) {
+      bugs.push(`[${i}] currency got ${d.currency} expected ${e.currency}`);
+    }
+    if (Object.prototype.hasOwnProperty.call(e, "dayOffset") && d.dayOffset !== e.dayOffset) {
+      bugs.push(`[${i}] dayOffset got ${d.dayOffset} expected ${e.dayOffset}`);
+    }
+    if (Object.prototype.hasOwnProperty.call(e, "dayPart") && d.dayPart !== e.dayPart) {
+      bugs.push(`[${i}] dayPart got ${d.dayPart} expected ${e.dayPart}`);
+    }
+    if (Object.prototype.hasOwnProperty.call(e, "frequency") && d.frequency !== e.frequency) {
+      bugs.push(`[${i}] frequency got ${d.frequency} expected ${e.frequency}`);
+    }
+  }
+  if (c.forbidNoteIncludes) {
+    for (const d of drafts) {
+      for (const bad of c.forbidNoteIncludes) {
+        if (normalize(d.note).includes(normalize(bad))) {
+          bugs.push(`note leaked companion «${bad}»: «${d.note}»`);
+        }
+      }
+    }
   }
   const ok = bugs.length === 0;
   if (!ok) failed += 1;
-  console.log(`${ok ? "PASS" : "FAIL"}  multi coffee+taxi`);
-  if (!ok) for (const b of bugs) console.log(`      - ${b}`);
+  results.push({ name: c.name, ok, draft: drafts, bugs });
+  console.log(`${ok ? "PASS" : "FAIL"}  ${c.name}`);
+  if (!ok) {
+    console.log(`      drafts: ${JSON.stringify(drafts)}`);
+    for (const b of bugs) console.log(`      - ${b}`);
+  }
 }
 
 console.log("\n---");
-console.log(`Total: ${results.length + 1}, passed: ${results.length + 1 - failed}, failed: ${failed}`);
+console.log(
+  `Total: ${results.length}, passed: ${results.length - failed}, failed: ${failed} (incl. ${multiChecked} multi)`
+);
 if (failed > 0) {
   process.exit(1);
 }
