@@ -6,7 +6,20 @@ struct CheckMoneyProvider: TimelineProvider {
         CheckMoneyEntry(date: .now, snapshot: .placeholder)
     }
 
-    /// Async WidgetKit API (iOS 17+) — preferred over completion-handler variants.
+    // MARK: Completion-handler API (required TimelineProvider protocol)
+
+    func getSnapshot(in context: Context, completion: @escaping (CheckMoneyEntry) -> Void) {
+        completion(CheckMoneyEntry(date: .now, snapshot: loadSnapshot()))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<CheckMoneyEntry>) -> Void) {
+        let entry = CheckMoneyEntry(date: .now, snapshot: loadSnapshot())
+        let next = Calendar.current.date(byAdding: .minute, value: 15, to: .now) ?? .now
+        completion(Timeline(entries: [entry], policy: .after(next)))
+    }
+
+    // MARK: Async convenience (iOS 17+ / Xcode 26) — same payloads
+
     func snapshot(in context: Context) async -> CheckMoneyEntry {
         CheckMoneyEntry(date: .now, snapshot: loadSnapshot())
     }

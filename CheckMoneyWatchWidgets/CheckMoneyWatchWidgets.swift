@@ -13,6 +13,16 @@ struct TodaySpendProvider: TimelineProvider {
         TodaySpendEntry(date: .now, todayExpense: 12.5, balance: 100, currency: .byn)
     }
 
+    func getSnapshot(in context: Context, completion: @escaping (TodaySpendEntry) -> Void) {
+        completion(makeEntry())
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<TodaySpendEntry>) -> Void) {
+        let entry = makeEntry()
+        let next = Calendar.current.date(byAdding: .minute, value: 30, to: .now) ?? .now
+        completion(Timeline(entries: [entry], policy: .after(next)))
+    }
+
     func snapshot(in context: Context) async -> TodaySpendEntry {
         makeEntry()
     }

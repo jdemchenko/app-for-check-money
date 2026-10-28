@@ -214,6 +214,17 @@
 		C70000000000000000000001 /* CheckMoneyPhoneWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CheckMoneyPhoneWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B50000000000000000000001 /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
 		B50000000000000000000002 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		BA00000000000000000001 /* MoneySpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneySpace.swift; sourceTree = "<group>"; };
+		BA00000000000000000002 /* MoneyAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyAccount.swift; sourceTree = "<group>"; };
+		BA00000000000000000003 /* MoneyGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyGoal.swift; sourceTree = "<group>"; };
+		BA00000000000000000004 /* MoneyDebt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyDebt.swift; sourceTree = "<group>"; };
+		BA00000000000000000005 /* AccountLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLedger.swift; sourceTree = "<group>"; };
+		BA00000000000000000006 /* CashflowInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashflowInsights.swift; sourceTree = "<group>"; };
+		BA00000000000000000007 /* LedgerHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerHubView.swift; sourceTree = "<group>"; };
+		BA00000000000000000008 /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
+		BA00000000000000000009 /* GoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsView.swift; sourceTree = "<group>"; };
+		BA0000000000000000000A /* DebtsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebtsView.swift; sourceTree = "<group>"; };
+		BA0000000000000000000B /* SpacesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -671,6 +682,17 @@
 				A1000000000000000000002A /* QuietConfirmPanel.swift in Sources */,
 				A10000000000000000000020 /* TextNormalizer.swift in Sources */,
 				A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */,
+				AA00000000000000000001 /* MoneySpace.swift in Sources */,
+				AA00000000000000000002 /* MoneyAccount.swift in Sources */,
+				AA00000000000000000003 /* MoneyGoal.swift in Sources */,
+				AA00000000000000000004 /* MoneyDebt.swift in Sources */,
+				AA00000000000000000005 /* AccountLedger.swift in Sources */,
+				AA00000000000000000006 /* CashflowInsights.swift in Sources */,
+				AA00000000000000000007 /* LedgerHubView.swift in Sources */,
+				AA00000000000000000008 /* AccountsView.swift in Sources */,
+				AA00000000000000000009 /* GoalsView.swift in Sources */,
+				AA0000000000000000000A /* DebtsView.swift in Sources */,
+				AA0000000000000000000B /* SpacesView.swift in Sources */,
 				A10000000000000000000022 /* SharedVoiceParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
