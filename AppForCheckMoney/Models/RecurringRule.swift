@@ -28,6 +28,7 @@ final class RecurringRule {
     var nextFireDate: Date
     var isActive: Bool
     var createdAt: Date
+    var accountId: String
 
     init(
         id: String = UUID().uuidString,
@@ -40,7 +41,8 @@ final class RecurringRule {
         frequency: RecurringFrequency = .monthly,
         nextFireDate: Date = .now,
         isActive: Bool = true,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        accountId: String = AccountIDs.cashBYN
     ) {
         self.id = id
         self.amount = amount
@@ -53,6 +55,7 @@ final class RecurringRule {
         self.nextFireDate = nextFireDate
         self.isActive = isActive
         self.createdAt = createdAt
+        self.accountId = accountId
     }
 
     var type: TransactionType {

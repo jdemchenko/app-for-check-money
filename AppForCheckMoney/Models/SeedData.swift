@@ -44,10 +44,42 @@ enum SeedData {
             for (index, item) in defaults.enumerated() {
                 context.insert(makeCategory(from: item, sortOrder: index))
             }
-            try? context.save()
-            return
+        } else {
+            refreshDefaultKeywords(in: context)
         }
-        refreshDefaultKeywords(in: context)
+        ensureLedgerDefaults(in: context)
+        try? context.save()
+    }
+
+    /// Private space + default BYN cash account (idempotent).
+    static func ensureLedgerDefaults(in context: ModelContext) {
+        let spaces = (try? context.fetch(FetchDescriptor<MoneySpace>())) ?? []
+        if spaces.first(where: { $0.id == SpaceIDs.privateDefault }) == nil {
+            context.insert(MoneySpace(
+                id: SpaceIDs.privateDefault,
+                name: L10n.string("space.privateDefaultName"),
+                kind: .privateSpace
+            ))
+        }
+
+        let accounts = (try? context.fetch(FetchDescriptor<MoneyAccount>())) ?? []
+        if accounts.first(where: { $0.id == AccountIDs.cashBYN }) == nil {
+            context.insert(MoneyAccount(
+                id: AccountIDs.cashBYN,
+                name: L10n.string("account.cashBYN"),
+                currency: .byn,
+                spaceId: SpaceIDs.privateDefault,
+                sortOrder: 0,
+                symbolName: "banknote"
+            ))
+        }
+
+        // Stamp legacy txs missing accountId onto default cash.
+        let txs = (try? context.fetch(FetchDescriptor<MoneyTransaction>())) ?? []
+        for tx in txs where tx.accountId.isEmpty {
+            tx.accountId = AccountIDs.cashBYN
+            if tx.spaceId.isEmpty { tx.spaceId = SpaceIDs.privateDefault }
+        }
     }
 
     /// Updates keywords / names / symbols for seeded defaults without wiping custom categories.

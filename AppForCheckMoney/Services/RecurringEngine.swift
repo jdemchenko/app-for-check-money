@@ -22,7 +22,8 @@ enum RecurringEngine {
                     createdAt: now,
                     source: .manual,
                     currency: rule.currency,
-                    paymentMethod: rule.paymentMethod
+                    paymentMethod: rule.paymentMethod,
+                    accountId: rule.accountId.isEmpty ? AccountIDs.cashBYN : rule.accountId
                 )
                 context.insert(tx)
                 rule.advanceNextFire()

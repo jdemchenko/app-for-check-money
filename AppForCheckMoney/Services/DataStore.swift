@@ -10,6 +10,10 @@ enum DataStore {
             MoneyTransaction.self,
             MoneyCategory.self,
             RecurringRule.self,
+            MoneyAccount.self,
+            MoneyGoal.self,
+            MoneyDebt.self,
+            MoneySpace.self,
         ])
 
         let preferCloud = UserDefaults.standard.bool(forKey: "settings.icloud.prefer")

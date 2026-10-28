@@ -8,10 +8,13 @@ struct HistoryView: View {
     private var transactions: [MoneyTransaction]
     @Query(sort: \MoneyCategory.sortOrder)
     private var categories: [MoneyCategory]
+    @Query(sort: \MoneyAccount.sortOrder)
+    private var accounts: [MoneyAccount]
 
     @State private var query = ""
     @State private var typeFilter: TypeFilter = .all
     @State private var categoryFilter: String = "all"
+    @State private var accountFilter: String = "all"
     @State private var paymentFilter: PaymentFilter = .all
     @State private var fromDate: Date?
     @State private var toDate: Date?
@@ -42,6 +45,10 @@ struct HistoryView: View {
             if typeFilter == .expense, tx.type != .expense { return false }
             if typeFilter == .income, tx.type != .income { return false }
             if categoryFilter != "all", tx.categoryId != categoryFilter { return false }
+            if accountFilter != "all" {
+                let aid = tx.accountId.isEmpty ? AccountIDs.cashBYN : tx.accountId
+                if aid != accountFilter { return false }
+            }
             switch paymentFilter {
             case .all: break
             case .cash: if tx.paymentMethod != .cash { return false }
@@ -73,6 +80,7 @@ struct HistoryView: View {
                     tx.currency.displaySymbol,
                     tx.paymentMethod.title,
                     tx.type.rawValue,
+                    accounts.first { $0.id == (tx.accountId.isEmpty ? AccountIDs.cashBYN : tx.accountId) }?.name ?? "",
                 ].joined(separator: " ").lowercased()
                 if !hay.contains(q) { return false }
             }
@@ -402,6 +410,21 @@ struct HistoryView: View {
                     }
 
                     GlassPanel {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(L10n.string("accounts.title"))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Picker(L10n.string("accounts.title"), selection: $accountFilter) {
+                                Text(L10n.string("filter.all")).tag("all")
+                                ForEach(accounts.filter { !$0.isArchived }, id: \.id) { account in
+                                    Text("\(account.name) · \(account.currency.code)").tag(account.id)
+                                }
+                            }
+                            .labelsHidden()
+                        }
+                    }
+
+                    GlassPanel {
                         VStack(alignment: .leading, spacing: 12) {
                             QuietSectionLabel(text: L10n.string("history.dateRange"))
                             Toggle(isOn: Binding(
@@ -453,6 +476,7 @@ struct HistoryView: View {
                     Button(L10n.string("history.reset")) {
                         typeFilter = .all
                         categoryFilter = "all"
+                        accountFilter = "all"
                         paymentFilter = .all
                         fromDate = nil
                         toDate = nil

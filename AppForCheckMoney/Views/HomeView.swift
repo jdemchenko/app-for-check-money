@@ -23,7 +23,9 @@ struct HomeView: View {
     @State private var showStatus = false
     @State private var showManualAdd = false
     @State private var showSettings = false
+    @State private var showLedger = false
     @State private var isHoldingMic = false
+    @Query(sort: \MoneyAccount.sortOrder) private var accounts: [MoneyAccount]
     /// Soft day-total / category % after save (DeepSeek-style, no toast).
     @State private var quietFeedback: String?
     @State private var quietFeedbackTask: Task<Void, Never>?
@@ -53,7 +55,19 @@ struct HomeView: View {
             .reduce(0) { $0 + $1.amountIn(displayCurrency) }
     }
 
-    private var balance: Double { income - expense }
+    /// Month cashflow (income − expense) in display currency.
+    private var monthCashflow: Double { income - expense }
+
+    /// Multi-account FX total (opening + signed txs) in display currency.
+    private var ledgerTotal: Double {
+        AccountLedger.totals(
+            accounts: accounts,
+            transactions: transactions,
+            displayCurrency: displayCurrency
+        ).totalDisplay
+    }
+
+    private var balance: Double { ledgerTotal }
 
     private var todayExpense: Double {
         let cal = Calendar.current
@@ -99,6 +113,13 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
+                        Button {
+                            showLedger = true
+                        } label: {
+                            Image(systemName: "wallet.pass")
+                        }
+                        .accessibilityLabel(L10n.string("ledger.title"))
+
                         Button {
                             showSettings = true
                         } label: {
@@ -155,6 +176,11 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
+                    .presentationDetents([.large, .medium])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showLedger) {
+                LedgerHubView()
                     .presentationDetents([.large, .medium])
                     .presentationDragIndicator(.visible)
             }
@@ -256,7 +282,11 @@ struct HomeView: View {
                     .lineLimit(1)
                     .contentTransition(.numericText())
 
-                Text(L10n.string("home.monthIn") + " " + displayCurrency.displaySymbol)
+                Text(
+                    L10n.string("home.monthCashflow")
+                        + " "
+                        + MoneyFormat.currency(monthCashflow, code: displayCurrency)
+                )
                     .font(.caption2)
                     .themeTertiary()
 

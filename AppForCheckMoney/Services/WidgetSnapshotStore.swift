@@ -22,7 +22,8 @@ enum WidgetSnapshotStore {
     static func publish(
         transactions: [MoneyTransaction],
         displayCurrency: AppCurrency,
-        settings: AppSettingsStore
+        settings: AppSettingsStore,
+        accounts: [MoneyAccount] = []
     ) {
         let cal = Calendar.current
         let now = Date.now
@@ -38,6 +39,18 @@ enum WidgetSnapshotStore {
         let monthExpense = transactions
             .filter { $0.type == .expense && $0.date >= monthStart }
             .reduce(0.0) { $0 + $1.amountIn(displayCurrency) }
+
+        // Prefer multi-account FX total when accounts exist; else month cashflow.
+        let monthBalance: Double = {
+            if accounts.contains(where: { !$0.isArchived }) {
+                return AccountLedger.totals(
+                    accounts: accounts,
+                    transactions: transactions,
+                    displayCurrency: displayCurrency
+                ).totalDisplay
+            }
+            return monthIncome - monthExpense
+        }()
 
         let budgetSpent: Double = {
             guard settings.budgetEnabled else { return 0 }
@@ -59,7 +72,7 @@ enum WidgetSnapshotStore {
             Snapshot(
                 updatedAt: now,
                 todayExpense: todayExpense,
-                monthBalance: monthIncome - monthExpense,
+                monthBalance: monthBalance,
                 monthExpense: monthExpense,
                 currencySymbol: displayCurrency.displaySymbol,
                 budgetEnabled: settings.budgetEnabled,

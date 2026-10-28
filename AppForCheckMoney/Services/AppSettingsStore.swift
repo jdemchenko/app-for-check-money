@@ -12,6 +12,7 @@ final class AppSettingsStore: ObservableObject {
         static let budgetAmount = "settings.budget.amount"
         static let budgetCurrency = "settings.budget.currency"
         static let categoryBudgets = "settings.budget.categories"
+        static let accountBudgets = "settings.budget.accounts"
         static let lockEnabled = "settings.lock.enabled"
         static let onboardingDone = "settings.onboarding.done"
         static let iCloudPrefer = "settings.icloud.prefer"
@@ -35,6 +36,11 @@ final class AppSettingsStore: ObservableObject {
     /// Optional per-category monthly limits (same currency as `budgetCurrency`).
     @Published var categoryBudgets: [String: Double] {
         didSet { persistCategoryBudgets() }
+    }
+
+    /// Optional per-account monthly spend limits (same currency as `budgetCurrency`).
+    @Published var accountBudgets: [String: Double] {
+        didSet { persistAccountBudgets() }
     }
 
     @Published var lockEnabled: Bool {
@@ -86,6 +92,14 @@ final class AppSettingsStore: ObservableObject {
             cats = [:]
         }
 
+        let accountCaps: [String: Double]
+        if let data = defaults.data(forKey: Key.accountBudgets),
+           let decoded = try? JSONDecoder().decode([String: Double].self, from: data) {
+            accountCaps = decoded
+        } else {
+            accountCaps = [:]
+        }
+
         let done: Bool
         if defaults.object(forKey: Key.onboardingDone) != nil {
             done = defaults.bool(forKey: Key.onboardingDone)
@@ -103,6 +117,7 @@ final class AppSettingsStore: ObservableObject {
         budgetAmount = amount
         budgetCurrency = currency
         categoryBudgets = cats
+        accountBudgets = accountCaps
         lockEnabled = lock
         preferiCloudSync = preferCloud
         reminderEnabled = reminderOn
@@ -125,9 +140,30 @@ final class AppSettingsStore: ObservableObject {
         categoryBudgets = next
     }
 
+    func accountBudget(for id: String) -> Double? {
+        guard let value = accountBudgets[id], value > 0 else { return nil }
+        return value
+    }
+
+    func setAccountBudget(_ amount: Double?, for id: String) {
+        var next = accountBudgets
+        if let amount, amount > 0 {
+            next[id] = amount
+        } else {
+            next.removeValue(forKey: id)
+        }
+        accountBudgets = next
+    }
+
     private func persistCategoryBudgets() {
         if let data = try? JSONEncoder().encode(categoryBudgets) {
             defaults.set(data, forKey: Key.categoryBudgets)
+        }
+    }
+
+    private func persistAccountBudgets() {
+        if let data = try? JSONEncoder().encode(accountBudgets) {
+            defaults.set(data, forKey: Key.accountBudgets)
         }
     }
 }

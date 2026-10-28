@@ -18,6 +18,10 @@ final class MoneyTransaction {
     var currencyRaw: String = AppCurrency.byn.rawValue
     /// "" | cash | card — empty means unspecified (legacy rows).
     var paymentMethodRaw: String = ""
+    /// Empty → default cash BYN account (`AccountIDs.cashBYN`).
+    var accountId: String = ""
+    /// Empty → private default space.
+    var spaceId: String = SpaceIDs.privateDefault
 
     init(
         id: String = UUID().uuidString,
@@ -29,7 +33,9 @@ final class MoneyTransaction {
         createdAt: Date = .now,
         source: EntrySource = .manual,
         currency: AppCurrency = .byn,
-        paymentMethod: PaymentMethod = .unspecified
+        paymentMethod: PaymentMethod = .unspecified,
+        accountId: String = AccountIDs.cashBYN,
+        spaceId: String = SpaceIDs.privateDefault
     ) {
         self.id = id
         self.amount = amount
@@ -41,6 +47,8 @@ final class MoneyTransaction {
         self.sourceRaw = source.rawValue
         self.currencyRaw = currency.rawValue
         self.paymentMethodRaw = paymentMethod.rawValue
+        self.accountId = accountId
+        self.spaceId = spaceId
     }
 
     var type: TransactionType {
