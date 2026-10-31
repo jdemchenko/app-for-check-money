@@ -7,6 +7,8 @@ struct HomeView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.launchHomePulseToken) private var launchHomePulseToken
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query(sort: \MoneyTransaction.createdAt, order: .reverse)
     private var transactions: [MoneyTransaction]
     @Query(sort: \MoneyCategory.sortOrder)
@@ -31,6 +33,9 @@ struct HomeView: View {
     @State private var quietFeedback: String?
     @State private var quietFeedbackTask: Task<Void, Never>?
     @ObservedObject private var incoming = IncomingDraftStore.shared
+    /// One-shot return-open balance reveal / mic pulse (LaunchWowStore).
+    @State private var balanceReveal: Double = 1
+    @State private var micLaunchPulse = false
 
     private var monthTransactions: [MoneyTransaction] {
         let cal = Calendar.current
@@ -203,7 +208,33 @@ struct HomeView: View {
                 consumeIncomingDraft()
             }
             .onAppear { consumeIncomingDraft() }
+            .onChange(of: launchHomePulseToken) { _, token in
+                guard token > 0 else { return }
+                runReturnReveal()
+            }
             .id(currencySettings.displayCurrency.rawValue)
+        }
+    }
+
+    /// Light ~0.6s balance fade-up + single mic pulse after a returning open.
+    private func runReturnReveal() {
+        if reduceMotion {
+            balanceReveal = 1
+            micLaunchPulse = false
+            return
+        }
+        balanceReveal = 0.35
+        micLaunchPulse = false
+        withAnimation(.spring(response: 0.52, dampingFraction: 0.86)) {
+            balanceReveal = 1
+        }
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+            micLaunchPulse = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+            withAnimation(AppTheme.springSoft) {
+                micLaunchPulse = false
+            }
         }
     }
 
@@ -271,6 +302,8 @@ struct HomeView: View {
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
                 .contentTransition(.numericText())
+                .opacity(balanceReveal)
+                .offset(y: (1 - balanceReveal) * 8)
                 .padding(.top, 2)
 
             Text(
@@ -443,10 +476,13 @@ struct HomeView: View {
                 .foregroundStyle(speech.isListening ? AppTheme.accent : Color.primary)
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.pulse, isActive: speech.isListening)
-                .quietInteractiveGlassCircle(listening: speech.isListening)
-                .scaleEffect(isHoldingMic || speech.isListening ? 1.05 : 1.0)
+                .quietInteractiveGlassCircle(listening: speech.isListening || micLaunchPulse)
+                .scaleEffect(
+                    isHoldingMic || speech.isListening || micLaunchPulse ? 1.05 : 1.0
+                )
                 .animation(AppTheme.springSnappy, value: isHoldingMic)
                 .animation(AppTheme.springSnappy, value: speech.isListening)
+                .animation(AppTheme.springSnappy, value: micLaunchPulse)
                 // Use weight-based impact (iOS 17+). Avoid `.impact(flexibility:)` /
                 // `SensoryFeedback.Flexibility` — those require a newer SDK than iOS 18.
                 .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: isHoldingMic)
