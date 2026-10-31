@@ -1,10 +1,15 @@
 import SwiftUI
 
 // MARK: - Design tokens (HIG / quiet Liquid Glass)
+// Durable spec: docs/hig-redesign.md (Clarity · Depth · Fluidity)
 
 enum AppTheme {
-    /// Controls, chips, text fields — continuous iOS control radius.
+    // MARK: Radii — continuous corners 12…20
+
+    /// Controls, chips, text fields.
     static let radiusControl: CGFloat = 12
+    /// Grouped rows / nested surfaces.
+    static let radiusGroup: CGFloat = 16
     /// Panels / sheets — soft continuous surface (not pill-y).
     static let radiusPanel: CGFloat = 20
 
@@ -12,53 +17,90 @@ enum AppTheme {
     static let cornerMedium: CGFloat = radiusPanel
     static let cornerLarge: CGFloat = radiusPanel
 
+    // MARK: Spacing — content first, air between jobs
+
     /// Ample vertical rhythm between major sections.
-    static let spaceSection: CGFloat = 32
+    static let spaceSection: CGFloat = 36
+    /// Related blocks inside a section.
+    static let spaceGroup: CGFloat = 20
     static let spaceItem: CGFloat = 14
     static let spaceTight: CGFloat = 8
     static let touchMin: CGFloat = 44
     /// Horizontal page inset.
     static let pageInset: CGFloat = 22
 
+    // MARK: Color — system labels + one brand accent + semantic money
+
     /// Single accent — muted slate-teal (not purple, not neon).
     static let accent = Color(hex: "3A6B6E")
-    /// Functional cues only — low chroma.
-    static let income = Color(hex: "2A6B45")
-    static let expense = Color(hex: "B03A35")
+    /// Semantic system green / red (adaptive light+dark).
+    static let income = Color.green
+    static let expense = Color.red
     static let positive = income
     static let negative = expense
 
     /// Crisp 1px border language.
     static let borderWidth: CGFloat = 1.0
 
-    /// Quiet spring for press / listen / sheet content.
-    static var springSnappy: Animation {
-        .spring(response: 0.32, dampingFraction: 0.78)
+    // MARK: Type — SF hierarchy Large Title → Caption
+
+    enum TypeScale {
+        static let largeTitle = Font.largeTitle.weight(.bold)
+        static let title = Font.title.weight(.bold)
+        static let title2 = Font.title2.weight(.semibold)
+        static let title3 = Font.title3.weight(.semibold)
+        static let headline = Font.headline.weight(.semibold)
+        static let body = Font.body
+        static let callout = Font.callout
+        static let subheadline = Font.subheadline
+        static let footnote = Font.footnote
+        static let caption = Font.caption
+        static let caption2 = Font.caption2
+        /// Money display — rounded SF for numerals only.
+        static let moneyHero = Font.system(size: 48, weight: .semibold, design: .rounded)
+        static let moneyTitle = Font.system(.title, design: .rounded).weight(.semibold)
     }
+
+    // MARK: Motion — critically damped springs + press
+
+    /// Content settle / sheet / reveal — critically damped (no bounce).
+    static var springFluid: Animation {
+        .spring(response: 0.48, dampingFraction: 1.0)
+    }
+    /// Quiet press / mic / chip feedback.
+    static var springPress: Animation {
+        .spring(response: 0.28, dampingFraction: 0.92)
+    }
+    /// Listen / toggle — slight energy, still near-critical.
+    static var springSnappy: Animation {
+        .spring(response: 0.34, dampingFraction: 0.88)
+    }
+    /// Soft panel / feedback fade.
     static var springSoft: Animation {
-        .spring(response: 0.42, dampingFraction: 0.86)
+        .spring(response: 0.42, dampingFraction: 0.92)
     }
 
     // MARK: Scheme-aware surfaces
 
     static func canvas(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "000000") : Color(hex: "F2F2F7")
+        // System grouped background feel.
+        scheme == .dark ? Color.black : Color(hex: "F2F2F7")
     }
 
     static func elevatedFill(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "1C1C1E").opacity(0.78) : Color.white.opacity(0.92)
+        scheme == .dark ? Color(hex: "1C1C1E").opacity(0.82) : Color.white.opacity(0.94)
     }
 
     static func labelSecondary(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.secondary : Color(hex: "3A3A3C")
+        Color.secondary
     }
 
     static func labelTertiary(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.secondary.opacity(0.82) : Color(hex: "636366")
+        scheme == .dark ? Color.secondary.opacity(0.85) : Color(hex: "636366")
     }
 
     static func hairline(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.16) : Color.black.opacity(0.10)
+        scheme == .dark ? Color.white.opacity(0.14) : Color.black.opacity(0.08)
     }
 
     static func selectionStroke(_ scheme: ColorScheme) -> Color {
@@ -70,7 +112,7 @@ enum AppTheme {
     }
 
     static func trackValue(_ scheme: ColorScheme, emphasized: Bool = false) -> Color {
-        if emphasized { return AppTheme.expense.opacity(scheme == .dark ? 0.75 : 0.85) }
+        if emphasized { return AppTheme.expense.opacity(scheme == .dark ? 0.80 : 0.90) }
         return AppTheme.accent.opacity(scheme == .dark ? 0.55 : 0.65)
     }
 
@@ -78,13 +120,13 @@ enum AppTheme {
     static func glassStroke(_ scheme: ColorScheme) -> LinearGradient {
         if scheme == .dark {
             return LinearGradient(
-                colors: [Color.white.opacity(0.22), Color.white.opacity(0.06)],
+                colors: [Color.white.opacity(0.20), Color.white.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         }
         return LinearGradient(
-            colors: [Color.white.opacity(0.90), Color.black.opacity(0.08)],
+            colors: [Color.white.opacity(0.92), Color.black.opacity(0.06)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -92,6 +134,24 @@ enum AppTheme {
 
     static func continuousRect(_ radius: CGFloat = radiusControl) -> RoundedRectangle {
         RoundedRectangle(cornerRadius: radius, style: .continuous)
+    }
+}
+
+/// Critically damped press — scale + opacity, no bounce clutter.
+struct QuietPressButtonStyle: ButtonStyle {
+    var pressedScale: CGFloat = 0.97
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? pressedScale : 1)
+            .opacity(configuration.isPressed ? 0.88 : 1)
+            .animation(AppTheme.springPress, value: configuration.isPressed)
+    }
+}
+
+extension View {
+    func quietPress(scale: CGFloat = 0.97) -> some View {
+        buttonStyle(QuietPressButtonStyle(pressedScale: scale))
     }
 }
 
@@ -127,15 +187,25 @@ struct AtmosphereBackground: View {
     var body: some View {
         ZStack {
             AppTheme.canvas(scheme)
-            // One soft wash — depth without muddy clutter.
+            // Soft depth layer — one accent wash, no purple clutter.
             RadialGradient(
                 colors: [
-                    AppTheme.accent.opacity(scheme == .dark ? 0.10 : 0.05),
+                    AppTheme.accent.opacity(scheme == .dark ? 0.11 : 0.055),
                     .clear,
                 ],
-                center: UnitPoint(x: 0.15, y: -0.05),
-                startRadius: 4,
-                endRadius: 380
+                center: UnitPoint(x: 0.12, y: -0.02),
+                startRadius: 8,
+                endRadius: 420
+            )
+            // Second quieter veil for material stacking.
+            RadialGradient(
+                colors: [
+                    Color.primary.opacity(scheme == .dark ? 0.04 : 0.02),
+                    .clear,
+                ],
+                center: UnitPoint(x: 0.92, y: 0.95),
+                startRadius: 10,
+                endRadius: 280
             )
         }
         .ignoresSafeArea()
@@ -373,7 +443,7 @@ struct GlassActionButton: View {
                     Image(systemName: systemImage)
                 }
                 Text(title)
-                    .fontWeight(.semibold)
+                    .font(AppTheme.TypeScale.headline)
             }
             .frame(maxWidth: .infinity)
             .frame(minHeight: AppTheme.touchMin - 8)
@@ -385,7 +455,7 @@ struct GlassActionButton: View {
                 reduceTransparency: reduceTransparency
             ))
         }
-        .buttonStyle(.plain)
+        .quietPress()
     }
 }
 
@@ -445,7 +515,7 @@ struct QuietSectionLabel: View {
 
     var body: some View {
         Text(text)
-            .font(.subheadline.weight(.semibold))
+            .font(AppTheme.TypeScale.subheadline.weight(.semibold))
             .foregroundStyle(AppTheme.labelSecondary(scheme))
             .textCase(nil)
             .tracking(0.2)

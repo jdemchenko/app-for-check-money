@@ -16,7 +16,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: AppTheme.spaceSection) {
                     currencyBlock(
                         title: L10n.string("settings.displayCurrency"),
                         subtitle: L10n.string("settings.displayCurrencyHint"),
@@ -41,11 +41,11 @@ struct SettingsView: View {
                     ratesBlock
                 }
                 .padding(.horizontal, AppTheme.pageInset)
-                .padding(.vertical, 16)
+                .padding(.vertical, AppTheme.spaceGroup)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("settings.title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.string("common.close")) { dismiss() }

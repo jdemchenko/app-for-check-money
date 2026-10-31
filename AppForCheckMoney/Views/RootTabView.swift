@@ -29,7 +29,7 @@ struct RootTabView: View {
                 CategoriesView()
             }
         }
-        .tint(Color.primary)
+        .tint(AppTheme.accent)
         .task {
             ExchangeRateStore.shared.refreshIfNeeded()
         }

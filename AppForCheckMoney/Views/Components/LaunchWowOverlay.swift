@@ -82,7 +82,7 @@ struct LaunchWowOverlay: View {
         morphProgress = 0
         overlayOpacity = 1
 
-        withAnimation(.spring(response: 0.78, dampingFraction: 0.82)) {
+        withAnimation(.spring(response: 0.72, dampingFraction: 1.0)) {
             brandOpacity = 1
             glassScale = 1
             glassBlur = 0

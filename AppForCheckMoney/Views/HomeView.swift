@@ -109,15 +109,16 @@ struct HomeView: View {
                     secondaryGlance
                     recentBlock
                 }
-                .animation(AppTheme.springSoft, value: quietFeedback)
+                .animation(AppTheme.springFluid, value: quietFeedback)
                 .padding(.horizontal, AppTheme.pageInset)
-                .padding(.top, 4)
-                .padding(.bottom, 40)
+                .padding(.top, 8)
+                .padding(.bottom, 48)
             }
             .liquidScreen()
             // Brand lives in the first viewport hero — keep nav chrome quiet.
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
@@ -225,14 +226,14 @@ struct HomeView: View {
         }
         balanceReveal = 0.35
         micLaunchPulse = false
-        withAnimation(.spring(response: 0.52, dampingFraction: 0.86)) {
+        withAnimation(AppTheme.springFluid) {
             balanceReveal = 1
         }
-        withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+        withAnimation(AppTheme.springPress) {
             micLaunchPulse = true
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
-            withAnimation(AppTheme.springSoft) {
+            withAnimation(AppTheme.springFluid) {
                 micLaunchPulse = false
             }
         }
@@ -290,37 +291,36 @@ struct HomeView: View {
 
     /// Brand-forward balance + hold-to-talk. No card chrome in the hero.
     private var firstViewport: some View {
-        VStack(alignment: .leading, spacing: AppTheme.spaceItem) {
+        VStack(alignment: .leading, spacing: AppTheme.spaceGroup) {
             Text(L10n.string("app.name"))
-                .font(.title2.weight(.semibold))
+                .font(AppTheme.TypeScale.largeTitle)
                 .foregroundStyle(.primary)
                 .accessibilityAddTraits(.isHeader)
 
             Text(MoneyFormat.currency(balance, code: displayCurrency))
-                .font(.system(size: 48, weight: .semibold, design: .rounded))
+                .font(AppTheme.TypeScale.moneyHero)
                 .foregroundStyle(.primary)
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
                 .contentTransition(.numericText())
                 .opacity(balanceReveal)
                 .offset(y: (1 - balanceReveal) * 8)
-                .padding(.top, 2)
 
             Text(
                 L10n.string("home.monthCashflow")
                     + " · "
                     + MoneyFormat.currency(monthCashflow, code: displayCurrency)
             )
-            .font(.subheadline)
+            .font(AppTheme.TypeScale.subheadline)
             .themeTertiary()
 
             quickMic
                 .frame(maxWidth: .infinity)
-                .padding(.top, AppTheme.spaceItem)
+                .padding(.top, AppTheme.spaceTight)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, 4)
-        .padding(.bottom, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
     }
 
     /// Below-fold glance: income/expense, today, budgets — one quiet panel, not hero clutter.
@@ -502,14 +502,14 @@ struct HomeView: View {
                     ? L10n.string("voice.listening")
                     : L10n.string("home.quickEntry")
             )
-            .font(.subheadline.weight(.semibold))
+            .font(AppTheme.TypeScale.subheadline.weight(.semibold))
 
             Text(
                 speech.isListening
                     ? L10n.string("home.quickEntryStop")
                     : L10n.string("home.quickEntryHint")
             )
-            .font(.footnote)
+            .font(AppTheme.TypeScale.footnote)
             .themeTertiary()
             .multilineTextAlignment(.center)
             .frame(maxWidth: 280)
@@ -579,8 +579,9 @@ struct HomeView: View {
                     Button(L10n.string("home.seeAll")) {
                         selectedTab = .history
                     }
-                    .font(.subheadline.weight(.medium))
+                    .font(AppTheme.TypeScale.subheadline.weight(.medium))
                     .foregroundStyle(AppTheme.accent)
+                    .quietPress(scale: 0.98)
                 }
             }
 

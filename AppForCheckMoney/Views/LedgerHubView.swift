@@ -73,11 +73,11 @@ struct LedgerHubView: View {
                     }
                 }
                 .padding(.horizontal, AppTheme.pageInset)
-                .padding(.vertical, 16)
+                .padding(.vertical, AppTheme.spaceGroup)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("ledger.title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.string("common.close")) { dismiss() }
@@ -99,12 +99,12 @@ struct LedgerHubView: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: symbol)
-                    .font(.body.weight(.semibold))
+                    .font(AppTheme.TypeScale.body.weight(.semibold))
                     .foregroundStyle(AppTheme.accent)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.body.weight(.medium)).foregroundStyle(.primary)
-                    Text(subtitle).font(.caption).themeTertiary()
+                    Text(title).font(AppTheme.TypeScale.body.weight(.medium)).foregroundStyle(.primary)
+                    Text(subtitle).font(AppTheme.TypeScale.caption).themeTertiary()
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
@@ -113,14 +113,14 @@ struct LedgerHubView: View {
             }
             .padding(16)
             .background {
-                AppTheme.continuousRect(AppTheme.radiusPanel)
+                AppTheme.continuousRect(AppTheme.radiusGroup)
                     .fill(.ultraThinMaterial)
                     .overlay {
-                        AppTheme.continuousRect(AppTheme.radiusPanel)
+                        AppTheme.continuousRect(AppTheme.radiusGroup)
                             .strokeBorder(AppTheme.hairline(colorScheme), lineWidth: AppTheme.borderWidth)
                     }
             }
         }
-        .buttonStyle(.plain)
+        .quietPress()
     }
 }

@@ -18,7 +18,7 @@ struct AppLockGate: View {
 
             VStack(spacing: 20) {
                 Text(L10n.string("app.name"))
-                    .font(.title2.weight(.semibold))
+                    .font(AppTheme.TypeScale.title2)
                     .accessibilityAddTraits(.isHeader)
 
                 Image(systemName: "lock.fill")

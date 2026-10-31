@@ -63,8 +63,8 @@ struct StatsView: View {
                         .padding(.horizontal, 4)
                 }
                 .padding(.horizontal, AppTheme.pageInset)
-                .padding(.vertical, 16)
-                .animation(AppTheme.springSoft, value: period)
+                .padding(.vertical, AppTheme.spaceGroup)
+                .animation(AppTheme.springFluid, value: period)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("tab.stats"))

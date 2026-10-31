@@ -16,11 +16,11 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: AppTheme.spaceSection) {
                 VStack(alignment: .leading, spacing: AppTheme.spaceTight) {
                     Text(L10n.string("app.name"))
-                        .font(.largeTitle.weight(.bold))
+                        .font(AppTheme.TypeScale.largeTitle)
                         .foregroundStyle(.primary)
 
                     Text(L10n.string("onboarding.headline"))
-                        .font(.title3.weight(.medium))
+                        .font(AppTheme.TypeScale.title3.weight(.medium))
                         .themeSecondary()
                 }
 
@@ -83,9 +83,9 @@ struct OnboardingView: View {
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(AppTheme.TypeScale.subheadline.weight(.semibold))
                 Text(body)
-                    .font(.footnote)
+                    .font(AppTheme.TypeScale.footnote)
                     .themeTertiary()
             }
         }

@@ -25,17 +25,17 @@ struct QuietConfirmPanel: View {
             HStack(spacing: 10) {
                 Button(action: onCancel) {
                     Text(L10n.string("common.cancel"))
-                        .font(.subheadline.weight(.semibold))
+                        .font(AppTheme.TypeScale.subheadline.weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: AppTheme.touchMin)
                         .padding(.horizontal, 8)
                         .modifier(QuietConfirmButtonChrome(emphasized: false, destructive: false))
                 }
-                .buttonStyle(.plain)
+                .quietPress()
 
                 Button(action: onConfirm) {
                     Text(confirmTitle)
-                        .font(.subheadline.weight(.semibold))
+                        .font(AppTheme.TypeScale.subheadline.weight(.semibold))
                         .foregroundStyle(confirmDestructive ? AppTheme.expense : AppTheme.accent)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: AppTheme.touchMin)
@@ -47,14 +47,14 @@ struct QuietConfirmPanel: View {
                             )
                         )
                 }
-                .buttonStyle(.plain)
+                .quietPress()
             }
         }
         .padding(20)
         .modifier(QuietConfirmPanelChrome(scheme: colorScheme, reduceTransparency: reduceTransparency))
         .padding(.horizontal, AppTheme.pageInset + 6)
-        .transition(.scale(scale: 0.96).combined(with: .opacity))
-        .animation(AppTheme.springSoft, value: title)
+        .transition(.scale(scale: 0.97).combined(with: .opacity))
+        .animation(AppTheme.springFluid, value: title)
     }
 }
 
