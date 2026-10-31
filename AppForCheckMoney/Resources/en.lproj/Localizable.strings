@@ -21,6 +21,7 @@
 "home.today" = "Today";
 "home.seeAll" = "See all";
 "home.quietFeedback" = "Today %@ · %@ %@%%";
+"home.budgetUnder" = "On track · %@ left this month";
 
 "add.mode" = "Mode";
 "add.manual" = "Manual";
@@ -42,6 +43,7 @@
 "currency.rub" = "Russian ruble (₽)";
 "currency.usd" = "US dollar ($)";
 "currency.eur" = "Euro (€)";
+"currency.gbp" = "British pound (£)";
 "common.done" = "Done";
 
 "stats.period" = "Period";
@@ -194,6 +196,7 @@
 
 "voice.batchTitle" = "Save these expenses?";
 "voice.batchSave" = "Save all";
+"voice.batchSummary" = "%@, %@";
 "voice.recurringTitle" = "Create recurring?";
 "voice.recurringSave" = "Create";
 "voice.recurringSaved" = "Recurring rule saved";

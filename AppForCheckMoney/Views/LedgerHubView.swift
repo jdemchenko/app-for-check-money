@@ -4,6 +4,7 @@ import SwiftData
 /// Quiet hub for accounts, goals, debts, and the spaces shell.
 struct LedgerHubView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \MoneyAccount.sortOrder) private var accounts: [MoneyAccount]
     @Query(sort: \MoneyGoal.createdAt, order: .reverse) private var goals: [MoneyGoal]
     @Query(sort: \MoneyDebt.createdAt, order: .reverse) private var debts: [MoneyDebt]
@@ -29,52 +30,54 @@ struct LedgerHubView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
-                    GlassPanel(padding: 18) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(L10n.string("ledger.totalBalance"))
-                                .font(.footnote.weight(.medium))
-                                .themeSecondary()
-                            Text(MoneyFormat.currency(totals.totalDisplay, code: totals.displayCurrency))
-                                .font(.system(size: 32, weight: .semibold, design: .rounded))
-                            Text(L10n.string("ledger.fxNote"))
-                                .font(.caption2)
-                                .themeTertiary()
-                        }
+                VStack(alignment: .leading, spacing: AppTheme.spaceSection) {
+                    VStack(alignment: .leading, spacing: AppTheme.spaceTight) {
+                        Text(L10n.string("ledger.totalBalance"))
+                            .font(.footnote.weight(.medium))
+                            .themeSecondary()
+                        Text(MoneyFormat.currency(totals.totalDisplay, code: totals.displayCurrency))
+                            .font(.system(size: 36, weight: .semibold, design: .rounded))
+                        Text(L10n.string("ledger.fxNote"))
+                            .font(.caption2)
+                            .themeTertiary()
                     }
+                    .padding(.top, 4)
 
-                    row(
-                        title: L10n.string("accounts.title"),
-                        subtitle: String(
-                            format: L10n.string("accounts.countFormat"),
-                            accounts.filter { !$0.isArchived }.count
-                        ),
-                        symbol: "creditcard"
-                    ) { showAccounts = true }
+                    VStack(spacing: AppTheme.spaceItem) {
+                        row(
+                            title: L10n.string("accounts.title"),
+                            subtitle: String(
+                                format: L10n.string("accounts.countFormat"),
+                                accounts.filter { !$0.isArchived }.count
+                            ),
+                            symbol: "creditcard"
+                        ) { showAccounts = true }
 
-                    row(
-                        title: L10n.string("goals.title"),
-                        subtitle: String(format: L10n.string("goals.countFormat"), goals.count),
-                        symbol: "target"
-                    ) { showGoals = true }
+                        row(
+                            title: L10n.string("goals.title"),
+                            subtitle: String(format: L10n.string("goals.countFormat"), goals.count),
+                            symbol: "target"
+                        ) { showGoals = true }
 
-                    row(
-                        title: L10n.string("debt.title"),
-                        subtitle: String(format: L10n.string("debt.openFormat"), openDebts),
-                        symbol: "person.2"
-                    ) { showDebts = true }
+                        row(
+                            title: L10n.string("debt.title"),
+                            subtitle: String(format: L10n.string("debt.openFormat"), openDebts),
+                            symbol: "person.2"
+                        ) { showDebts = true }
 
-                    row(
-                        title: L10n.string("space.title"),
-                        subtitle: spaces.first?.name ?? L10n.string("space.privateDefaultName"),
-                        symbol: "person.3"
-                    ) { showSpaces = true }
+                        row(
+                            title: L10n.string("space.title"),
+                            subtitle: spaces.first?.name ?? L10n.string("space.privateDefaultName"),
+                            symbol: "person.3"
+                        ) { showSpaces = true }
+                    }
                 }
-                .padding(20)
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.vertical, AppTheme.spaceGroup)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("ledger.title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.string("common.close")) { dismiss() }
@@ -96,24 +99,28 @@ struct LedgerHubView: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: symbol)
-                    .font(.body.weight(.semibold))
+                    .font(AppTheme.TypeScale.body.weight(.semibold))
+                    .foregroundStyle(AppTheme.accent)
                     .frame(width: 28)
-                    .themeSecondary()
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.body.weight(.medium)).foregroundStyle(.primary)
-                    Text(subtitle).font(.caption).themeTertiary()
+                    Text(title).font(AppTheme.TypeScale.body.weight(.medium)).foregroundStyle(.primary)
+                    Text(subtitle).font(AppTheme.TypeScale.caption).themeTertiary()
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
                     .themeTertiary()
             }
-            .padding(14)
+            .padding(16)
             .background {
-                AppTheme.continuousRect(AppTheme.cornerMedium)
+                AppTheme.continuousRect(AppTheme.radiusGroup)
                     .fill(.ultraThinMaterial)
+                    .overlay {
+                        AppTheme.continuousRect(AppTheme.radiusGroup)
+                            .strokeBorder(AppTheme.hairline(colorScheme), lineWidth: AppTheme.borderWidth)
+                    }
             }
         }
-        .buttonStyle(.plain)
+        .quietPress()
     }
 }

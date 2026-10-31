@@ -18,6 +18,8 @@ struct VoiceDraft: Equatable {
     var dayOffset: Int?
     /// `morning` / `evening` from speech (optional).
     var dayPart: String?
+    /// Subscription brand id for confirm logos (`apple_music`, `spotify`, …).
+    var subscriptionBrand: String?
 
     /// Happy-path autosave: amount + keyword category, not a recurring rule.
     var isAutosaveReady: Bool {
@@ -38,7 +40,8 @@ struct VoiceDraft: Equatable {
         currency: AppCurrency?,
         frequency: RecurringFrequency? = nil,
         dayOffset: Int? = nil,
-        dayPart: String? = nil
+        dayPart: String? = nil,
+        subscriptionBrand: String? = nil
     ) {
         self.amount = amount
         self.type = type
@@ -50,6 +53,7 @@ struct VoiceDraft: Equatable {
         self.frequency = frequency
         self.dayOffset = dayOffset
         self.dayPart = dayPart
+        self.subscriptionBrand = subscriptionBrand
     }
 
     init(from shared: SharedVoiceDraft) {
@@ -63,6 +67,17 @@ struct VoiceDraft: Equatable {
         frequency = shared.frequencyRaw.flatMap { RecurringFrequency(rawValue: $0) }
         dayOffset = shared.dayOffset
         dayPart = shared.dayPart
+        subscriptionBrand = shared.subscriptionBrandRaw
+    }
+
+    var subscriptionBrandTitle: String? {
+        guard let subscriptionBrand else { return nil }
+        return SharedVoiceParser.SubscriptionBrand.displayName(for: subscriptionBrand)
+    }
+
+    var subscriptionBrandSymbol: String? {
+        guard let subscriptionBrand else { return nil }
+        return SharedVoiceParser.SubscriptionBrand.symbolName(for: subscriptionBrand)
     }
 
     /// Resolve speech-relative date to a concrete `Date` for save.

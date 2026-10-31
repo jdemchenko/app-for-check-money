@@ -18,6 +18,8 @@ struct SharedVoiceDraft: Equatable {
     var dayOffset: Int?
     /// Optional part of day from speech: `morning` / `evening`.
     var dayPart: String?
+    /// Detected subscription brand id (`apple_music`, `spotify`, …) for confirm UI.
+    var subscriptionBrandRaw: String?
 
     /// Happy-path autosave: amount + keyword category, not recurring.
     var isAutosaveReady: Bool {
@@ -35,7 +37,7 @@ enum SharedVoiceParser {
     private static let wa = #"(?![0-9A-Za-zА-Яа-яЁё])"#
 
     private static let expenseCues = try! NSRegularExpression(
-        pattern: wb + #"(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)"# + wa,
+        pattern: wb + #"(spent|spend|paid|pay|bought|buy|потратил|потратила|потрачено|оплатил|оплатила|купил|купила|заказал|заказала|расход|закинул|закинула|пополнил|пополнила|добавь|добавьте|добавить|итого)"# + wa,
         options: [.caseInsensitive]
     )
     private static let incomeCues = try! NSRegularExpression(
@@ -46,7 +48,7 @@ enum SharedVoiceParser {
     /// Any currency *token* (amount unit or commodity mention).
     /// Includes «белорусских рублей» (бел… + руб with letters between).
     private static let currencyTokenPattern =
-        #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|белорусск(?:их|ий|ого|ом|ими)?\s+руб(?:л(?:ей|я|ь|ями)?)?|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|доллар(?:ов|а|ы)?|евро|₽|\$|€)"#
+        #"(руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|белорусск(?:их|ий|ого|ом|ими)?\s+руб(?:л(?:ей|я|ь|ями)?)?|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?|dollars?|usd|eur|gbp|доллар(?:ов|а|ы)?|евро|фунт(?:ов|а|ы|ами|е|ом)?(?:\s+стерлинг\w*)?|pounds?|₽|\$|€|£)"#
 
     /// Currency words stripped from notes only when they were the **amount unit**.
     private static let currencyWords = try! NSRegularExpression(
@@ -102,42 +104,146 @@ enum SharedVoiceParser {
         options: []
     )
 
+    /// Currency unit after a digit — used to find amount boundaries without «и»/comma.
+    private static let amountCurrencyUnit =
+        #"(?:₽|\$|€|£|руб(?:л(?:ей|я|ь|ями)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|доллар(?:ов|а|ы)?|евро|фунт(?:ов|а|ы|ами|е|ом)?|pounds?)"#
+
+    /// Amount+unit spans for «15 € … 30 $ …» splitting (keeps category words with each amount).
+    private static let amountSpan = try! NSRegularExpression(
+        pattern: #"(?i)\d+(?:[.,]\d{1,2})?\s*"# + amountCurrencyUnit
+            + #"|"# + amountCurrencyUnit + #"\s*\d+(?:[.,]\d{1,2})?"#,
+        options: []
+    )
+
     /// Split multi-expense utterances: «кофе 5 и такси 12», «coffee 5 and taxi 12».
     private static let multiSplit = try! NSRegularExpression(
         pattern: #"(?i)(?:,\s*|\s+и\s+|\s+and\s+)(?=(?:[^0-9]{0,40})?\d)"#,
         options: []
     )
 
-    /// Narrative clause boundaries: потом / затем / оплатил / date anchors.
+    /// Narrative clause boundaries: потом / затем / оплатил / заказал / date / weekday anchors.
     /// Use `wa` (not JS/`\b`) so Cyrillic tokens match.
     private static let narrativeSplit = try! NSRegularExpression(
-        pattern: #"(?i)(?:\s+потом\s+|\s+затем\s+|\s+после\s+(?:этого|того)\s+|(?<=[\p{L}\d.])\s+(?=оплатил[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=сегодня"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=позавчера"# + wa + #"))"#,
+        pattern: #"(?i)(?:\s+потом\s+|\s+затем\s+|\s+после\s+(?:этого|того)\s+|(?<=[\p{L}\d.])\s+(?=оплатил[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=заказал[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=утром"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вечером"# + wa + #")|(?<=[\p{L}\d.])\s+(?=сегодня"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=позавчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=во?\s+(?:понедельник|вторник|сред[ауеы]|четверг|пятниц[уыае]|суббот[уыае]|воскресень[еяю]|пн|вт|ср|чт|пт|сб|вс)"# + wa + #")|(?<=[\p{L}\d.])\s+(?=(?:понедельник|вторник|сред[ауеы]|четверг|пятниц[уыае]|суббот[уыае]|воскресень[еяю])"# + wa + #"))"#,
         options: []
     )
 
-    private static let sessionCurrencyCue = try! NSRegularExpression(
+    /// Letters for stems — NSRegularExpression `\w` is ASCII-only, so Cyrillic endings need this.
+    private static let letter = #"[а-яёА-ЯЁa-zA-Z]"#
+
+    /// Food-delivery / food-order cue — always Еда, never housing/freelance.
+    /// Must match «доставку еды» / «заказал доставку» (Cyrillic endings).
+    private static let foodDeliveryCue = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:в\s+рб|рб|белорусск\w*|бел\.?\s*руб|byn|br|моя\s+валюта)"#
+            + #"(?:доставк\#(letter)*\s+ед\#(letter)*|ед\#(letter)*\s+доставк\#(letter)*|заказ\#(letter)*\s+(?:доставк\#(letter)*|ед\#(letter)*)|order(?:ed)?\s+food|food\s+order|food\s+delivery|delivery\s+food|доставк\#(letter)*)"#
+            + wa,
+        options: []
+    )
+
+    /// Meal / eating cue — «поесть», «сходил поесть» → Еда (never housing).
+    private static let foodMealCue = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:поесть|поел[аи]?|поем|поедим|поужина\#(letter)*|пообеда\#(letter)*|обеда\#(letter)*|ужина\#(letter)*|завтрака\#(letter)*|сходил[аи]?\s+поесть|ходили\s+поесть|went\s+(?:to\s+)?(?:eat|lunch|dinner)|had\s+(?:lunch|dinner|breakfast))"#
+            + wa,
+        options: []
+    )
+
+    /// Fuel / car fill-up — «заправила машину» → Транспорт (never housing).
+    private static let fuelCue = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:заправ\#(letter)*|бензин\#(letter)*|топлив\#(letter)*|дизел\#(letter)*|азс|gas\s*station|petrol|diesel|fuel(?:ed|ling)?|заправ\#(letter)*\s+машин\#(letter)*|машин\#(letter)*\s+заправ\#(letter)*)"#
+            + wa,
+        options: []
+    )
+
+    /// Beauty salon — «салон» → Красота (never Еда / housing).
+    private static let beautySalonCue = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:салон\#(letter)*|salon|маникюр\#(letter)*|педикюр\#(letter)*|парикмахер\#(letter)*|стрижк\#(letter)*|beauty\s*salon)"#
+            + wa,
+        options: []
+    )
+
+    /// Narrative filler stripped from notes («мы зашли», «потратил», «ещё/так/привет»…).
+    private static let noteNarrativeFiller = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:мы\s+)?(?:зашли|зашёл|зашел|зашла|зайти)\s+в"#
+            + #"|"# + wb + #"(?:мы\s+)?(?:зашли|зашёл|зашел|зашла)"#
+            + #"|"# + wb + #"(?:потратил\#(letter)*|потрачено|ездил\#(letter)*|попил\#(letter)*|купил\#(letter)*|оплатил\#(letter)*|сходил\#(letter)*|ходил\#(letter)*)"#
+            + #"|"# + wb + #"(?:ещё|еще|так|привет|слушай|короче|типа|ну)"#
+            + wa,
+        options: []
+    )
+
+    /// Session cues — matched **in order** (EUR / USD before BYN). Bare «моя валюта» alone is NOT BYN.
+    private static let sessionEUR = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:моя\s+валюта\s+евро|валюта\s+евро|в\s+европ\w*|в\s+еврозоне|europe|eurozone|(?:default|entry)\s+eur)"#
+            + wa,
+        options: []
+    )
+    private static let sessionUSD = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:моя\s+валюта\s+(?:доллар\w*|usd)|валюта\s+(?:доллар\w*|usd)|в\s+сша|in\s+the\s+usa|(?:default|entry)\s+usd)"#
+            + wa,
+        options: []
+    )
+    private static let sessionBYN = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:моя\s+валюта\s+(?:бел\w*|byn|br|руб\w*)|валюта\s+(?:бел\w*|byn|br)|в\s+рб|белорусск\w*|бел\.?\s*руб|byn\b|br\b)"#
             + wa,
         options: []
     )
 
     private static let companionStrip = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:вместе\s+)?с\s+[А-ЯЁ][а-яёА-Яа-яЁё]{1,40}"#
+            + #"(?:вместе\s+)?с\s+[А-ЯЁа-яё][а-яёА-Яа-яЁё]{1,40}"#
             + wa,
         options: []
     )
 
     private static let subscriptionCue = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\s*music|yandex\s*music|яндекс\s*музык\w*|apple\s*music|youtube\s*premium|youtube\s*music)"#
+            + #"(?:подписк\#(letter)*(?:\s+(?:на\s+)?(?:программ\#(letter)*|сервис\#(letter)*|приложен\#(letter)*))?|subscription|netflix|spotify|яндекс\s*(?:music|plus|плюс|музык\w*)|yandex\s*(?:music|plus)|apple\s*music|\bapple\b|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music|youtube\s*premium|youtube\s*music)"#
             + wa,
         options: []
     )
 
+    /// Brand detectors — longer / more specific first.
+    private static let subscriptionBrands: [(id: String, pattern: NSRegularExpression)] = [
+        ("apple_music", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:apple\s*music|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music)"# + wa, options: []
+        )),
+        ("youtube_premium", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:youtube\s*premium|youtube\s*music|ютюб\s*премиум|ютуб\s*премиум)"# + wa, options: []
+        )),
+        ("yandex_music", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:яндекс\s*music|yandex\s*music|яндекс\s*музык\w*)"# + wa, options: []
+        )),
+        ("yandex_plus", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:яндекс\s*(?:plus|плюс)|yandex\s*plus)"# + wa, options: []
+        )),
+        ("netflix", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"netflix"# + wa, options: []
+        )),
+        ("spotify", try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"spotify"# + wa, options: []
+        )),
+        ("apple_music", try! NSRegularExpression(
+            // Bare «Apple» near подписк* — last resort after Music-specific patterns.
+            pattern: #"(?i)"# + wb + #"apple"# + wa, options: []
+        )),
+    ]
+
     private static let dateYesterday = try! NSRegularExpression(
         pattern: #"(?i)"# + wb + #"вчера"# + wa, options: []
+    )
+    /// «вечером вчерашнего дня» / «вчерашний вечер».
+    private static let dateYesterdayGenitive = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:вечером\s+вчерашнего(?:\s+дня)?|утром\s+вчерашнего(?:\s+дня)?|вчерашн(?:его|ий|яя|ее|им)\s+(?:дня|день|вечер\w*|утр\w*))"#
+            + wa,
+        options: []
     )
     private static let dateDayBefore = try! NSRegularExpression(
         pattern: #"(?i)"# + wb + #"позавчера"# + wa, options: []
@@ -151,6 +257,31 @@ enum SharedVoiceParser {
     private static let dayPartEvening = try! NSRegularExpression(
         pattern: #"(?i)"# + wb + #"(?:вечером|evening|tonight)"# + wa, options: []
     )
+
+    /// Gregorian `weekday` (1=Sun … 7=Sat) → RU weekday / abbr patterns.
+    private static let weekdayCues: [(weekday: Int, pattern: NSRegularExpression)] = [
+        (2, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:понедельн\#(letter)*|пн)"# + wa, options: []
+        )),
+        (3, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:вторник\#(letter)*|вт)"# + wa, options: []
+        )),
+        (4, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:сред[аеуы]|ср)"# + wa, options: []
+        )),
+        (5, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:четверг\#(letter)*|чт)"# + wa, options: []
+        )),
+        (6, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:пятниц\#(letter)*|пт)"# + wa, options: []
+        )),
+        (7, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:суббот\#(letter)*|сб)"# + wa, options: []
+        )),
+        (1, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:воскресень\#(letter)*|вс)"# + wa, options: []
+        )),
+    ]
 
     /// Category-signal words that must never become a stored note by themselves.
     private static let noteSuppress: Set<String> = Set([
@@ -185,10 +316,23 @@ enum SharedVoiceParser {
         "копеек", "копейки", "копейка",
         "косметика", "cosmetics", "красота", "beauty",
         "категория", "category",
-        "на", "за", "для", "и", "получил", "получила", "потратил", "потратила",
-        "закинул", "закинула", "пополнил", "купил", "купила", "добавь", "кажется",
-        "сегодня", "это", "будет", "свой", "свою",
-        "got", "received", "spent", "paid", "bought",
+        "на", "за", "для", "и", "я", "получил", "получила", "потратил", "потратила",
+        "закинул", "закинула", "пополнил", "купил", "купила", "заказал", "заказала",
+        "добавь", "кажется",
+        "сегодня", "вчера", "позавчера", "утром", "вечером",
+        "вчерашнего", "вчерашний", "дня", "день",
+        "это", "будет", "свой", "свою",
+        "got", "received", "spent", "paid", "bought", "ordered",
+        "зашёл", "зашла", "зашел", "зашли", "мы", "попил", "попила",
+        "ездил", "ездила", "в",
+        "ещё", "еще", "так", "привет", "слушай", "короче", "типа", "ну",
+        "сходил", "сходила", "ходил", "ходила", "поесть", "поел", "поела",
+        "заправила", "заправил", "заправка", "машину", "машина",
+        "понедельник", "вторник", "среда", "среду", "четверг", "пятница", "пятницу",
+        "суббота", "субботу", "воскресенье", "пн", "вт", "ср", "чт", "пт", "сб", "вс",
+        "салон", "подписку", "подписка", "программу", "программа",
+        // Delivery stems — category signal, not a stored note
+        "доставка", "доставку", "доставк", "еды", "еду", "едой", "delivery",
         // NOTE: keep «аренда квартиры», «проезд», «телефон», «долларов» OUT — descriptions
     ].map { TextNormalizer.normalize($0) })
 
@@ -205,8 +349,8 @@ enum SharedVoiceParser {
         cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
 
         let patterns = [
-            #"(?i)(\d+(?:[.,]\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)"#,
-            #"(?i)(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)\s*(\d+(?:[.,]\d{1,2})?)"#,
+            #"(?i)(\d+(?:[.,]\d{1,2})?)\s*(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?)"#,
+            #"(?i)(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?)\s*(\d+(?:[.,]\d{1,2})?)"#,
             #"(\d+(?:[.,]\d{1,2})?)"#,
         ]
         for pattern in patterns {
@@ -313,15 +457,22 @@ enum SharedVoiceParser {
     }
 
     private static func resolveCurrencyToken(_ raw: String) -> AmountCurrencyResolve {
-        let t = TextNormalizer.normalize(raw)
-            .replacingOccurrences(of: "$", with: "usd")
-            .replacingOccurrences(of: "€", with: "eur")
-            .replacingOccurrences(of: "₽", with: "rub")
-        if t.contains("dollar") || t == "usd" || t.hasPrefix("доллар") {
+        // Map symbols before normalize — TextNormalizer strips €/$/£/₽.
+        var t = raw
+            .replacingOccurrences(of: "$", with: " usd ")
+            .replacingOccurrences(of: "€", with: " eur ")
+            .replacingOccurrences(of: "£", with: " gbp ")
+            .replacingOccurrences(of: "₽", with: " rub ")
+        t = TextNormalizer.normalize(t)
+        if t.contains("dollar") || t == "usd" || t.hasPrefix("доллар") || t.split(separator: " ").contains("usd") {
             return AmountCurrencyResolve(currencyRaw: "usd")
         }
-        if t.contains("euro") || t == "eur" || t.hasPrefix("евро") {
+        if t.contains("euro") || t == "eur" || t.hasPrefix("евро") || t.split(separator: " ").contains("eur") {
             return AmountCurrencyResolve(currencyRaw: "eur")
+        }
+        if t.contains("pound") || t == "gbp" || t.hasPrefix("фунт") || t.contains("стерлинг")
+            || t.split(separator: " ").contains("gbp") {
+            return AmountCurrencyResolve(currencyRaw: "gbp")
         }
         if t == "byn" || t == "br" || t.contains("бел") || t.contains("белорус") {
             return AmountCurrencyResolve(currencyRaw: "byn")
@@ -349,12 +500,17 @@ enum SharedVoiceParser {
             pattern: #"(?i)"# + wb + #"(euros?|eur|евро|€)"# + wa,
             options: []
         )
+        let gbp = try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(pounds?|gbp|фунт(?:ов|а|ы|ами|е|ом)?(?:\s+стерлинг\w*)?|£)"# + wa,
+            options: []
+        )
         let byn = try! NSRegularExpression(
             pattern: #"(?i)"# + wb + #"(byn|br|белорусск\w*|бел(?:\.?\s*)?руб(?:л(?:ей|я|ь)?)?)"# + wa,
             options: []
         )
         if usd.firstMatch(in: working, options: [], range: range) != nil { return "usd" }
         if eur.firstMatch(in: working, options: [], range: range) != nil { return "eur" }
+        if gbp.firstMatch(in: working, options: [], range: range) != nil { return "gbp" }
         if byn.firstMatch(in: working, options: [], range: range) != nil { return "byn" }
         return nil
     }
@@ -439,15 +595,21 @@ enum SharedVoiceParser {
         dayOffset: Int?,
         dayPart: String?
     ) -> SharedVoiceDraft {
-        let subscription = detectSubscription(in: rawText)
+        let brand = detectSubscriptionBrand(in: rawText)
+        let subscription = detectSubscription(in: rawText) ?? (brand != nil ? "monthly" : nil)
         let frequency = detectFrequency(in: rawText) ?? subscription
         let working = frequency != nil ? stripRecurringCues(rawText) : rawText
 
         let amount = parseAmount(from: working)
         var type = inferType(from: working)
+        let delivery = isFoodDelivery(in: working) || isFoodDelivery(in: rawText)
+        // Delivery / оплатил+подписка are always expenses — never freelance income.
+        if delivery || subscription != nil {
+            type = "expense"
+        }
+        // Explicit unit on the amount always wins; session fills bare / ambiguous only.
         var currency = inferCurrency(from: working)
-        // Session «в рб» stamps BYN when the unit was bare «руб» / missing.
-        if currency == nil, sessionCurrency != nil {
+        if currency == nil, let sessionCurrency {
             currency = sessionCurrency
         }
 
@@ -469,6 +631,9 @@ enum SharedVoiceParser {
                 matched.kindRaw == "income" ? "income" : "expense"
             )
         }
+        if delivery || subscription != nil {
+            type = "expense"
+        }
         if type == nil { type = "expense" }
 
         // Re-score with final type preference, then unrestricted fallback.
@@ -481,16 +646,65 @@ enum SharedVoiceParser {
             categories: categories,
             preferredTypeRaw: nil
         )
+        let meal = isFoodMeal(in: working) || isFoodMeal(in: rawText)
+        let fuel = isFuelExpense(in: working) || isFuelExpense(in: rawText)
+        let salon = isBeautySalon(in: working) || isBeautySalon(in: rawText)
+        let hasSubCue = subscription != nil || brand != nil
+
+        // Strong cues beat weak / housing misses (salon before meal so «салон» ≠ Еда).
+        if salon, let beauty = categories.first(where: { $0.id == "beauty" }) {
+            matched = beauty
+        } else if delivery || meal, let food = categories.first(where: { $0.id == "food" }) {
+            matched = food
+        } else if fuel, let transport = categories.first(where: { $0.id == "transport" }) {
+            matched = transport
+        } else if matched?.id == "housing",
+                  (delivery || meal || working.range(
+                    of: #"доставк|еды|еду|заказ|поесть|поел"#,
+                    options: [.regularExpression, .caseInsensitive]
+                  ) != nil),
+                  let food = categories.first(where: { $0.id == "food" }) {
+            matched = food
+        }
+        // Any подписк* cue (incl. «подписку на программу» / $ / €) → Подписки, never housing.
+        if hasSubCue {
+            if let subs = categories.first(where: { $0.id == "subscriptions" }) {
+                matched = subs
+            } else if brand != nil, let entertainment = categories.first(where: { $0.id == "entertainment" }) {
+                matched = entertainment
+            }
+        }
 
         let categoryMatchedByKeyword = matched != nil
-        let categoryId = matched?.id
-            ?? SharedCategoryMatcher.categories(forRaw: type!, in: categories).first?.id
+        // Blind fallback is housing (sort 0) — never use it for meal/fuel/salon/sub/delivery.
+        let categoryId: String? = {
+            if delivery || meal {
+                return matched?.id ?? categories.first(where: { $0.id == "food" })?.id
+            }
+            if fuel {
+                return matched?.id ?? categories.first(where: { $0.id == "transport" })?.id
+            }
+            if salon {
+                return matched?.id ?? categories.first(where: { $0.id == "beauty" })?.id
+            }
+            if hasSubCue {
+                return matched?.id ?? categories.first(where: { $0.id == "subscriptions" })?.id
+            }
+            return matched?.id
+                ?? SharedCategoryMatcher.categories(forRaw: type!, in: categories).first?.id
+        }()
 
-        let note = extractNote(
+        var note = extractNote(
             from: working,
             matchedCategory: matched,
             allCategories: categories
         )
+        if let brand, note.isEmpty || note.count < 3 {
+            note = SubscriptionBrand.displayName(for: brand)
+        } else if let brand {
+            // Prefer clean brand label over leftover «подписку долларов …».
+            note = SubscriptionBrand.displayName(for: brand)
+        }
 
         return SharedVoiceDraft(
             amount: amount,
@@ -502,7 +716,8 @@ enum SharedVoiceParser {
             currencyRaw: currency,
             frequencyRaw: frequency,
             dayOffset: dayOffset,
-            dayPart: dayPart
+            dayPart: dayPart,
+            subscriptionBrandRaw: brand
         )
     }
 
@@ -519,16 +734,24 @@ enum SharedVoiceParser {
         var activePart: String? = nil
         var drafts: [SharedVoiceDraft] = []
 
-        // Seed from preamble before the first segment if the full text starts with a date.
-        if let preamble = detectDateAnchor(in: fullText) {
+        // Seed day from full text only when an explicit day word is present (вчера/сегодня/…).
+        if let preamble = detectDateAnchor(in: fullText), preamble.dayExplicit {
             activeOffset = preamble.offset
             activePart = preamble.part
         }
 
         for segment in segments {
             if let anchor = detectDateAnchor(in: segment) {
-                activeOffset = anchor.offset
-                activePart = anchor.part
+                if anchor.dayExplicit, let offset = anchor.offset {
+                    activeOffset = offset
+                } else if activeOffset == nil, let offset = anchor.offset {
+                    // Bare «утром»/«вечером» → today only when no day is active yet.
+                    activeOffset = offset
+                }
+                // Bare day-part after «вчера» keeps yesterday and only updates morning/evening.
+                if let part = anchor.part {
+                    activePart = part
+                }
             }
             var draft = parse(
                 rawText: segment,
@@ -538,18 +761,36 @@ enum SharedVoiceParser {
                 dayPart: activePart
             )
             guard let amount = draft.amount, amount > 0 else { continue }
-            // Prefer segment text as raw; keep subscription frequency if detected.
+            // Prefer segment text as raw; keep subscription frequency / brand if detected.
             if draft.frequencyRaw == nil, let sub = detectSubscription(in: segment) {
                 draft.frequencyRaw = sub
+            }
+            if draft.subscriptionBrandRaw == nil,
+               let brand = detectSubscriptionBrand(in: segment) {
+                draft.subscriptionBrandRaw = brand
+                draft.frequencyRaw = draft.frequencyRaw ?? "monthly"
+                draft.note = SubscriptionBrand.displayName(for: brand)
+                if let subs = categories.first(where: { $0.id == "subscriptions" }) {
+                    draft.categoryId = subs.id
+                    draft.categoryMatchedByKeyword = true
+                }
             }
             drafts.append(draft)
         }
         return drafts
     }
 
+    /// Per-utterance session default. Explicit amount units always win later in `parse`.
+    /// Priority: EUR → USD → BYN. Never treat bare «моя валюта» as BYN.
     static func detectSessionCurrency(in text: String) -> String? {
         let range = NSRange(text.startIndex..., in: text)
-        if sessionCurrencyCue.firstMatch(in: text, options: [], range: range) != nil {
+        if sessionEUR.firstMatch(in: text, options: [], range: range) != nil {
+            return "eur"
+        }
+        if sessionUSD.firstMatch(in: text, options: [], range: range) != nil {
+            return "usd"
+        }
+        if sessionBYN.firstMatch(in: text, options: [], range: range) != nil {
             return "byn"
         }
         return nil
@@ -570,12 +811,61 @@ enum SharedVoiceParser {
         if subscriptionCue.firstMatch(in: text, options: [], range: range) != nil {
             return "monthly"
         }
+        if detectSubscriptionBrand(in: text) != nil {
+            return "monthly"
+        }
         return nil
     }
 
+    /// Brand id for confirm UI logos (`apple_music`, `spotify`, …).
+    static func detectSubscriptionBrand(in text: String) -> String? {
+        let range = NSRange(text.startIndex..., in: text)
+        for brand in subscriptionBrands {
+            if brand.pattern.firstMatch(in: text, options: [], range: range) != nil {
+                return brand.id
+            }
+        }
+        return nil
+    }
+
+    /// «доставка еды» / «заказал доставку» — expense food, never freelance.
+    static func isFoodDelivery(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return foodDeliveryCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
+    /// «поесть» / «сходил поесть» — Еда.
+    static func isFoodMeal(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return foodMealCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
+    /// «заправила машину» / АЗС — Транспорт.
+    static func isFuelExpense(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return fuelCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
+    /// «салон» — Красота.
+    static func isBeautySalon(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return beautySalonCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
+    /// Days since the most recent `weekday` (1=Sun…7=Sat), including today → 0.
+    static func offsetToWeekday(_ targetWeekday: Int, from date: Date = .now) -> Int {
+        let today = Calendar.current.component(.weekday, from: date)
+        var delta = today - targetWeekday
+        if delta < 0 { delta += 7 }
+        return -delta
+    }
+
     struct DateAnchor {
-        var offset: Int
+        /// Calendar day offset; `nil` when only a day-part was spoken.
+        var offset: Int?
         var part: String?
+        /// True when вчера/сегодня/позавчера/вчерашнего was explicit (not bare утром).
+        var dayExplicit: Bool
     }
 
     static func detectDateAnchor(in text: String) -> DateAnchor? {
@@ -587,20 +877,67 @@ enum SharedVoiceParser {
             part = "evening"
         }
 
+        // «вечером вчерашнего дня» before bare «вчера» / «вечером».
+        if dateYesterdayGenitive.firstMatch(in: text, options: [], range: range) != nil {
+            if part == nil {
+                if text.range(of: #"вечер"#, options: [.regularExpression, .caseInsensitive]) != nil {
+                    part = "evening"
+                } else if text.range(of: #"утр"#, options: [.regularExpression, .caseInsensitive]) != nil {
+                    part = "morning"
+                }
+            }
+            return DateAnchor(offset: -1, part: part, dayExplicit: true)
+        }
         if dateDayBefore.firstMatch(in: text, options: [], range: range) != nil {
-            return DateAnchor(offset: -2, part: part)
+            return DateAnchor(offset: -2, part: part, dayExplicit: true)
         }
         if dateYesterday.firstMatch(in: text, options: [], range: range) != nil {
-            return DateAnchor(offset: -1, part: part)
+            return DateAnchor(offset: -1, part: part, dayExplicit: true)
         }
         if dateToday.firstMatch(in: text, options: [], range: range) != nil {
-            return DateAnchor(offset: 0, part: part)
+            return DateAnchor(offset: 0, part: part, dayExplicit: true)
         }
-        // Bare «утром» / «вечером» without сегодня still implies today.
+        // Weekdays пн–вс / full names — most recent occurrence (incl. today).
+        for cue in weekdayCues {
+            if cue.pattern.firstMatch(in: text, options: [], range: range) != nil {
+                return DateAnchor(
+                    offset: offsetToWeekday(cue.weekday),
+                    part: part,
+                    dayExplicit: true
+                )
+            }
+        }
+        // Bare «утром» / «вечером» — day-part only; materialize keeps prior day when set.
         if part != nil {
-            return DateAnchor(offset: 0, part: part)
+            return DateAnchor(offset: 0, part: part, dayExplicit: false)
         }
         return nil
+    }
+
+    /// Display names + SF Symbols for subscription brands.
+    enum SubscriptionBrand {
+        static func displayName(for id: String) -> String {
+            switch id {
+            case "apple_music": return "Apple Music"
+            case "yandex_music": return "Yandex Music"
+            case "yandex_plus": return "Yandex Plus"
+            case "spotify": return "Spotify"
+            case "netflix": return "Netflix"
+            case "youtube_premium": return "YouTube Premium"
+            default: return id
+            }
+        }
+
+        static func symbolName(for id: String) -> String {
+            switch id {
+            case "apple_music": return "applelogo"
+            case "yandex_music", "yandex_plus": return "music.note.list"
+            case "spotify": return "music.note"
+            case "netflix": return "play.tv"
+            case "youtube_premium": return "play.rectangle.fill"
+            default: return "rectangle.stack.fill.badge.plus"
+            }
+        }
     }
 
     static func splitNarrative(_ text: String) -> [String] {
@@ -635,8 +972,21 @@ enum SharedVoiceParser {
         let tail = String(text[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
         if !tail.isEmpty { parts.append(tail) }
 
-        let withAmount = parts.filter { parseAmount(from: $0) != nil }
-        return withAmount.count >= 2 ? withAmount : [text]
+        // Flatten: each narrative clause may still hold comma/«и» multi-amounts
+        // (e.g. «продукты 30 евро, подписка 3 доллара … были вчера»).
+        var expanded: [String] = []
+        for part in parts {
+            let multi = splitMultiExpense(part)
+            if multi.count >= 2 {
+                expanded.append(contentsOf: multi)
+            } else {
+                expanded.append(part)
+            }
+        }
+
+        // Keep date-only clauses («утром», «вчера я») so materialize can advance anchors.
+        let withAmount = expanded.filter { parseAmount(from: $0) != nil }
+        return withAmount.count >= 2 ? expanded : [text]
     }
 
     /// Rough count of distinct amount mentions (digits or spelled) for recurring gating.
@@ -692,25 +1042,63 @@ enum SharedVoiceParser {
     }
 
     static func splitMultiExpense(_ text: String) -> [String] {
+        // Prefer comma/«и» first so «30 евро, подписка 3 доллара» keeps brand with the 3.
         let range = NSRange(text.startIndex..., in: text)
         let matches = multiSplit.matches(in: text, options: [], range: range)
-        guard !matches.isEmpty else { return [text] }
+        if !matches.isEmpty {
+            var parts: [String] = []
+            var start = text.startIndex
+            for match in matches {
+                guard let cut = Range(match.range, in: text) else { continue }
+                let piece = String(text[start..<cut.lowerBound])
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !piece.isEmpty { parts.append(piece) }
+                start = cut.upperBound
+            }
+            let tail = String(text[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !tail.isEmpty { parts.append(tail) }
+
+            let withAmount = parts.filter { parseAmount(from: $0) != nil }
+            if withAmount.count >= 2 {
+                var expanded: [String] = []
+                for part in withAmount {
+                    if let spanned = splitByAmountSpans(part) {
+                        expanded.append(contentsOf: spanned)
+                    } else {
+                        expanded.append(part)
+                    }
+                }
+                let ok = expanded.filter { parseAmount(from: $0) != nil }
+                return ok.count >= 2 ? ok : withAmount
+            }
+        }
+
+        if let spanned = splitByAmountSpans(text) {
+            return spanned
+        }
+        return [text]
+    }
+
+    /// «15 € за продукты 30 $ за игрушки» — split on amount+unit spans, keep category words.
+    private static func splitByAmountSpans(_ text: String) -> [String]? {
+        let range = NSRange(text.startIndex..., in: text)
+        let matches = amountSpan.matches(in: text, options: [], range: range)
+        guard matches.count >= 2 else { return nil }
 
         var parts: [String] = []
-        var start = text.startIndex
-        for match in matches {
-            guard let cut = Range(match.range, in: text) else { continue }
-            let piece = String(text[start..<cut.lowerBound])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+        for i in 0..<matches.count {
+            let startLoc = i == 0 ? 0 : matches[i].range.location
+            let endLoc = i + 1 < matches.count
+                ? matches[i + 1].range.location
+                : (text as NSString).length
+            let nsRange = NSRange(location: startLoc, length: endLoc - startLoc)
+            guard let swift = Range(nsRange, in: text) else { continue }
+            let piece = String(text[swift]).trimmingCharacters(in: .whitespacesAndNewlines)
             if !piece.isEmpty { parts.append(piece) }
-            start = cut.upperBound
         }
-        let tail = String(text[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
-        if !tail.isEmpty { parts.append(tail) }
-
-        // Keep only segments that still look like they carry an amount.
         let withAmount = parts.filter { parseAmount(from: $0) != nil }
-        return withAmount.count >= 2 ? withAmount : [text]
+        guard withAmount.count >= 2 else { return nil }
+        return withAmount
     }
 
     // MARK: - Note extraction
@@ -863,12 +1251,19 @@ enum SharedVoiceParser {
     }
 
     private static func stripFiller(_ text: String) -> String {
-        fillerWords.stringByReplacingMatches(
+        var working = fillerWords.stringByReplacingMatches(
             in: text,
             options: [],
             range: NSRange(text.startIndex..., in: text),
             withTemplate: " "
         )
+        working = noteNarrativeFiller.stringByReplacingMatches(
+            in: working,
+            options: [],
+            range: NSRange(working.startIndex..., in: working),
+            withTemplate: " "
+        )
+        return working
     }
 
     private static func stripSuppressTokens(_ text: String) -> String {
@@ -882,8 +1277,15 @@ enum SharedVoiceParser {
     private static func stripKeyword(_ keyword: String, from text: String) -> String {
         let k = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !k.isEmpty else { return text }
-        let escaped = NSRegularExpression.escapedPattern(for: k)
-        let flexible = escaped.replacingOccurrences(of: #"\s+"#, with: #"\s+"#, options: .regularExpression)
+        // ё/е interchangeable so normalized suppress tokens hit spoken «зашёл».
+        let flexible = k.map { ch -> String in
+            switch ch {
+            case "е", "ё": return "[её]"
+            case "Е", "Ё": return "[ЕЁ]"
+            case " ": return #"\s+"#
+            default: return NSRegularExpression.escapedPattern(for: String(ch))
+            }
+        }.joined()
         let pattern = #"(?i)(?<![0-9A-Za-zА-Яа-яЁё])\#(flexible)(?![0-9A-Za-zА-Яа-яЁё])"#
         return text.replacingOccurrences(of: pattern, with: " ", options: .regularExpression)
     }
@@ -897,6 +1299,20 @@ enum SharedVoiceParser {
         s = s.trimmingCharacters(in: .whitespacesAndNewlines)
         if s.count <= 1, s.unicodeScalars.allSatisfy({ CharacterSet.punctuationCharacters.contains($0) }) {
             return ""
+        }
+        // Soft truncation — keep a short descriptive phrase, not the whole utterance.
+        let maxChars = 42
+        if s.count > maxChars {
+            let words = s.split(separator: " ").map(String.init)
+            var clipped: [String] = []
+            var len = 0
+            for w in words {
+                let next = len + w.count + (clipped.isEmpty ? 0 : 1)
+                if next > maxChars { break }
+                clipped.append(w)
+                len = next
+            }
+            s = clipped.isEmpty ? String(s.prefix(maxChars)) : clipped.joined(separator: " ")
         }
         return s
     }
@@ -1052,7 +1468,7 @@ extension SharedVoiceParser {
             if ivan[0].amount != 15 || ivan[0].currencyRaw != "byn" || ivan[0].categoryId != "food" || ivan[0].dayOffset != -1 {
                 failures.append("ivan[0] coffee: \(ivan[0])")
             }
-            if ivan[1].amount != 3 || ivan[1].currencyRaw != "usd" || ivan[1].categoryId != "entertainment" || ivan[1].frequencyRaw != "monthly" {
+            if ivan[1].amount != 3 || ivan[1].currencyRaw != "usd" || ivan[1].categoryId != "subscriptions" || ivan[1].frequencyRaw != "monthly" {
                 failures.append("ivan[1] yandex: \(ivan[1])")
             }
             if ivan[2].amount != 40 || ivan[2].currencyRaw != "byn" || ivan[2].categoryId != "food" || ivan[2].dayOffset != -1 {

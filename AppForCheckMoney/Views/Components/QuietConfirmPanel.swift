@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Compact glass confirm — avoids bulky system white action sheets.
+/// Compact glass confirm — quiet HIG surface, no bulky system action sheet.
 struct QuietConfirmPanel: View {
     let title: String
     var message: String? = nil
@@ -13,31 +13,32 @@ struct QuietConfirmPanel: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: AppTheme.spaceItem) {
             Text(title)
-                .font(.headline)
+                .font(.headline.weight(.semibold))
             if let message, !message.isEmpty {
                 Text(message)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .themeSecondary()
+                    .fixedLineLimit()
             }
             HStack(spacing: 10) {
                 Button(action: onCancel) {
                     Text(L10n.string("common.cancel"))
-                        .font(.subheadline.weight(.semibold))
+                        .font(AppTheme.TypeScale.subheadline.weight(.semibold))
                         .frame(maxWidth: .infinity)
-                        .frame(minHeight: 44)
+                        .frame(minHeight: AppTheme.touchMin)
                         .padding(.horizontal, 8)
                         .modifier(QuietConfirmButtonChrome(emphasized: false, destructive: false))
                 }
-                .buttonStyle(.plain)
+                .quietPress()
 
                 Button(action: onConfirm) {
                     Text(confirmTitle)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(confirmDestructive ? AppTheme.expense : Color.primary)
+                        .font(AppTheme.TypeScale.subheadline.weight(.semibold))
+                        .foregroundStyle(confirmDestructive ? AppTheme.expense : AppTheme.accent)
                         .frame(maxWidth: .infinity)
-                        .frame(minHeight: 44)
+                        .frame(minHeight: AppTheme.touchMin)
                         .padding(.horizontal, 8)
                         .modifier(
                             QuietConfirmButtonChrome(
@@ -46,18 +47,29 @@ struct QuietConfirmPanel: View {
                             )
                         )
                 }
-                .buttonStyle(.plain)
+                .quietPress()
             }
         }
-        .padding(18)
+        .padding(20)
         .modifier(QuietConfirmPanelChrome(scheme: colorScheme, reduceTransparency: reduceTransparency))
-        .padding(.horizontal, 28)
+        .padding(.horizontal, AppTheme.pageInset + 6)
+        .transition(.scale(scale: 0.97).combined(with: .opacity))
+        .animation(AppTheme.springFluid, value: title)
+    }
+}
+
+private extension View {
+    /// Multi-line confirm body without truncating batch lists.
+    func fixedLineLimit() -> some View {
+        self.lineLimit(12)
+            .multilineTextAlignment(.leading)
     }
 }
 
 private struct QuietConfirmButtonChrome: ViewModifier {
     var emphasized: Bool
     var destructive: Bool
+    @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     func body(content: Content) -> some View {
@@ -67,17 +79,25 @@ private struct QuietConfirmButtonChrome: ViewModifier {
                 emphasized ? .regular.interactive() : .regular,
                 in: shape
             )
+            .overlay {
+                if emphasized {
+                    shape.strokeBorder(
+                        (destructive ? AppTheme.expense : AppTheme.accent).opacity(0.35),
+                        lineWidth: AppTheme.borderWidth
+                    )
+                }
+            }
         } else {
             content.background {
                 shape
                     .fill(emphasized ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(.ultraThinMaterial))
                     .overlay {
-                        if emphasized {
-                            shape.strokeBorder(
-                                (destructive ? AppTheme.expense : Color.primary).opacity(0.18),
-                                lineWidth: 0.7
-                            )
-                        }
+                        shape.strokeBorder(
+                            emphasized
+                                ? (destructive ? AppTheme.expense : AppTheme.accent).opacity(0.32)
+                                : AppTheme.hairline(scheme),
+                            lineWidth: AppTheme.borderWidth
+                        )
                     }
             }
         }
@@ -89,7 +109,7 @@ private struct QuietConfirmPanelChrome: ViewModifier {
     var reduceTransparency: Bool
 
     func body(content: Content) -> some View {
-        let shape = AppTheme.continuousRect(AppTheme.cornerLarge)
+        let shape = AppTheme.continuousRect(AppTheme.radiusPanel)
         if #available(iOS 26.0, *), !reduceTransparency {
             content.glassEffect(.regular, in: shape)
         } else {
@@ -97,7 +117,7 @@ private struct QuietConfirmPanelChrome: ViewModifier {
                 shape
                     .fill(.ultraThinMaterial)
                     .overlay {
-                        shape.strokeBorder(AppTheme.glassStroke(scheme), lineWidth: 1)
+                        shape.strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
                     }
             }
         }

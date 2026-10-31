@@ -2,7 +2,7 @@ import Foundation
 
 /// Lightweight currency codes mirrored from the phone app.
 enum SharedCurrencyCode: String, Codable, CaseIterable, Identifiable {
-    case byn, rub, usd, eur
+    case byn, rub, usd, eur, gbp
     var id: String { rawValue }
 
     var displaySymbol: String {
@@ -11,6 +11,7 @@ enum SharedCurrencyCode: String, Codable, CaseIterable, Identifiable {
         case .rub: return "₽"
         case .usd: return "$"
         case .eur: return "€"
+        case .gbp: return "£"
         }
     }
 
@@ -164,9 +165,16 @@ enum SharedSeed {
     /// Minimal expense grid for Watch when snapshot is empty (with keyword bank for dictation).
     static let defaultExpenseCategories: [SharedCategoryDTO] = [
         .init(id: "food", nameRu: "Еда", nameEn: "Food", kindRaw: "expense", symbolName: "fork.knife", colorHex: "8E8E93", sortOrder: 0,
-              keywords: ["еда", "food", "кофе", "coffee", "обед", "lunch", "ужин", "dinner", "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe", "продукт", "продукты", "grocery", "пицца", "pizza", "бургер", "burger", "картошк", "огурц", "гарнир"]),
+              keywords: [
+                "еда", "еды", "еду", "food", "кофе", "coffee", "кофейн", "кофейню",
+                "обед", "lunch", "ужин", "dinner", "завтрак", "breakfast",
+                "ресторан", "restaurant", "кафе", "cafe", "продукт", "продукты", "grocery",
+                "пицца", "pizza", "бургер", "burger", "картошк", "огурц", "гарнир",
+                "доставка еды", "доставку еды", "доставка", "доставку", "доставк",
+                "delivery", "food delivery", "food order", "заказ еды",
+              ]),
         .init(id: "transport", nameRu: "Транспорт", nameEn: "Transport", kindRaw: "expense", symbolName: "car.fill", colorHex: "8E8E93", sortOrder: 1,
-              keywords: ["транспорт", "transport", "азс", "azs", "заправка", "бензин", "топливо", "gas", "fuel", "taxi", "такси", "метро", "metro", "автобус", "bus", "парковка", "parking", "проезд", "uber"]),
+              keywords: ["транспорт", "transport", "азс", "azs", "заправка", "бензин", "топливо", "gas", "fuel", "taxi", "такси", "метро", "metro", "автобус", "bus", "парковка", "parking", "проезд", "uber", "каршеринг", "carshare", "carsharing"]),
         .init(id: "housing", nameRu: "Жильё", nameEn: "Housing", kindRaw: "expense", symbolName: "house.fill", colorHex: "8E8E93", sortOrder: 2,
               keywords: ["жильё", "жилье", "housing", "аренда", "rent", "квартира", "apartment", "коммуналка", "utilities"]),
         .init(id: "shopping", nameRu: "Одежда", nameEn: "Clothing", kindRaw: "expense", symbolName: "tshirt.fill", colorHex: "8E8E93", sortOrder: 3,
@@ -196,6 +204,7 @@ enum SharedMoneyFormat {
         case .rub: return "\(number) ₽"
         case .usd: return "$\(number)"
         case .eur: return "\(number) €"
+        case .gbp: return "£\(number)"
         }
     }
 }

@@ -31,6 +31,8 @@
 		A1000000000000000000000E /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* Theme.swift */; };
 		A1000000000000000000000F /* TransactionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* TransactionRowView.swift */; };
 		A1000000000000000000002A /* QuietConfirmPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* QuietConfirmPanel.swift */; };
+		A1000000000000000000002B /* VoiceBatchConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* VoiceBatchConfirmView.swift */; };
+		A1000000000000000000002C /* LaunchWowOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000025 /* LaunchWowOverlay.swift */; };
 		A10000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* Assets.xcassets */; };
 		A10000000000000000000011 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Localizable.strings */; };
 		A1000000000000000000001C /* PhoneWatchSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* PhoneWatchSync.swift */; };
@@ -74,6 +76,7 @@
 		A60000000000000000000009 /* RecurringListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000009 /* RecurringListView.swift */; };
 		A6000000000000000000000A /* AppLockGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000000000000000000A /* AppLockGate.swift */; };
 		A6000000000000000000000B /* EditTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000000000000000000B /* EditTransactionView.swift */; };
+		A6000000000000000000000C /* LaunchWowStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000000000000000000C /* LaunchWowStore.swift */; };
 		A90000000000000000000001 /* CSVImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000001 /* CSVImport.swift */; };
 		A90000000000000000000002 /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000002 /* ReminderService.swift */; };
 		A90000000000000000000003 /* IncomingDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000003 /* IncomingDraftStore.swift */; };
@@ -163,6 +166,8 @@
 		B1000000000000000000000E /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		B1000000000000000000000F /* TransactionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRowView.swift; sourceTree = "<group>"; };
 		B10000000000000000000023 /* QuietConfirmPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietConfirmPanel.swift; sourceTree = "<group>"; };
+		B10000000000000000000024 /* VoiceBatchConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceBatchConfirmView.swift; sourceTree = "<group>"; };
+		B10000000000000000000025 /* LaunchWowOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWowOverlay.swift; sourceTree = "<group>"; };
 		B10000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10000000000000000000012 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B10000000000000000000013 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -203,6 +208,7 @@
 		B60000000000000000000009 /* RecurringListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringListView.swift; sourceTree = "<group>"; };
 		B6000000000000000000000A /* AppLockGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockGate.swift; sourceTree = "<group>"; };
 		B6000000000000000000000B /* EditTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTransactionView.swift; sourceTree = "<group>"; };
+		B6000000000000000000000C /* LaunchWowStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWowStore.swift; sourceTree = "<group>"; };
 		B90000000000000000000001 /* CSVImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImport.swift; sourceTree = "<group>"; };
 		B90000000000000000000002 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
 		B90000000000000000000003 /* IncomingDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingDraftStore.swift; sourceTree = "<group>"; };
@@ -214,6 +220,17 @@
 		C70000000000000000000001 /* CheckMoneyPhoneWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CheckMoneyPhoneWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B50000000000000000000001 /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
 		B50000000000000000000002 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		BA00000000000000000001 /* MoneySpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneySpace.swift; sourceTree = "<group>"; };
+		BA00000000000000000002 /* MoneyAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyAccount.swift; sourceTree = "<group>"; };
+		BA00000000000000000003 /* MoneyGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyGoal.swift; sourceTree = "<group>"; };
+		BA00000000000000000004 /* MoneyDebt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyDebt.swift; sourceTree = "<group>"; };
+		BA00000000000000000005 /* AccountLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLedger.swift; sourceTree = "<group>"; };
+		BA00000000000000000006 /* CashflowInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashflowInsights.swift; sourceTree = "<group>"; };
+		BA00000000000000000007 /* LedgerHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerHubView.swift; sourceTree = "<group>"; };
+		BA00000000000000000008 /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
+		BA00000000000000000009 /* GoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsView.swift; sourceTree = "<group>"; };
+		BA0000000000000000000A /* DebtsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebtsView.swift; sourceTree = "<group>"; };
+		BA0000000000000000000B /* SpacesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -323,6 +340,7 @@
 				B60000000000000000000004 /* CSVExport.swift */,
 				B90000000000000000000001 /* CSVImport.swift */,
 				B60000000000000000000005 /* AppLockService.swift */,
+				B6000000000000000000000C /* LaunchWowStore.swift */,
 				B90000000000000000000002 /* ReminderService.swift */,
 				B90000000000000000000003 /* IncomingDraftStore.swift */,
 				B90000000000000000000004 /* AddExpenseIntent.swift */,
@@ -371,6 +389,8 @@
 				B1000000000000000000000E /* Theme.swift */,
 				B1000000000000000000000F /* TransactionRowView.swift */,
 				B10000000000000000000023 /* QuietConfirmPanel.swift */,
+				B10000000000000000000024 /* VoiceBatchConfirmView.swift */,
+				B10000000000000000000025 /* LaunchWowOverlay.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -646,6 +666,7 @@
 				A60000000000000000000004 /* CSVExport.swift in Sources */,
 				A90000000000000000000001 /* CSVImport.swift in Sources */,
 				A60000000000000000000005 /* AppLockService.swift in Sources */,
+				A6000000000000000000000C /* LaunchWowStore.swift in Sources */,
 				A90000000000000000000002 /* ReminderService.swift in Sources */,
 				A90000000000000000000003 /* IncomingDraftStore.swift in Sources */,
 				A90000000000000000000004 /* AddExpenseIntent.swift in Sources */,
@@ -669,8 +690,21 @@
 				A1000000000000000000000E /* Theme.swift in Sources */,
 				A1000000000000000000000F /* TransactionRowView.swift in Sources */,
 				A1000000000000000000002A /* QuietConfirmPanel.swift in Sources */,
+				A1000000000000000000002B /* VoiceBatchConfirmView.swift in Sources */,
+				A1000000000000000000002C /* LaunchWowOverlay.swift in Sources */,
 				A10000000000000000000020 /* TextNormalizer.swift in Sources */,
 				A10000000000000000000021 /* SharedCategoryMatcher.swift in Sources */,
+				AA00000000000000000001 /* MoneySpace.swift in Sources */,
+				AA00000000000000000002 /* MoneyAccount.swift in Sources */,
+				AA00000000000000000003 /* MoneyGoal.swift in Sources */,
+				AA00000000000000000004 /* MoneyDebt.swift in Sources */,
+				AA00000000000000000005 /* AccountLedger.swift in Sources */,
+				AA00000000000000000006 /* CashflowInsights.swift in Sources */,
+				AA00000000000000000007 /* LedgerHubView.swift in Sources */,
+				AA00000000000000000008 /* AccountsView.swift in Sources */,
+				AA00000000000000000009 /* GoalsView.swift in Sources */,
+				AA0000000000000000000A /* DebtsView.swift in Sources */,
+				AA0000000000000000000B /* SpacesView.swift in Sources */,
 				A10000000000000000000022 /* SharedVoiceParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -794,7 +828,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -829,7 +863,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppForCheckMoney/Resources/Info.plist;
@@ -862,7 +896,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -899,7 +933,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatch/Info.plist;
@@ -936,7 +970,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -967,7 +1001,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -999,7 +1033,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;
@@ -1031,7 +1065,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3G9UZZBWW9;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 32;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CheckMoneyPhoneWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CheckMoney;

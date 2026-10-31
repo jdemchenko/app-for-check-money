@@ -8,6 +8,7 @@ enum AppCurrency: String, CaseIterable, Identifiable, Codable {
     case rub
     case usd
     case eur
+    case gbp
 
     var id: String { rawValue }
 
@@ -17,6 +18,7 @@ enum AppCurrency: String, CaseIterable, Identifiable, Codable {
         case .rub: return "RUB"
         case .usd: return "USD"
         case .eur: return "EUR"
+        case .gbp: return "GBP"
         }
     }
 
@@ -27,6 +29,7 @@ enum AppCurrency: String, CaseIterable, Identifiable, Codable {
         case .rub: return "₽"
         case .usd: return "$"
         case .eur: return "€"
+        case .gbp: return "£"
         }
     }
 
@@ -36,6 +39,7 @@ enum AppCurrency: String, CaseIterable, Identifiable, Codable {
         case .rub: return L10n.string("currency.rub")
         case .usd: return L10n.string("currency.usd")
         case .eur: return L10n.string("currency.eur")
+        case .gbp: return L10n.string("currency.gbp")
         }
     }
 

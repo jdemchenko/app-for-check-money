@@ -4,7 +4,7 @@ Native **SwiftUI** personal money tracker for iPhone, iPad, and **Apple Watch** 
 
 > This repository is an **independent** iOS app. It is not related to Fitil.
 
-**Launch candidate:** marketing **1.3**, build **27** — optimized for **iOS 26** Liquid Glass (dual-path fallback to iOS 18+). See agent-store `docs/ios26-ready.md`.
+**Launch candidate:** marketing **1.3**, build **28** — optimized for **iOS 26** Liquid Glass (dual-path fallback to iOS 18+). See agent-store `docs/ios26-ready.md` / `docs/ui-hig-pass.md`.
 
 ## Features
 

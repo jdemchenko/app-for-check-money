@@ -16,7 +16,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: AppTheme.spaceSection) {
                     currencyBlock(
                         title: L10n.string("settings.displayCurrency"),
                         subtitle: L10n.string("settings.displayCurrencyHint"),
@@ -40,11 +40,12 @@ struct SettingsView: View {
                     iCloudBlock
                     ratesBlock
                 }
-                .padding(20)
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.vertical, AppTheme.spaceGroup)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("settings.title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.string("common.close")) { dismiss() }
@@ -319,6 +320,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(rateLine(code: .usd))
                             Text(rateLine(code: .eur))
+                            Text(rateLine(code: .gbp))
                             Text(rateLine(code: .rub))
                         }
                         .font(.footnote.monospacedDigit())
@@ -414,7 +416,7 @@ private struct SettingsRowSurface: View {
             .overlay {
                 if scheme != .dark {
                     AppTheme.continuousRect(AppTheme.cornerMedium)
-                        .strokeBorder(AppTheme.hairline(scheme), lineWidth: 0.6)
+                        .strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
                 }
             }
     }

@@ -174,12 +174,17 @@ enum SeedData {
             nameEn: "Food",
             kind: .expense,
             keywords: [
-                "еда", "food", "кофе", "coffee", "кофейн", "обед", "lunch", "ужин", "dinner",
+                "еда", "еды", "еду", "едой", "food",
+                "кофе", "coffee", "кофейн", "кофейня", "кофейню",
+                "обед", "lunch", "ужин", "dinner",
                 "завтрак", "breakfast", "ресторан", "restaurant", "кафе", "cafe",
                 "продукт", "продукты", "grocery", "groceries", "пицца", "pizza",
                 "бургер", "burger", "снек", "snack", "столовая", "супермаркет",
                 "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
-                "гарнир", "доставка еды", "пятёрочка", "пятерочка",
+                "гарнир", "доставка еды", "доставку еды", "доставка", "доставку",
+                "доставк", "delivery", "food delivery", "food order", "заказ еды",
+                "поесть", "поел", "поела", "пообедал", "пообедала", "поужинал", "поужинала",
+                "пятёрочка", "пятерочка",
             ],
             colorHex: "8E8E93",
             symbolName: "fork.knife"
@@ -192,6 +197,7 @@ enum SeedData {
             keywords: [
                 "транспорт", "transport", "такси", "taxi", "метро", "metro", "subway",
                 "автобус", "bus", "бензин", "gas", "fuel", "топливо", "заправка",
+                "заправил", "заправила", "заправ", "машину", "машина",
                 "азс", "azs", "gas station", "petrol", "diesel", "дизель",
                 "uber", "яндекс такси", "яндекс го", "yandex go", "yandex taxi",
                 "парковка", "parking", "поезд", "train",
@@ -236,13 +242,27 @@ enum SeedData {
             keywords: [
                 "развлечения", "entertainment", "кино", "кинотеатр", "cinema",
                 "movie", "movies", "театр", "theater", "theatre", "игры", "games",
-                "подписк", "subscription", "netflix", "spotify",
-                "яндекс music", "yandex music", "яндекс музык", "apple music",
-                "youtube premium", "youtube music",
                 "концерт", "concert", "клуб", "club", "бар", "bar", "bowling", "хобби",
             ],
             colorHex: "8E8E93",
             symbolName: "film.fill"
+        ),
+        .init(
+            id: "subscriptions",
+            nameRu: "Подписки",
+            nameEn: "Subscriptions",
+            kind: .expense,
+            keywords: [
+                "подписк", "подписка", "подписку", "подписки", "subscription", "subscriptions",
+                "программа", "программу", "программе",
+                "netflix", "spotify",
+                "яндекс music", "yandex music", "яндекс музык", "яндекс plus", "яндекс плюс",
+                "yandex plus", "apple music", "apple",
+                "эпл мьюзик", "эппл мьюзик", "эпл music",
+                "youtube premium", "youtube music", "ютюб премиум", "ютуб премиум",
+            ],
+            colorHex: "8E8E93",
+            symbolName: "rectangle.stack.fill.badge.plus"
         ),
         .init(
             id: "telecom",
@@ -302,7 +322,10 @@ enum SeedData {
             nameRu: "Другое",
             nameEn: "Other",
             kind: .expense,
-            keywords: ["другое", "other", "разное", "misc"],
+            keywords: [
+                "другое", "other", "разное", "misc",
+                "игрушк", "toys", "toy", "цвет", "flowers", "flower",
+            ],
             colorHex: "8E8E93",
             symbolName: "circle.fill"
         ),
@@ -325,7 +348,7 @@ enum SeedData {
             kind: .income,
             keywords: [
                 "фриланс", "freelance", "проект", "project", "клиент", "client",
-                "заказ", "contract",
+                "заказчик", "contract",
             ],
             colorHex: "8E8E93",
             symbolName: "laptopcomputer"

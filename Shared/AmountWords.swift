@@ -117,8 +117,8 @@ enum AmountWords {
         )
         cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
         let patterns = [
-            #"(?:итого\s+)?(\d+(?:\.\d{1,2})?)\s*(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€|копе(?:ек|йки)?)"#,
-            #"(?:₽|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|\$|usd|eur|€)\s*(\d+(?:\.\d{1,2})?)"#,
+            #"(?:итого\s+)?(\d+(?:\.\d{1,2})?)\s*(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?|копе(?:ек|йки)?)"#,
+            #"(?:₽|\$|€|£|руб(?:л(?:ей|я|ь)?)?|rubles?|byn|br|dollars?|usd|eur|gbp|фунт(?:ов|а|ы)?|pounds?)\s*(\d+(?:\.\d{1,2})?)"#,
             #"(\d+\.\d{1,2})"#,
             #"(\d{1,7})"#,
         ]

@@ -9,17 +9,22 @@ struct AppLockGate: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.35)
-                .ignoresSafeArea()
-                .background(.ultraThinMaterial)
+            // Subtle brand atmosphere behind the lock — never delays Face ID.
+            AtmosphereBackground()
+                .overlay {
+                    Color.black.opacity(colorScheme == .dark ? 0.28 : 0.12)
+                        .ignoresSafeArea()
+                }
 
             VStack(spacing: 20) {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 36, weight: .medium))
-                    .foregroundStyle(.primary)
-
                 Text(L10n.string("app.name"))
-                    .font(.title2.weight(.semibold))
+                    .font(AppTheme.TypeScale.title2)
+                    .accessibilityAddTraits(.isHeader)
+
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(.primary)
+                    .padding(.top, 4)
 
                 Text(L10n.string("lock.subtitle"))
                     .font(.footnote)

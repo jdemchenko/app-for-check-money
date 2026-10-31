@@ -21,6 +21,7 @@
 "home.today" = "Сегодня";
 "home.seeAll" = "Все";
 "home.quietFeedback" = "Сегодня %@ · %@ %@%%";
+"home.budgetUnder" = "В рамках бюджета · осталось %@";
 
 "add.mode" = "Режим";
 "add.manual" = "Вручную";
@@ -42,6 +43,7 @@
 "currency.rub" = "Российский рубль (₽)";
 "currency.usd" = "Доллар США ($)";
 "currency.eur" = "Евро (€)";
+"currency.gbp" = "Фунт стерлингов (£)";
 "common.done" = "Готово";
 
 "stats.period" = "Период";
@@ -194,6 +196,7 @@
 
 "voice.batchTitle" = "Сохранить эти расходы?";
 "voice.batchSave" = "Сохранить все";
+"voice.batchSummary" = "%@, %@";
 "voice.recurringTitle" = "Создать повтор?";
 "voice.recurringSave" = "Создать";
 "voice.recurringSaved" = "Повтор сохранён";

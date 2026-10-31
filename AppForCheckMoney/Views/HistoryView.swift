@@ -466,7 +466,7 @@ struct HistoryView: View {
                         showFilters = false
                     }
                 }
-                .padding(20)
+                .padding(AppTheme.pageInset)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("history.filters"))
@@ -533,7 +533,7 @@ struct HistoryView: View {
                         pendingDelete = tx
                     }
                 }
-                .padding(20)
+                .padding(AppTheme.pageInset)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("history.detail"))

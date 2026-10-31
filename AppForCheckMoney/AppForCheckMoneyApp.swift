@@ -37,22 +37,27 @@ struct AppForCheckMoneyApp: App {
     }
 }
 
-/// Owns lock, onboarding, WCSession, recurring catch-up, widget snapshot.
+/// Owns lock, onboarding, launch wow, WCSession, recurring catch-up, widget snapshot.
 private struct AppRootHost: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var settings: AppSettingsStore
 
     @Query private var transactions: [MoneyTransaction]
     @Query private var recurringRules: [RecurringRule]
     @Query(sort: \MoneyAccount.sortOrder) private var accounts: [MoneyAccount]
     @ObservedObject private var currencySettings = CurrencySettings.shared
+    @ObservedObject private var launchWow = LaunchWowStore.shared
 
     @State private var unlocked = false
+
+    private var isUnlocked: Bool { !settings.lockEnabled || unlocked }
 
     var body: some View {
         ZStack {
             RootTabView()
+                .environment(\.launchHomePulseToken, launchWow.homePulseToken)
 
             if settings.lockEnabled && !unlocked {
                 AppLockGate { unlocked = true }
@@ -65,9 +70,26 @@ private struct AppRootHost: View {
                     .transition(.opacity)
                     .zIndex(3)
             }
+
+            // Cold brand morph only — never covers Face ID (lock sits under / before this).
+            if isUnlocked, launchWow.phase == .cold {
+                LaunchWowOverlay(mode: .cold) {
+                    launchWow.finishOverlay()
+                }
+                .transition(.opacity)
+                .zIndex(4)
+            }
         }
         .onAppear {
-            if !settings.lockEnabled { unlocked = true }
+            if !settings.lockEnabled {
+                unlocked = true
+                launchWow.considerColdLaunch(reduceMotion: reduceMotion)
+                if reduceMotion {
+                    launchWow.notifyHomeReadyIfNeeded()
+                }
+            } else {
+                launchWow.deferColdUntilUnlock()
+            }
             SeedData.ensureLedgerDefaults(in: modelContext)
             Task { @MainActor in
                 PhoneWatchSync.shared.start(modelContext: modelContext)
@@ -79,10 +101,16 @@ private struct AppRootHost: View {
             }
             publishWidget()
         }
+        .onChange(of: unlocked) { _, isOn in
+            if isOn {
+                launchWow.onUnlocked(reduceMotion: reduceMotion)
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .background:
                 if settings.lockEnabled { unlocked = false }
+                launchWow.onBackground()
                 publishWidget()
             case .active:
                 _ = RecurringEngine.applyDue(in: modelContext)
@@ -90,6 +118,7 @@ private struct AppRootHost: View {
                 Task {
                     await ReminderService.scheduleRecurringDayBefore(rules: recurringRules)
                 }
+                launchWow.onBecameActive(unlocked: isUnlocked, reduceMotion: reduceMotion)
                 publishWidget()
             default:
                 break
@@ -100,6 +129,9 @@ private struct AppRootHost: View {
         }
         .onChange(of: settings.lockEnabled) { _, enabled in
             unlocked = !enabled
+            if !enabled {
+                launchWow.onUnlocked(reduceMotion: reduceMotion)
+            }
         }
         .onChange(of: transactions.count) { _, _ in
             publishWidget()

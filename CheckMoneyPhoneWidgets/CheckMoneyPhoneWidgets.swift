@@ -6,7 +6,20 @@ struct CheckMoneyProvider: TimelineProvider {
         CheckMoneyEntry(date: .now, snapshot: .placeholder)
     }
 
-    /// Async WidgetKit API (iOS 17+) — preferred over completion-handler variants.
+    // MARK: Completion-handler API (required TimelineProvider protocol)
+
+    func getSnapshot(in context: Context, completion: @escaping (CheckMoneyEntry) -> Void) {
+        completion(CheckMoneyEntry(date: .now, snapshot: loadSnapshot()))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<CheckMoneyEntry>) -> Void) {
+        let entry = CheckMoneyEntry(date: .now, snapshot: loadSnapshot())
+        let next = Calendar.current.date(byAdding: .minute, value: 15, to: .now) ?? .now
+        completion(Timeline(entries: [entry], policy: .after(next)))
+    }
+
+    // MARK: Async convenience (iOS 17+ / Xcode 26) — same payloads
+
     func snapshot(in context: Context) async -> CheckMoneyEntry {
         CheckMoneyEntry(date: .now, snapshot: loadSnapshot())
     }
@@ -64,11 +77,14 @@ struct CheckMoneyWidgetView: View {
     }
 
     /// Small + medium — unchanged glance (no sparkline).
+    /// Quiet slate-teal — matches app accent without importing AppTheme.
+    private var accent: Color { Color(red: 58 / 255, green: 107 / 255, blue: 110 / 255) }
+
     private var compactLayout: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("CheckMoney")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(accent.opacity(0.9))
 
             Text(entry.snapshot.currencySymbol + " " + format(entry.snapshot.monthBalance))
                 .font(.title2.weight(.semibold).monospacedDigit())
@@ -88,7 +104,7 @@ struct CheckMoneyWidgetView: View {
             if entry.snapshot.budgetEnabled, entry.snapshot.budgetAmount > 0 {
                 let progress = min(1, max(0, entry.snapshot.budgetSpent / entry.snapshot.budgetAmount))
                 ProgressView(value: progress)
-                    .tint(.primary.opacity(0.45))
+                    .tint(accent.opacity(0.7))
             }
         }
     }
@@ -99,7 +115,7 @@ struct CheckMoneyWidgetView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text("CheckMoney")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(accent.opacity(0.9))
 
                 Text(entry.snapshot.currencySymbol + " " + format(entry.snapshot.monthBalance))
                     .font(.system(size: 34, weight: .semibold, design: .rounded).monospacedDigit())
@@ -119,7 +135,7 @@ struct CheckMoneyWidgetView: View {
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
                         ProgressView(value: progress)
-                            .tint(.primary.opacity(0.45))
+                            .tint(accent.opacity(0.7))
                     }
                 }
 
@@ -158,7 +174,7 @@ struct CheckMoneyWidgetView: View {
             HStack(alignment: .bottom, spacing: 5) {
                 ForEach(Array(days.enumerated()), id: \.offset) { index, value in
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(Color.primary.opacity(index == days.count - 1 ? 0.45 : 0.22))
+                        .fill(accent.opacity(index == days.count - 1 ? 0.72 : 0.28))
                         .frame(
                             width: 10,
                             height: max(4, CGFloat(value / maxValue) * 72)

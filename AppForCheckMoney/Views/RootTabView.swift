@@ -29,7 +29,8 @@ struct RootTabView: View {
                 CategoriesView()
             }
         }
-        .tint(Color.primary)
+        .tint(AppTheme.accent)
+        .animation(AppTheme.springFluid, value: selectedTab)
         .task {
             ExchangeRateStore.shared.refreshIfNeeded()
         }
