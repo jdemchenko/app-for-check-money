@@ -10,6 +10,28 @@ enum L10n {
         let code = Locale.current.language.languageCode?.identifier ?? "en"
         return code.hasPrefix("ru")
     }
+
+    /// «N запись / записи / записей» or «N entry / entries».
+    static func batchEntryCount(_ count: Int) -> String {
+        if isRussian {
+            let n = abs(count)
+            let mod100 = n % 100
+            let mod10 = n % 10
+            let word: String
+            if mod100 >= 11 && mod100 <= 14 {
+                word = "записей"
+            } else {
+                switch mod10 {
+                case 1: word = "запись"
+                case 2, 3, 4: word = "записи"
+                default: word = "записей"
+                }
+            }
+            return "\(count) \(word)"
+        }
+        let word = abs(count) == 1 ? "entry" : "entries"
+        return "\(count) \(word)"
+    }
 }
 
 enum MoneyFormat {

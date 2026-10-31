@@ -88,6 +88,7 @@ const CATEGORIES = [
       "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
       "гарнир", "доставка еды", "доставку еды", "доставка", "доставку",
       "доставк", "delivery", "food delivery", "food order", "заказ еды",
+      "поесть", "поел", "поела", "пообедал", "пообедала", "поужинал", "поужинала",
       "пятёрочка", "пятерочка",
     ],
   },
@@ -99,6 +100,7 @@ const CATEGORIES = [
     keywords: [
       "транспорт", "transport", "такси", "taxi", "метро", "metro", "subway",
       "автобус", "bus", "бензин", "gas", "fuel", "топливо", "заправка",
+      "заправил", "заправила", "заправ", "машину", "машина",
       "азс", "azs", "gas station", "petrol", "diesel", "дизель",
       "uber", "яндекс такси", "яндекс го", "yandex go", "yandex taxi",
       "парковка", "parking", "поезд", "train",
@@ -145,7 +147,8 @@ const CATEGORIES = [
     nameEn: "Subscriptions",
     kind: "expense",
     keywords: [
-      "подписк", "subscription", "subscriptions",
+      "подписк", "подписка", "подписку", "подписки", "subscription", "subscriptions",
+      "программа", "программу", "программе",
       "netflix", "spotify",
       "яндекс music", "yandex music", "яндекс музык", "яндекс plus", "яндекс плюс",
       "yandex plus", "apple music", "apple",
@@ -271,6 +274,12 @@ const NOTE_SUPPRESS = new Set(
     "зашёл", "зашла", "зашел", "зашли", "мы", "попил", "попила",
     "ездил", "ездила", "в",
     "доставка", "доставку", "доставк", "еды", "еду", "едой", "delivery",
+    "ещё", "еще", "так", "привет", "слушай", "короче", "типа", "ну",
+    "сходил", "сходила", "ходил", "ходила", "поесть", "поел", "поела",
+    "заправила", "заправил", "заправка", "машину", "машина",
+    "понедельник", "вторник", "среда", "среду", "четверг", "пятница", "пятницу",
+    "суббота", "субботу", "воскресенье", "пн", "вт", "ср", "чт", "пт", "сб", "вс",
+    "салон", "подписку", "подписка", "программу", "программа",
   ].map(normalize)
 );
 
@@ -297,10 +306,26 @@ const FOOD_DELIVERY_CUE = new RegExp(
   `${WB}(?:доставк${LETTER}*\\s+ед${LETTER}*|ед${LETTER}*\\s+доставк${LETTER}*|заказ${LETTER}*\\s+(?:доставк${LETTER}*|ед${LETTER}*)|order(?:ed)?\\s+food|food\\s+order|food\\s+delivery|delivery\\s+food|доставк${LETTER}*)${WA}`,
   "i"
 );
+/** «поесть» / «сходил поесть» → Еда (never housing). */
+const FOOD_MEAL_CUE = new RegExp(
+  `${WB}(?:поесть|поел[аи]?|поем|поедим|поужина${LETTER}*|пообеда${LETTER}*|обеда${LETTER}*|ужина${LETTER}*|завтрака${LETTER}*|сходил[аи]?\\s+поесть|ходили\\s+поесть|went\\s+(?:to\\s+)?(?:eat|lunch|dinner)|had\\s+(?:lunch|dinner|breakfast))${WA}`,
+  "i"
+);
+/** «заправила машину» / АЗС → Транспорт (never housing). */
+const FUEL_CUE = new RegExp(
+  `${WB}(?:заправ${LETTER}*|бензин${LETTER}*|топлив${LETTER}*|дизел${LETTER}*|азс|gas\\s*station|petrol|diesel|fuel(?:ed|ling)?)${WA}`,
+  "i"
+);
+/** «салон» → Красота (never Еда / housing). */
+const BEAUTY_SALON_CUE = new RegExp(
+  `${WB}(?:салон${LETTER}*|salon|маникюр${LETTER}*|педикюр${LETTER}*|парикмахер${LETTER}*|стрижк${LETTER}*|beauty\\s*salon)${WA}`,
+  "i"
+);
 const NOTE_NARRATIVE_FILLER = new RegExp(
   `${WB}(?:мы\\s+)?(?:зашли|зашёл|зашел|зашла|зайти)\\s+в${WA}` +
     `|${WB}(?:мы\\s+)?(?:зашли|зашёл|зашел|зашла)${WA}` +
-    `|${WB}(?:потратил${LETTER}*|потрачено|ездил${LETTER}*|попил${LETTER}*|купил${LETTER}*|оплатил${LETTER}*)${WA}`,
+    `|${WB}(?:потратил${LETTER}*|потрачено|ездил${LETTER}*|попил${LETTER}*|купил${LETTER}*|оплатил${LETTER}*|сходил${LETTER}*|ходил${LETTER}*)${WA}` +
+    `|${WB}(?:ещё|еще|так|привет|слушай|короче|типа|ну)${WA}`,
   "gi"
 );
 
@@ -452,6 +477,20 @@ function cleanNoteFragment(text) {
   let s = text.replace(/[«»""]/g, "");
   s = s.replace(/^[,.!;?:\-\s]+/, "").replace(/[,.\s]+$/, "");
   s = s.replace(/\s{2,}/g, " ").trim();
+  // Soft truncation — keep a short descriptive phrase, not the whole utterance.
+  const maxChars = 42;
+  if (s.length > maxChars) {
+    const words = s.split(/\s+/).filter(Boolean);
+    const clipped = [];
+    let len = 0;
+    for (const w of words) {
+      const next = len + w.length + (clipped.length ? 1 : 0);
+      if (next > maxChars) break;
+      clipped.push(w);
+      len = next;
+    }
+    s = clipped.length ? clipped.join(" ") : s.slice(0, maxChars);
+  }
   return s;
 }
 
@@ -643,7 +682,7 @@ const AMOUNT_SPAN = new RegExp(
   "gi"
 );
 const NARRATIVE_SPLIT = new RegExp(
-  `(?:\\s+потом\\s+|\\s+затем\\s+|\\s+после\\s+(?:этого|того)\\s+|(?<=[\\p{L}\\d.])\\s+(?=оплатил[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=заказал[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=утром${WA})|(?<=[\\p{L}\\d.])\\s+(?=вечером${WA})|(?<=[\\p{L}\\d.])\\s+(?=сегодня${WA})|(?<=[\\p{L}\\d.])\\s+(?=вчера${WA})|(?<=[\\p{L}\\d.])\\s+(?=позавчера${WA}))`,
+  `(?:\\s+потом\\s+|\\s+затем\\s+|\\s+после\\s+(?:этого|того)\\s+|(?<=[\\p{L}\\d.])\\s+(?=оплатил[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=заказал[аи]?${WA})|(?<=[\\p{L}\\d.])\\s+(?=утром${WA})|(?<=[\\p{L}\\d.])\\s+(?=вечером${WA})|(?<=[\\p{L}\\d.])\\s+(?=сегодня${WA})|(?<=[\\p{L}\\d.])\\s+(?=вчера${WA})|(?<=[\\p{L}\\d.])\\s+(?=позавчера${WA})|(?<=[\\p{L}\\d.])\\s+(?=во?\\s+(?:понедельник|вторник|сред[ауеы]|четверг|пятниц[уыае]|суббот[уыае]|воскресень[еяю]|пн|вт|ср|чт|пт|сб|вс)${WA})|(?<=[\\p{L}\\d.])\\s+(?=(?:понедельник|вторник|сред[ауеы]|четверг|пятниц[уыае]|суббот[уыае]|воскресень[еяю])${WA}))`,
   "giu"
 );
 const SESSION_EUR = new RegExp(
@@ -663,7 +702,7 @@ const COMPANION_STRIP = new RegExp(
   "giu"
 );
 const SUBSCRIPTION_CUE = new RegExp(
-  `${WB}(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\\s*(?:music|plus|плюс|музык\\w*)|yandex\\s*(?:music|plus)|apple\\s*music|\\bapple\\b|эпл\\s*мьюзик|эппл\\s*мьюзик|эпл\\s*music|youtube\\s*premium|youtube\\s*music)${WA}`,
+  `${WB}(?:подписк${LETTER}*(?:\\s+(?:на\\s+)?(?:программ${LETTER}*|сервис${LETTER}*|приложен${LETTER}*))?|subscription|netflix|spotify|яндекс\\s*(?:music|plus|плюс|музык\\w*)|yandex\\s*(?:music|plus)|apple\\s*music|\\bapple\\b|эпл\\s*мьюзик|эппл\\s*мьюзик|эпл\\s*music|youtube\\s*premium|youtube\\s*music)${WA}`,
   "i"
 );
 const SUBSCRIPTION_BRANDS = [
@@ -757,9 +796,32 @@ function detectDateAnchor(text) {
   if (new RegExp(`${WB}сегодня${WA}`, "i").test(text)) {
     return { offset: 0, part, dayExplicit: true };
   }
+  // Weekdays пн–вс / full names — most recent occurrence (incl. today).
+  const weekdayCues = [
+    [2, `(?:понедельн${LETTER}*|пн)`],
+    [3, `(?:вторник${LETTER}*|вт)`],
+    [4, `(?:сред[аеуы]|ср)`],
+    [5, `(?:четверг${LETTER}*|чт)`],
+    [6, `(?:пятниц${LETTER}*|пт)`],
+    [7, `(?:суббот${LETTER}*|сб)`],
+    [1, `(?:воскресень${LETTER}*|вс)`],
+  ];
+  for (const [weekday, pat] of weekdayCues) {
+    if (new RegExp(`${WB}${pat}${WA}`, "i").test(text)) {
+      return { offset: offsetToWeekday(weekday), part, dayExplicit: true };
+    }
+  }
   // Bare «утром» / «вечером» — day-part only; keep prior day when set.
   if (part) return { offset: 0, part, dayExplicit: false };
   return null;
+}
+
+/** Gregorian weekday 1=Sun…7=Sat → days since most recent occurrence (0=today). */
+function offsetToWeekday(targetWeekday, from = new Date()) {
+  const greg = from.getDay() + 1;
+  let delta = greg - targetWeekday;
+  if (delta < 0) delta += 7;
+  return -delta;
 }
 
 function stripRecurringCues(text) {
@@ -865,6 +927,21 @@ function isFoodDelivery(text) {
   return FOOD_DELIVERY_CUE.test(text);
 }
 
+function isFoodMeal(text) {
+  FOOD_MEAL_CUE.lastIndex = 0;
+  return FOOD_MEAL_CUE.test(text);
+}
+
+function isFuelExpense(text) {
+  FUEL_CUE.lastIndex = 0;
+  return FUEL_CUE.test(text);
+}
+
+function isBeautySalon(text) {
+  BEAUTY_SALON_CUE.lastIndex = 0;
+  return BEAUTY_SALON_CUE.test(text);
+}
+
 function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null) {
   const session = sessionCurrency ?? detectSessionCurrency(rawText);
   const anchor = detectDateAnchor(rawText);
@@ -877,33 +954,53 @@ function parse(rawText, sessionCurrency = null, dayOffset = null, dayPart = null
   const amount = parseAmount(working);
   let type = inferType(working);
   const delivery = isFoodDelivery(working) || isFoodDelivery(rawText);
-  if (delivery || subscription) type = "expense";
+  const meal = isFoodMeal(working) || isFoodMeal(rawText);
+  const fuel = isFuelExpense(working) || isFuelExpense(rawText);
+  const salon = isBeautySalon(working) || isBeautySalon(rawText);
+  const hasSubCue = Boolean(subscription || brand);
+  if (delivery || meal || subscription) type = "expense";
   let matched = autoAssign(working, type);
   if (!matched) matched = autoAssign(working, null);
   if (!type && matched) type = matched.kind === "income" ? "income" : "expense";
-  if (delivery || subscription) type = "expense";
+  if (delivery || meal || subscription) type = "expense";
   if (!type) type = "expense";
   matched = autoAssign(working, type) ?? autoAssign(working, null);
-  if (delivery) {
+  // Strong cues beat weak / housing misses (salon before meal so «салон» ≠ Еда).
+  if (salon) {
+    matched = CATEGORIES.find((c) => c.id === "beauty") ?? matched;
+  } else if (delivery || meal) {
     matched = CATEGORIES.find((c) => c.id === "food") ?? matched;
+  } else if (fuel) {
+    matched = CATEGORIES.find((c) => c.id === "transport") ?? matched;
   } else if (
     matched?.id === "housing" &&
-    (isFoodDelivery(working) || /доставк|еды|еду|заказ/i.test(working))
+    (delivery || meal || /доставк|еды|еду|заказ|поесть|поел/i.test(working))
   ) {
     matched = CATEGORIES.find((c) => c.id === "food") ?? matched;
   }
-  if (brand) {
+  // Any подписк* cue (incl. «подписку на программу» / $ / €) → Подписки, never housing.
+  if (hasSubCue) {
     matched =
       CATEGORIES.find((c) => c.id === "subscriptions") ??
-      CATEGORIES.find((c) => c.id === "entertainment") ??
+      (brand ? CATEGORIES.find((c) => c.id === "entertainment") : null) ??
       matched;
   }
   const categoryMatchedByKeyword = Boolean(matched);
-  // Blind fallback is housing (sort 0) — never use it when delivery cues are present.
-  const categoryId = delivery
-    ? matched?.id ?? CATEGORIES.find((c) => c.id === "food")?.id
-    : matched?.id ??
+  // Blind fallback is housing (sort 0) — never use it for meal/fuel/salon/sub/delivery.
+  let categoryId;
+  if (delivery || meal) {
+    categoryId = matched?.id ?? CATEGORIES.find((c) => c.id === "food")?.id;
+  } else if (fuel) {
+    categoryId = matched?.id ?? CATEGORIES.find((c) => c.id === "transport")?.id;
+  } else if (salon) {
+    categoryId = matched?.id ?? CATEGORIES.find((c) => c.id === "beauty")?.id;
+  } else if (hasSubCue) {
+    categoryId = matched?.id ?? CATEGORIES.find((c) => c.id === "subscriptions")?.id;
+  } else {
+    categoryId =
+      matched?.id ??
       CATEGORIES.find((c) => c.kind === type || c.kind === "both")?.id;
+  }
   let note = extractNote(working, matched);
   if (brand) note = brand.name;
   let currency = inferCurrency(working);
@@ -1126,6 +1223,49 @@ const cases = [
     name: "recurring RU каждый месяц",
     input: "аренда 200 каждый месяц",
     expect: { amount: 200, categoryId: "housing", frequency: "monthly", autosave: false },
+  },
+  // Ivan screenshot tip — meal / fuel / salon / sub / filler notes
+  {
+    name: "ivan поесть → food never housing",
+    input: "сходил поесть на 25 руб",
+    expect: { amount: 25, categoryId: "food", type: "expense" },
+  },
+  {
+    name: "ivan поесть bare → food",
+    input: "поесть 40 рублей",
+    expect: { amount: 40, categoryId: "food", type: "expense" },
+  },
+  {
+    name: "ivan заправила машину → transport",
+    input: "заправила машину на 50 руб",
+    expect: { amount: 50, categoryId: "transport", type: "expense" },
+  },
+  {
+    name: "ivan салон → beauty never food",
+    input: "в салоне 1200 руб",
+    expect: { amount: 1200, categoryId: "beauty", type: "expense" },
+  },
+  {
+    name: "ivan подписку на программу $ → subscriptions",
+    input: "оплатил подписку на программу 5 долларов",
+    expect: {
+      amount: 5,
+      currency: "usd",
+      categoryId: "subscriptions",
+      frequency: "monthly",
+      autosave: false,
+    },
+  },
+  {
+    name: "ivan подписка € → subscriptions never housing",
+    input: "подписка 9 евро",
+    expect: {
+      amount: 9,
+      currency: "eur",
+      categoryId: "subscriptions",
+      frequency: "monthly",
+      autosave: false,
+    },
   },
 ];
 
@@ -1362,6 +1502,41 @@ const multiCases = [
       "ульяной",
     ],
   },
+  {
+    name: "ivan weekday пт/сб amounts ≠ all сегодня",
+    input: "в пятницу кофе 10 руб в субботу такси 20 руб",
+    expect: [
+      { amount: 10, categoryId: "food", dayOffset: offsetToWeekday(6) },
+      { amount: 20, categoryId: "transport", dayOffset: offsetToWeekday(7) },
+    ],
+  },
+  {
+    name: "ivan weekday abbr пн–чт",
+    input: "в пн продукты 15 руб во вт бензин 30 руб в ср такси 8 руб в чт кофе 5 руб",
+    expect: [
+      { amount: 15, categoryId: "food", dayOffset: offsetToWeekday(2) },
+      { amount: 30, categoryId: "transport", dayOffset: offsetToWeekday(3) },
+      { amount: 8, categoryId: "transport", dayOffset: offsetToWeekday(4) },
+      { amount: 5, categoryId: "food", dayOffset: offsetToWeekday(5) },
+    ],
+  },
+  {
+    name: "ivan meal+fuel+salon+sub narrative",
+    input:
+      "привет ещё так сходил поесть на 25 руб потом заправила машину на 50 руб затем в салоне 1200 руб и оплатил подписку на программу 5 долларов",
+    expect: [
+      { amount: 25, categoryId: "food", type: "expense" },
+      { amount: 50, categoryId: "transport", type: "expense" },
+      { amount: 1200, categoryId: "beauty", type: "expense" },
+      {
+        amount: 5,
+        currency: "usd",
+        categoryId: "subscriptions",
+        frequency: "monthly",
+      },
+    ],
+    forbidNoteIncludes: ["привет", "ещё", "еще", "так", "сходил", "заправила", "housing"],
+  },
 ];
 
 // Delivery cue + filler unit checks (Cyrillic endings; note strip).
@@ -1372,6 +1547,9 @@ const multiCases = [
   }
   if (!isFoodDelivery("доставка еды")) bugs.push("isFoodDelivery доставка еды");
   if (!isFoodDelivery("food order")) bugs.push("isFoodDelivery food order");
+  if (!isFoodMeal("сходил поесть")) bugs.push("isFoodMeal сходил поесть");
+  if (!isFuelExpense("заправила машину")) bugs.push("isFuelExpense заправила");
+  if (!isBeautySalon("салон")) bugs.push("isBeautySalon салон");
   const cafe = parse("вечером вчерашнего дня зашёл в кофейню потратил 17 руб");
   if (cafe.categoryId !== "food") bugs.push(`cafe cat ${cafe.categoryId}`);
   if (normalize(cafe.note) !== normalize("кофейню")) {
@@ -1385,6 +1563,15 @@ const multiCases = [
   const del = parse("заказал доставку еды на 15 руб");
   if (del.categoryId !== "food") bugs.push(`delivery cat ${del.categoryId} ≠ food`);
   if (normalize(del.note) !== "") bugs.push(`delivery note «${del.note}» not short`);
+  // Weekday anchors — пт ≠ today unless today is Friday.
+  const fri = detectDateAnchor("в пятницу кофе 10");
+  if (fri?.offset !== offsetToWeekday(6)) {
+    bugs.push(`пятницу offset ${fri?.offset} expected ${offsetToWeekday(6)}`);
+  }
+  const sat = detectDateAnchor("в субботу такси 20");
+  if (sat?.offset !== offsetToWeekday(7)) {
+    bugs.push(`субботу offset ${sat?.offset} expected ${offsetToWeekday(7)}`);
+  }
   // Blind-fallback trap: without delivery force, empty keywords → housing.
   const ok = bugs.length === 0;
   if (!ok) failed += 1;

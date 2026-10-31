@@ -196,7 +196,7 @@
 
 "voice.batchTitle" = "Save these expenses?";
 "voice.batchSave" = "Save all";
-"voice.batchSummary" = "%d entries, %@";
+"voice.batchSummary" = "%@, %@";
 "voice.recurringTitle" = "Create recurring?";
 "voice.recurringSave" = "Create";
 "voice.recurringSaved" = "Recurring rule saved";

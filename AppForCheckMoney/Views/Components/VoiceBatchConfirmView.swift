@@ -94,6 +94,7 @@ struct VoiceBatchConfirmView: View {
                     Button(action: onCancel) {
                         Text(L10n.string("common.cancel"))
                             .font(AppTheme.TypeScale.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: AppTheme.touchMin)
                             .modifier(BatchConfirmButtonChrome(emphasized: false, destructive: false))
@@ -106,7 +107,7 @@ struct VoiceBatchConfirmView: View {
                     } label: {
                         Text(L10n.string("common.save"))
                             .font(AppTheme.TypeScale.subheadline.weight(.semibold))
-                            .foregroundStyle(AppTheme.accent)
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: AppTheme.touchMin)
                             .modifier(BatchConfirmButtonChrome(emphasized: true, destructive: false))
@@ -167,7 +168,8 @@ struct VoiceBatchConfirmView: View {
             .foregroundStyle(.primary.opacity(0.92))
             .multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
-            .padding(14)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .quietGlassSurface(corner: AppTheme.radiusControl)
     }
@@ -181,7 +183,7 @@ struct VoiceBatchConfirmView: View {
         return Text(
             String(
                 format: L10n.string("voice.batchSummary"),
-                drafts.count,
+                L10n.batchEntryCount(drafts.count),
                 totalText
             )
         )
@@ -314,30 +316,23 @@ private struct BatchConfirmButtonChrome: ViewModifier {
 
     func body(content: Content) -> some View {
         let shape = AppTheme.continuousRect(AppTheme.radiusControl)
-        if #available(iOS 26.0, *), !reduceTransparency {
-            content.glassEffect(
-                emphasized ? .regular.interactive() : .regular,
-                in: shape
-            )
-            .overlay {
-                if emphasized {
-                    shape.strokeBorder(
-                        (destructive ? AppTheme.expense : AppTheme.accent).opacity(0.35),
-                        lineWidth: AppTheme.borderWidth
-                    )
-                }
+        if emphasized {
+            // Primary filled Save — solid accent (not purple glow).
+            content.background {
+                shape.fill(destructive ? AppTheme.expense : AppTheme.accent)
             }
+        } else if #available(iOS 26.0, *), !reduceTransparency {
+            content
+                .glassEffect(.regular, in: shape)
+                .overlay {
+                    shape.strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
+                }
         } else {
             content.background {
                 shape
-                    .fill(emphasized ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(.ultraThinMaterial))
+                    .fill(.ultraThinMaterial)
                     .overlay {
-                        shape.strokeBorder(
-                            emphasized
-                                ? (destructive ? AppTheme.expense : AppTheme.accent).opacity(0.32)
-                                : AppTheme.hairline(scheme),
-                            lineWidth: AppTheme.borderWidth
-                        )
+                        shape.strokeBorder(AppTheme.hairline(scheme), lineWidth: AppTheme.borderWidth)
                     }
             }
         }

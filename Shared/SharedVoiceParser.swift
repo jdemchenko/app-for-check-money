@@ -121,10 +121,10 @@ enum SharedVoiceParser {
         options: []
     )
 
-    /// Narrative clause boundaries: потом / затем / оплатил / заказал / date anchors.
+    /// Narrative clause boundaries: потом / затем / оплатил / заказал / date / weekday anchors.
     /// Use `wa` (not JS/`\b`) so Cyrillic tokens match.
     private static let narrativeSplit = try! NSRegularExpression(
-        pattern: #"(?i)(?:\s+потом\s+|\s+затем\s+|\s+после\s+(?:этого|того)\s+|(?<=[\p{L}\d.])\s+(?=оплатил[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=заказал[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=утром"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вечером"# + wa + #")|(?<=[\p{L}\d.])\s+(?=сегодня"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=позавчера"# + wa + #"))"#,
+        pattern: #"(?i)(?:\s+потом\s+|\s+затем\s+|\s+после\s+(?:этого|того)\s+|(?<=[\p{L}\d.])\s+(?=оплатил[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=заказал[аи]?"# + wa + #")|(?<=[\p{L}\d.])\s+(?=утром"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вечером"# + wa + #")|(?<=[\p{L}\d.])\s+(?=сегодня"# + wa + #")|(?<=[\p{L}\d.])\s+(?=вчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=позавчера"# + wa + #")|(?<=[\p{L}\d.])\s+(?=во?\s+(?:понедельник|вторник|сред[ауеы]|четверг|пятниц[уыае]|суббот[уыае]|воскресень[еяю]|пн|вт|ср|чт|пт|сб|вс)"# + wa + #")|(?<=[\p{L}\d.])\s+(?=(?:понедельник|вторник|сред[ауеы]|четверг|пятниц[уыае]|суббот[уыае]|воскресень[еяю])"# + wa + #"))"#,
         options: []
     )
 
@@ -140,12 +140,37 @@ enum SharedVoiceParser {
         options: []
     )
 
-    /// Narrative filler stripped from notes («мы зашли», «потратил», …).
+    /// Meal / eating cue — «поесть», «сходил поесть» → Еда (never housing).
+    private static let foodMealCue = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:поесть|поел[аи]?|поем|поедим|поужина\#(letter)*|пообеда\#(letter)*|обеда\#(letter)*|ужина\#(letter)*|завтрака\#(letter)*|сходил[аи]?\s+поесть|ходили\s+поесть|went\s+(?:to\s+)?(?:eat|lunch|dinner)|had\s+(?:lunch|dinner|breakfast))"#
+            + wa,
+        options: []
+    )
+
+    /// Fuel / car fill-up — «заправила машину» → Транспорт (never housing).
+    private static let fuelCue = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:заправ\#(letter)*|бензин\#(letter)*|топлив\#(letter)*|дизел\#(letter)*|азс|gas\s*station|petrol|diesel|fuel(?:ed|ling)?|заправ\#(letter)*\s+машин\#(letter)*|машин\#(letter)*\s+заправ\#(letter)*)"#
+            + wa,
+        options: []
+    )
+
+    /// Beauty salon — «салон» → Красота (never Еда / housing).
+    private static let beautySalonCue = try! NSRegularExpression(
+        pattern: #"(?i)"# + wb
+            + #"(?:салон\#(letter)*|salon|маникюр\#(letter)*|педикюр\#(letter)*|парикмахер\#(letter)*|стрижк\#(letter)*|beauty\s*salon)"#
+            + wa,
+        options: []
+    )
+
+    /// Narrative filler stripped from notes («мы зашли», «потратил», «ещё/так/привет»…).
     private static let noteNarrativeFiller = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
             + #"(?:мы\s+)?(?:зашли|зашёл|зашел|зашла|зайти)\s+в"#
             + #"|"# + wb + #"(?:мы\s+)?(?:зашли|зашёл|зашел|зашла)"#
-            + #"|"# + wb + #"(?:потратил\#(letter)*|потрачено|ездил\#(letter)*|попил\#(letter)*|купил\#(letter)*|оплатил\#(letter)*)"#
+            + #"|"# + wb + #"(?:потратил\#(letter)*|потрачено|ездил\#(letter)*|попил\#(letter)*|купил\#(letter)*|оплатил\#(letter)*|сходил\#(letter)*|ходил\#(letter)*)"#
+            + #"|"# + wb + #"(?:ещё|еще|так|привет|слушай|короче|типа|ну)"#
             + wa,
         options: []
     )
@@ -179,7 +204,7 @@ enum SharedVoiceParser {
 
     private static let subscriptionCue = try! NSRegularExpression(
         pattern: #"(?i)"# + wb
-            + #"(?:подписк[аиуеой]*|subscription|netflix|spotify|яндекс\s*(?:music|plus|плюс|музык\w*)|yandex\s*(?:music|plus)|apple\s*music|\bapple\b|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music|youtube\s*premium|youtube\s*music)"#
+            + #"(?:подписк\#(letter)*(?:\s+(?:на\s+)?(?:программ\#(letter)*|сервис\#(letter)*|приложен\#(letter)*))?|subscription|netflix|spotify|яндекс\s*(?:music|plus|плюс|музык\w*)|yandex\s*(?:music|plus)|apple\s*music|\bapple\b|эпл\s*мьюзик|эппл\s*мьюзик|эпл\s*music|youtube\s*premium|youtube\s*music)"#
             + wa,
         options: []
     )
@@ -233,6 +258,31 @@ enum SharedVoiceParser {
         pattern: #"(?i)"# + wb + #"(?:вечером|evening|tonight)"# + wa, options: []
     )
 
+    /// Gregorian `weekday` (1=Sun … 7=Sat) → RU weekday / abbr patterns.
+    private static let weekdayCues: [(weekday: Int, pattern: NSRegularExpression)] = [
+        (2, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:понедельн\#(letter)*|пн)"# + wa, options: []
+        )),
+        (3, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:вторник\#(letter)*|вт)"# + wa, options: []
+        )),
+        (4, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:сред[аеуы]|ср)"# + wa, options: []
+        )),
+        (5, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:четверг\#(letter)*|чт)"# + wa, options: []
+        )),
+        (6, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:пятниц\#(letter)*|пт)"# + wa, options: []
+        )),
+        (7, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:суббот\#(letter)*|сб)"# + wa, options: []
+        )),
+        (1, try! NSRegularExpression(
+            pattern: #"(?i)"# + wb + #"(?:воскресень\#(letter)*|вс)"# + wa, options: []
+        )),
+    ]
+
     /// Category-signal words that must never become a stored note by themselves.
     private static let noteSuppress: Set<String> = Set([
         // Food signals (not venue details)
@@ -275,6 +325,12 @@ enum SharedVoiceParser {
         "got", "received", "spent", "paid", "bought", "ordered",
         "зашёл", "зашла", "зашел", "зашли", "мы", "попил", "попила",
         "ездил", "ездила", "в",
+        "ещё", "еще", "так", "привет", "слушай", "короче", "типа", "ну",
+        "сходил", "сходила", "ходил", "ходила", "поесть", "поел", "поела",
+        "заправила", "заправил", "заправка", "машину", "машина",
+        "понедельник", "вторник", "среда", "среду", "четверг", "пятница", "пятницу",
+        "суббота", "субботу", "воскресенье", "пн", "вт", "ср", "чт", "пт", "сб", "вс",
+        "салон", "подписку", "подписка", "программу", "программа",
         // Delivery stems — category signal, not a stored note
         "доставка", "доставку", "доставк", "еды", "еду", "едой", "delivery",
         // NOTE: keep «аренда квартиры», «проезд», «телефон», «долларов» OUT — descriptions
@@ -590,31 +646,49 @@ enum SharedVoiceParser {
             categories: categories,
             preferredTypeRaw: nil
         )
-        // Food delivery / food-order always beats housing (and any other miss).
-        if delivery, let food = categories.first(where: { $0.id == "food" }) {
+        let meal = isFoodMeal(in: working) || isFoodMeal(in: rawText)
+        let fuel = isFuelExpense(in: working) || isFuelExpense(in: rawText)
+        let salon = isBeautySalon(in: working) || isBeautySalon(in: rawText)
+        let hasSubCue = subscription != nil || brand != nil
+
+        // Strong cues beat weak / housing misses (salon before meal so «салон» ≠ Еда).
+        if salon, let beauty = categories.first(where: { $0.id == "beauty" }) {
+            matched = beauty
+        } else if delivery || meal, let food = categories.first(where: { $0.id == "food" }) {
             matched = food
+        } else if fuel, let transport = categories.first(where: { $0.id == "transport" }) {
+            matched = transport
         } else if matched?.id == "housing",
-                  (isFoodDelivery(in: working) || working.range(
-                    of: #"доставк|еды|еду|заказ"#,
+                  (delivery || meal || working.range(
+                    of: #"доставк|еды|еду|заказ|поесть|поел"#,
                     options: [.regularExpression, .caseInsensitive]
                   ) != nil),
                   let food = categories.first(where: { $0.id == "food" }) {
             matched = food
         }
-        // Subscription brands → Подписки. Bare «подписка» without a brand keeps other categories.
-        if brand != nil {
+        // Any подписк* cue (incl. «подписку на программу» / $ / €) → Подписки, never housing.
+        if hasSubCue {
             if let subs = categories.first(where: { $0.id == "subscriptions" }) {
                 matched = subs
-            } else if let entertainment = categories.first(where: { $0.id == "entertainment" }) {
+            } else if brand != nil, let entertainment = categories.first(where: { $0.id == "entertainment" }) {
                 matched = entertainment
             }
         }
 
         let categoryMatchedByKeyword = matched != nil
-        // Blind fallback is housing (sort 0) — never use it when delivery cues are present.
+        // Blind fallback is housing (sort 0) — never use it for meal/fuel/salon/sub/delivery.
         let categoryId: String? = {
-            if delivery {
+            if delivery || meal {
                 return matched?.id ?? categories.first(where: { $0.id == "food" })?.id
+            }
+            if fuel {
+                return matched?.id ?? categories.first(where: { $0.id == "transport" })?.id
+            }
+            if salon {
+                return matched?.id ?? categories.first(where: { $0.id == "beauty" })?.id
+            }
+            if hasSubCue {
+                return matched?.id ?? categories.first(where: { $0.id == "subscriptions" })?.id
             }
             return matched?.id
                 ?? SharedCategoryMatcher.categories(forRaw: type!, in: categories).first?.id
@@ -760,6 +834,32 @@ enum SharedVoiceParser {
         return foodDeliveryCue.firstMatch(in: text, options: [], range: range) != nil
     }
 
+    /// «поесть» / «сходил поесть» — Еда.
+    static func isFoodMeal(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return foodMealCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
+    /// «заправила машину» / АЗС — Транспорт.
+    static func isFuelExpense(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return fuelCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
+    /// «салон» — Красота.
+    static func isBeautySalon(in text: String) -> Bool {
+        let range = NSRange(text.startIndex..., in: text)
+        return beautySalonCue.firstMatch(in: text, options: [], range: range) != nil
+    }
+
+    /// Days since the most recent `weekday` (1=Sun…7=Sat), including today → 0.
+    static func offsetToWeekday(_ targetWeekday: Int, from date: Date = .now) -> Int {
+        let today = Calendar.current.component(.weekday, from: date)
+        var delta = today - targetWeekday
+        if delta < 0 { delta += 7 }
+        return -delta
+    }
+
     struct DateAnchor {
         /// Calendar day offset; `nil` when only a day-part was spoken.
         var offset: Int?
@@ -796,6 +896,16 @@ enum SharedVoiceParser {
         }
         if dateToday.firstMatch(in: text, options: [], range: range) != nil {
             return DateAnchor(offset: 0, part: part, dayExplicit: true)
+        }
+        // Weekdays пн–вс / full names — most recent occurrence (incl. today).
+        for cue in weekdayCues {
+            if cue.pattern.firstMatch(in: text, options: [], range: range) != nil {
+                return DateAnchor(
+                    offset: offsetToWeekday(cue.weekday),
+                    part: part,
+                    dayExplicit: true
+                )
+            }
         }
         // Bare «утром» / «вечером» — day-part only; materialize keeps prior day when set.
         if part != nil {
@@ -1189,6 +1299,20 @@ enum SharedVoiceParser {
         s = s.trimmingCharacters(in: .whitespacesAndNewlines)
         if s.count <= 1, s.unicodeScalars.allSatisfy({ CharacterSet.punctuationCharacters.contains($0) }) {
             return ""
+        }
+        // Soft truncation — keep a short descriptive phrase, not the whole utterance.
+        let maxChars = 42
+        if s.count > maxChars {
+            let words = s.split(separator: " ").map(String.init)
+            var clipped: [String] = []
+            var len = 0
+            for w in words {
+                let next = len + w.count + (clipped.isEmpty ? 0 : 1)
+                if next > maxChars { break }
+                clipped.append(w)
+                len = next
+            }
+            s = clipped.isEmpty ? String(s.prefix(maxChars)) : clipped.joined(separator: " ")
         }
         return s
     }

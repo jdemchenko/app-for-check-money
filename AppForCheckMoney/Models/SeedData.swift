@@ -183,6 +183,7 @@ enum SeedData {
                 "supermarket", "макдональдс", "mcdonalds", "картошк", "огурц",
                 "гарнир", "доставка еды", "доставку еды", "доставка", "доставку",
                 "доставк", "delivery", "food delivery", "food order", "заказ еды",
+                "поесть", "поел", "поела", "пообедал", "пообедала", "поужинал", "поужинала",
                 "пятёрочка", "пятерочка",
             ],
             colorHex: "8E8E93",
@@ -196,6 +197,7 @@ enum SeedData {
             keywords: [
                 "транспорт", "transport", "такси", "taxi", "метро", "metro", "subway",
                 "автобус", "bus", "бензин", "gas", "fuel", "топливо", "заправка",
+                "заправил", "заправила", "заправ", "машину", "машина",
                 "азс", "azs", "gas station", "petrol", "diesel", "дизель",
                 "uber", "яндекс такси", "яндекс го", "yandex go", "yandex taxi",
                 "парковка", "parking", "поезд", "train",
@@ -251,7 +253,8 @@ enum SeedData {
             nameEn: "Subscriptions",
             kind: .expense,
             keywords: [
-                "подписк", "subscription", "subscriptions",
+                "подписк", "подписка", "подписку", "подписки", "subscription", "subscriptions",
+                "программа", "программу", "программе",
                 "netflix", "spotify",
                 "яндекс music", "yandex music", "яндекс музык", "яндекс plus", "яндекс плюс",
                 "yandex plus", "apple music", "apple",
