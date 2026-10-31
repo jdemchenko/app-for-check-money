@@ -21,6 +21,7 @@
 "home.today" = "Today";
 "home.seeAll" = "See all";
 "home.quietFeedback" = "Today %@ · %@ %@%%";
+"home.budgetUnder" = "On track · %@ left this month";
 
 "add.mode" = "Mode";
 "add.manual" = "Manual";

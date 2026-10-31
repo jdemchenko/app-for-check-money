@@ -49,6 +49,9 @@ final class LaunchWowStore: ObservableObject {
             pendingAfterUnlock = nil
             if pending == .cold {
                 considerColdLaunch(reduceMotion: reduceMotion)
+                if reduceMotion {
+                    notifyHomeReadyIfNeeded()
+                }
             } else if pending == .returning {
                 playReturn(reduceMotion: reduceMotion)
             }
@@ -73,9 +76,10 @@ final class LaunchWowStore: ObservableObject {
     }
 
     func finishOverlay() {
-        let wasReturn = phase == .returning
+        // Cold + return both hand off to Home hero (count-up / mic pulse).
+        let handoff = phase == .cold || phase == .returning
         phase = .idle
-        if wasReturn {
+        if handoff {
             homePulseToken &+= 1
         }
     }
@@ -84,8 +88,13 @@ final class LaunchWowStore: ObservableObject {
         returnPlayedThisProcess = true
         phase = .idle
         // No second brand splash — Home does a ~0.6s balance reveal + mic pulse.
-        // Token still bumps under Reduce Motion so layout stays consistent (opacity 1).
         homePulseToken &+= 1
         _ = reduceMotion
+    }
+
+    /// When Reduce Motion skips the overlay, still nudge Home once.
+    func notifyHomeReadyIfNeeded() {
+        guard coldPlayedThisProcess, homePulseToken == 0 else { return }
+        homePulseToken &+= 1
     }
 }

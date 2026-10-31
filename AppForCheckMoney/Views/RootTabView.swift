@@ -30,6 +30,7 @@ struct RootTabView: View {
             }
         }
         .tint(AppTheme.accent)
+        .animation(AppTheme.springFluid, value: selectedTab)
         .task {
             ExchangeRateStore.shared.refreshIfNeeded()
         }

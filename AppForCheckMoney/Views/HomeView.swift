@@ -33,9 +33,15 @@ struct HomeView: View {
     @State private var quietFeedback: String?
     @State private var quietFeedbackTask: Task<Void, Never>?
     @ObservedObject private var incoming = IncomingDraftStore.shared
-    /// One-shot return-open balance reveal / mic pulse (LaunchWowStore).
+    /// One-shot hero reveal / mic pulse (LaunchWowStore — cold + return).
     @State private var balanceReveal: Double = 1
+    @State private var displayedBalance: Double = 0
+    @State private var balanceBlur: CGFloat = 0
     @State private var micLaunchPulse = false
+    @State private var heroAppeared = false
+    /// Soft under-budget cue — once per process, not confetti spam.
+    @State private var budgetCelebrateShown = false
+    @State private var budgetUnderGlow = false
 
     private var monthTransactions: [MoneyTransaction] {
         let cal = Calendar.current
@@ -175,6 +181,7 @@ struct HomeView: View {
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+                .presentationCornerRadius(AppTheme.radiusPanel)
             }
             .sheet(isPresented: $showManualAdd) {
                 NavigationStack {
@@ -182,16 +189,19 @@ struct HomeView: View {
                 }
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
+                .presentationCornerRadius(AppTheme.radiusPanel)
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
                     .presentationDetents([.large, .medium])
                     .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(AppTheme.radiusPanel)
             }
             .sheet(isPresented: $showLedger) {
                 LedgerHubView()
                     .presentationDetents([.large, .medium])
                     .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(AppTheme.radiusPanel)
             }
             .alert(statusMessage ?? "", isPresented: $showStatus) {
                 Button(L10n.string("common.ok"), role: .cancel) {}
@@ -203,36 +213,59 @@ struct HomeView: View {
                     recurringConfirmOverlay(recurring)
                 }
             }
-            .animation(.easeOut(duration: 0.2), value: pendingBatch?.count)
-            .animation(.easeOut(duration: 0.2), value: pendingRecurring?.rawText)
+            .animation(AppTheme.springFluid, value: pendingBatch?.count)
+            .animation(AppTheme.springFluid, value: pendingRecurring?.rawText)
             .onChange(of: incoming.pendingText) { _, _ in
                 consumeIncomingDraft()
             }
-            .onAppear { consumeIncomingDraft() }
+            .onAppear {
+                consumeIncomingDraft()
+                if !heroAppeared, launchHomePulseToken == 0 {
+                    displayedBalance = balance
+                    balanceBlur = 0
+                    balanceReveal = 1
+                }
+            }
             .onChange(of: launchHomePulseToken) { _, token in
                 guard token > 0 else { return }
-                runReturnReveal()
+                runHeroReveal()
+            }
+            .onChange(of: balance) { _, newValue in
+                guard heroAppeared, !reduceMotion else {
+                    displayedBalance = newValue
+                    return
+                }
+                withAnimation(AppTheme.springFluid) {
+                    displayedBalance = newValue
+                }
             }
             .id(currencySettings.displayCurrency.rawValue)
         }
     }
 
-    /// Light ~0.6s balance fade-up + single mic pulse after a returning open.
-    private func runReturnReveal() {
+    /// Count-up + blur→sharp + one mic glass pulse (cold handoff or return open).
+    private func runHeroReveal() {
+        heroAppeared = true
         if reduceMotion {
+            displayedBalance = balance
+            balanceBlur = 0
             balanceReveal = 1
             micLaunchPulse = false
             return
         }
-        balanceReveal = 0.35
+        displayedBalance = 0
+        balanceBlur = 12
+        balanceReveal = 0.4
         micLaunchPulse = false
         withAnimation(AppTheme.springFluid) {
+            displayedBalance = balance
+            balanceBlur = 0
             balanceReveal = 1
         }
         withAnimation(AppTheme.springPress) {
             micLaunchPulse = true
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.65) {
             withAnimation(AppTheme.springFluid) {
                 micLaunchPulse = false
             }
@@ -256,7 +289,7 @@ struct HomeView: View {
                 pendingBatchPhrase = ""
             }
         )
-        .transition(.opacity)
+        .transition(.opacity.combined(with: .scale(scale: 0.98)))
         .zIndex(10)
     }
 
@@ -283,7 +316,7 @@ struct HomeView: View {
                 onCancel: { pendingRecurring = nil }
             )
         }
-        .transition(.opacity)
+        .transition(.opacity.combined(with: .scale(scale: 0.98)))
         .zIndex(10)
     }
 
@@ -297,14 +330,14 @@ struct HomeView: View {
                 .foregroundStyle(.primary)
                 .accessibilityAddTraits(.isHeader)
 
-            Text(MoneyFormat.currency(balance, code: displayCurrency))
+            AnimatedCurrencyLabel(amount: displayedBalance, code: displayCurrency)
                 .font(AppTheme.TypeScale.moneyHero)
                 .foregroundStyle(.primary)
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
-                .contentTransition(.numericText())
+                .blur(radius: balanceBlur)
                 .opacity(balanceReveal)
-                .offset(y: (1 - balanceReveal) * 8)
+                .offset(y: (1 - balanceReveal) * 10)
 
             Text(
                 L10n.string("home.monthCashflow")
@@ -434,6 +467,15 @@ struct HomeView: View {
                     }
                 }
             }
+        }
+        .overlay {
+            AppTheme.continuousRect(AppTheme.radiusPanel)
+                .strokeBorder(
+                    AppTheme.income.opacity(budgetUnderGlow ? 0.45 : 0),
+                    lineWidth: AppTheme.borderWidth
+                )
+                .animation(AppTheme.springFluid, value: budgetUnderGlow)
+                .allowsHitTesting(false)
         }
     }
 
@@ -685,11 +727,13 @@ struct HomeView: View {
         PhoneWatchSync.shared.pushSnapshot()
         speech.clearTranscript()
         pendingDraft = nil
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         // No «Готово» toast — optional quiet day / category % (DeepSeek metrics, ADA-quiet).
         if (draft.type ?? .expense) == .expense {
             presentQuietFeedback(for: tx)
         } else {
             quietFeedback = nil
+            maybeCelebrateBudgetUnderLimit()
         }
     }
 
@@ -735,8 +779,11 @@ struct HomeView: View {
         pendingBatch = nil
         pendingBatchPhrase = ""
         speech.clearTranscript()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         if let lastExpense {
             presentQuietFeedback(for: lastExpense)
+        } else {
+            maybeCelebrateBudgetUnderLimit()
         }
     }
 
@@ -795,12 +842,40 @@ struct HomeView: View {
             tip.categoryName,
             pct
         )
+        maybeCelebrateBudgetUnderLimit()
         quietFeedbackTask?.cancel()
         quietFeedbackTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: 4_500_000_000)
             guard !Task.isCancelled else { return }
-            withAnimation(.easeOut(duration: 0.35)) {
+            withAnimation(AppTheme.springFluid) {
                 quietFeedback = nil
+                budgetUnderGlow = false
+            }
+        }
+    }
+
+    /// Subtle under-budget celebration — once per process, no confetti.
+    private func maybeCelebrateBudgetUnderLimit() {
+        guard settings.budgetEnabled, settings.budgetAmount > 0 else { return }
+        guard !budgetCelebrateShown else { return }
+        let spent = monthBudgetSpent
+        guard spent > 0, spent < settings.budgetAmount else { return }
+        budgetCelebrateShown = true
+        budgetUnderGlow = true
+        let remaining = settings.budgetAmount - spent
+        let line = String(
+            format: L10n.string("home.budgetUnder"),
+            MoneyFormat.currency(remaining, code: settings.budgetCurrency)
+        )
+        if let existing = quietFeedback, !existing.isEmpty {
+            quietFeedback = existing + " · " + line
+        } else {
+            quietFeedback = line
+        }
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.7)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+            withAnimation(AppTheme.springFluid) {
+                budgetUnderGlow = false
             }
         }
     }
@@ -820,6 +895,9 @@ struct ConfirmDraftSheet: View {
     var onCancel: () -> Void
     var onSave: (String) -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var revealed = false
+
     private var cats: [MoneyCategory] {
         CategoryMatcher.categories(for: draft.type ?? .expense, in: categories)
     }
@@ -829,7 +907,7 @@ struct ConfirmDraftSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: AppTheme.spaceGroup) {
                     GlassPanel {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(
@@ -838,24 +916,27 @@ struct ConfirmDraftSheet: View {
                                     code: draft.currency ?? CurrencySettings.shared.entryCurrency
                                 )
                             )
-                                .font(.system(size: 34, weight: .semibold, design: .rounded))
+                            .font(AppTheme.TypeScale.moneyTitle)
                             Text(draft.rawText)
-                                .font(.footnote)
+                                .font(AppTheme.TypeScale.footnote)
                                 .foregroundStyle(.secondary)
                             if !draft.note.isEmpty {
                                 Text(draft.note)
-                                    .font(.subheadline.weight(.medium))
+                                    .font(AppTheme.TypeScale.subheadline.weight(.medium))
                             }
                         }
                     }
+                    .opacity(revealed || reduceMotion ? 1 : 0)
+                    .offset(y: revealed || reduceMotion ? 0 : 10)
 
                     QuietSectionLabel(text: L10n.string("field.category"))
+                        .opacity(revealed || reduceMotion ? 1 : 0)
 
                     LazyVGrid(
                         columns: [GridItem(.flexible()), GridItem(.flexible())],
                         spacing: 10
                     ) {
-                        ForEach(cats, id: \.id) { cat in
+                        ForEach(Array(cats.enumerated()), id: \.element.id) { index, cat in
                             Button {
                                 categoryId = cat.id
                             } label: {
@@ -866,18 +947,25 @@ struct ConfirmDraftSheet: View {
                                         size: 28
                                     )
                                     Text(cat.displayName())
-                                        .font(.subheadline.weight(.medium))
+                                        .font(AppTheme.TypeScale.subheadline.weight(.medium))
                                         .lineLimit(1)
                                     Spacer(minLength: 0)
                                 }
                                 .padding(10)
                                 .glassChip(selected: categoryId == cat.id)
                             }
-                            .buttonStyle(.plain)
+                            .quietPress()
+                            .opacity(chipVisible(index) ? 1 : 0)
+                            .offset(y: chipVisible(index) ? 0 : 12)
+                            .animation(
+                                AppTheme.springFluid.delay(reduceMotion ? 0 : 0.05 + Double(index) * 0.045),
+                                value: revealed
+                            )
                         }
                     }
                 }
                 .padding(20)
+                .animation(AppTheme.springFluid, value: revealed)
             }
             .liquidScreen()
             .navigationTitle(L10n.string("common.confirm"))
@@ -889,13 +977,28 @@ struct ConfirmDraftSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.string("common.save")) {
                         guard canSave else { return }
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
                         onSave(categoryId)
                     }
                     .disabled(!canSave)
                     .fontWeight(.semibold)
                 }
             }
+            .onAppear {
+                if reduceMotion {
+                    revealed = true
+                } else {
+                    revealed = false
+                    DispatchQueue.main.async {
+                        withAnimation(AppTheme.springFluid) { revealed = true }
+                    }
+                }
+            }
         }
+    }
+
+    private func chipVisible(_ index: Int) -> Bool {
+        reduceMotion || revealed
     }
 }
 

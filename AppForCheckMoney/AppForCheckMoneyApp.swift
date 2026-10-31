@@ -84,6 +84,9 @@ private struct AppRootHost: View {
             if !settings.lockEnabled {
                 unlocked = true
                 launchWow.considerColdLaunch(reduceMotion: reduceMotion)
+                if reduceMotion {
+                    launchWow.notifyHomeReadyIfNeeded()
+                }
             } else {
                 launchWow.deferColdUntilUnlock()
             }

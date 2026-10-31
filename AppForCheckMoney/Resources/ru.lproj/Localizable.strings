@@ -21,6 +21,7 @@
 "home.today" = "Сегодня";
 "home.seeAll" = "Все";
 "home.quietFeedback" = "Сегодня %@ · %@ %@%%";
+"home.budgetUnder" = "В рамках бюджета · осталось %@";
 
 "add.mode" = "Режим";
 "add.manual" = "Вручную";

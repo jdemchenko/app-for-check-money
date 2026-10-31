@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Qalta-like multi-tx voice confirm: wallet chip, quoted phrase, day groups,
 /// dual amounts (display + original), Отмена / Сохранить.
@@ -14,6 +15,8 @@ struct VoiceBatchConfirmView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var revealed = false
 
     private var wallet: MoneyAccount? {
         accounts.first(where: { !$0.isArchived }) ?? accounts.first
@@ -58,15 +61,30 @@ struct VoiceBatchConfirmView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.spaceItem) {
                         walletChip
+                            .opacity(rowVisible(0) ? 1 : 0)
+                            .offset(y: rowVisible(0) ? 0 : 10)
                         quotedPhrase
+                            .opacity(rowVisible(1) ? 1 : 0)
+                            .offset(y: rowVisible(1) ? 0 : 10)
                         summaryLine
-                        ForEach(Array(dayGroups.enumerated()), id: \.offset) { _, group in
+                            .opacity(rowVisible(2) ? 1 : 0)
+                            .offset(y: rowVisible(2) ? 0 : 10)
+                        ForEach(Array(dayGroups.enumerated()), id: \.offset) { index, group in
                             daySection(group)
+                                .opacity(rowVisible(3 + index) ? 1 : 0)
+                                .offset(y: rowVisible(3 + index) ? 0 : 12)
+                                .animation(
+                                    AppTheme.springFluid.delay(
+                                        reduceMotion ? 0 : 0.06 + Double(3 + index) * 0.05
+                                    ),
+                                    value: revealed
+                                )
                         }
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 18)
                     .padding(.bottom, 8)
+                    .animation(AppTheme.springFluid, value: revealed)
                 }
                 .frame(maxHeight: 520)
 
@@ -75,22 +93,25 @@ struct VoiceBatchConfirmView: View {
                 HStack(spacing: 10) {
                     Button(action: onCancel) {
                         Text(L10n.string("common.cancel"))
-                            .font(.subheadline.weight(.semibold))
+                            .font(AppTheme.TypeScale.subheadline.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: AppTheme.touchMin)
                             .modifier(BatchConfirmButtonChrome(emphasized: false, destructive: false))
                     }
-                    .buttonStyle(.plain)
+                    .quietPress()
 
-                    Button(action: onConfirm) {
+                    Button {
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        onConfirm()
+                    } label: {
                         Text(L10n.string("common.save"))
-                            .font(.subheadline.weight(.semibold))
+                            .font(AppTheme.TypeScale.subheadline.weight(.semibold))
                             .foregroundStyle(AppTheme.accent)
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: AppTheme.touchMin)
                             .modifier(BatchConfirmButtonChrome(emphasized: true, destructive: false))
                     }
-                    .buttonStyle(.plain)
+                    .quietPress()
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 14)
@@ -100,9 +121,23 @@ struct VoiceBatchConfirmView: View {
                 reduceTransparency: reduceTransparency
             ))
             .padding(.horizontal, AppTheme.pageInset)
-            .transition(.scale(scale: 0.96).combined(with: .opacity))
+            .transition(.scale(scale: 0.97).combined(with: .opacity))
         }
-        .animation(AppTheme.springSoft, value: drafts.count)
+        .animation(AppTheme.springFluid, value: drafts.count)
+        .onAppear {
+            if reduceMotion {
+                revealed = true
+            } else {
+                revealed = false
+                DispatchQueue.main.async {
+                    withAnimation(AppTheme.springFluid) { revealed = true }
+                }
+            }
+        }
+    }
+
+    private func rowVisible(_ index: Int) -> Bool {
+        reduceMotion || revealed
     }
 
     // MARK: - Pieces
